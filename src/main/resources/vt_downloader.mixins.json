@@ -3,7 +3,9 @@
     "package": "io.github.bymartrixx.vtd.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [],
-    "client": [],
+    "client": [
+        "PackScreenMixin"
+    ],
     "injectors": {
         "defaultRequire": 1
     }
