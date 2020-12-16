@@ -44,4 +44,5 @@ jobs:
         uses: actions/upload-artifact@v2
         if: success()
         with:
-          path: build/libs
+          name: Built mod on JDK ${{ matrix.java-version }}
+          path: build/libs/*.jar
