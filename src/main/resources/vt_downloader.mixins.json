@@ -1,0 +1,10 @@
+{
+    "required": true,
+    "package": "io.github.bymartrixx.vtd.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [],
+    "client": [],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

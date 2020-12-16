@@ -1,33 +1,35 @@
 {
     "schemaVersion": 1,
-    "id": "skeleton_id",
+    "id": "vt_downloader",
     "version": "${version}",
 
-    "name": "Skeleton Name",
-    "description": "Skeleton Name",
+    "name": "VTDownloader",
+    "description": "VTDownloader",
     "authors": [
         "ByMartrixx"
     ],
     "contact": {
-        "sources": "https://github.com/ByMartrixx/skeleton-dir",
-        "issues": "https://github.com/ByMartrixx/skeleton-dir/issues"
+        "sources": "https://github.com/ByMartrixx/VTDownloader",
+        "issues": "https://github.com/ByMartrixx/VTDownloader/issues"
     },
 
     "custom": {
         "modmenu:api": false,
-        "modmenu:clientsideOnly": false
+        "modmenu:clientsideOnly": true
     },
 
     "license": "MIT",
-    "icon": "assets/skeleton_id/icon.png",
+    "icon": "assets/vt_downloader/icon.png",
 
-    "environment": "*",
+    "environment": "client",
     "entrypoints": {
-        "main": [
-            "io.github.bymartrixx.skeletonpkg.SkeletonClass"
+        "client": [
+            "io.github.bymartrixx.vtd.VTDMod"
         ]
     },
-    "mixins": [],
+    "mixins": [
+        "vt_downloader.mixins.json"
+    ],
 
     "depends": {
         "fabricloader": ">=0.7.4",
