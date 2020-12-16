@@ -1,0 +1,144 @@
+plugins {
+	id 'fabric-loom' version '0.5-SNAPSHOT'
+	id 'maven-publish'
+//b	id 'com.jfrog.bintray' version '1.8.5'
+//cf	id 'com.matthewprenger.cursegradle' version '1.4.0'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	maven {
+		name 'JitPack'
+		url 'https://jitpack.io'
+	}
+}
+
+dependencies {
+	//to change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// ModMenu
+	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+
+	// Sodium
+	modImplementation "com.github.jellysquid3:sodium-fabric:mc${project.sodium_version}"
+
+	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
+	// You may need to force-disable transitiveness on them.
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+// ensure that the encoding is set to UTF-8, no matter what the system default is
+// this fixes some edge cases with special characters not displaying correctly
+// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
+
+// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+// if it is present.
+// If you remove this task, sources will not be generated.
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = "sources"
+	from sourceSets.main.allSource
+}
+
+jar {
+	from "LICENSE"
+}
+
+//bbintray {
+//b	user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+//b	key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
+//b	publications = ["mavenJava"]
+//b	publish = false
+//b	pkg {
+//b		repo = 'maven'
+//b		name = 'skeleton-dir'
+//b		licenses = ['MIT']
+//b		vcsUrl = 'https://github.com/ByMartrixx/skeleton-dir.git'
+//b		version {
+//b			released = new Date()
+//b			githubRepo = 'ByMartrixx/skeleton-dir'
+//b			websiteUrl = 'https://github.com/ByMartrixx/skeleton-dir'
+//b			issueTrackerUrl = 'https://github.com/ByMartrixx/skeleton-dir/issues'
+//b			vcsUrl = 'https://github.com/ByMartrixx/skeleton-dir.git'
+//b			gpg {
+//b				sign = true
+//b			}
+//b		}
+//b	}
+//b}
+
+// configure the maven publication
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			// add all the jars that should be included when publishing to maven
+			artifact(remapJar) {
+				builtBy remapJar
+			}
+			artifact(sourcesJar) {
+				builtBy remapSourcesJar
+			}
+//b			pom.withXml {
+//b				def root = asNode()
+//b				root.appendNode('description', 'Skeleton Name')
+//b				root.appendNode('name', 'Skeleton Name')
+//b				root.appendNode('url', 'https://github.com/ByMartrixx/skeleton-dir')
+//b			}
+//b			groupId("${project.maven_group}")
+//b			artifactId 'skeleton-dir'
+		}
+	}
+
+	// select the repositories you want to publish to
+	repositories {
+		// uncomment to publish to the local maven
+		// mavenLocal()
+	}
+}
+
+//cfcurseforge {
+//cf	if (project.hasProperty('curse_api_key') || System.getEnv('CURSE_API_KEY') != null) {
+//cf		apiKey = project.hasProperty('curse_api_key') ? project.property('curse_api_key') : System.getenv('CURSE_API_KEY')
+//cf	}
+//cf	project {
+//cf		id = '111111'
+//cf		changelog = 'A changelog can be found at https://github.com/ByMartrixx/skleleton-dir/releases/latest'
+//cf		releaseType = 'release'
+//cf		addGameVersion '1.16'
+//cf		addGameVersion '1.16.1'
+//cf		addGameVersion '1.16.2'
+//cf		addGameVersion '1.16.3'
+//cf		addGameVersion '1.16.4'
+//cf		addGameVersion 'Fabric'
+//cf		mainArtifact(remapJar) {
+//cf			displayName = "Skeleton Name $version 1.16.x"
+//cf		}
+//cf		afterEvaluate {
+//cf			uploadTask.dependsOn("remapJar")
+//cf		}
+//cf	}
+//cf	options {
+//cf		forgeGradleIntegration = false
+//cf	}
+//cf}

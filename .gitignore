@@ -1,0 +1,37 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
+# idea
+
+!.idea/
+
+.idea/*
+!.idea/modules/
+!.idea/runConfigurations/
+!.idea/gradle.xml
+!.idea/misc.xml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# fabric
+
+!run/
+run/*
+!run/resourcepacks/
+!run/options.txt
+
+!run_server/
+run_server/*
+!run_server/server.properties
