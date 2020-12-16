@@ -35,13 +35,9 @@ jobs:
       - name: Rename artifacts
         if: success()
         run: |
-#         Download the renaming script
-          wget https://pastebin.com/raw/eC7vqtBU -O temp.sh
-#         Remove any \r from the file and save it as rename-artifacts.sh
-          awk '{ sub("\r$", ""); print }' temp.sh > rename-artifacts.sh
-#         Delete the temp.sh file
-          rm temp.sh
-#         Run the script
+          wget https://pastebin.com/raw/eC7vqtBU
+          awk '{ sub("\r$", ""); print }' eC7vqtBU > rename-artifacts.sh
+          rm eC7vqtBU
           sh rename-artifacts.sh
 
       - name: Upload Artifacts
