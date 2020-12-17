@@ -20,7 +20,7 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.addButton(new ButtonWidget(10, this.height, 160, 20, new LiteralText("Done"), button -> this.onClose()));
+        this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
         for (int i = 0; i < VTDMod.categories.size(); ++i) {
             JsonObject category = VTDMod.categories.get(i).getAsJsonObject();
