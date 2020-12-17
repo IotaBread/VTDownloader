@@ -1,6 +1,7 @@
-package io.github.bymartrixx.vtd;
+package io.github.bymartrixx.vtd.gui;
 
 import com.google.gson.JsonObject;
+import io.github.bymartrixx.vtd.VTDMod;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -19,7 +20,7 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.addButton(new ButtonWidget(10, this.height, 150, 20, new LiteralText("Done"), button -> this.onClose()));
+        this.addButton(new ButtonWidget(10, this.height, 160, 20, new LiteralText("Done"), button -> this.onClose()));
 
         for (int i = 0; i < VTDMod.categories.size(); ++i) {
             JsonObject category = VTDMod.categories.get(i).getAsJsonObject();
