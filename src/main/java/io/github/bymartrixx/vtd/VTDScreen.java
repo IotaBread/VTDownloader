@@ -3,6 +3,7 @@ package io.github.bymartrixx.vtd;
 import com.google.gson.JsonObject;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 
 public class VTDScreen extends Screen {
@@ -18,7 +19,7 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.addButton(new ButtonWidget(this.width, this.height, 150, 20, new LiteralText("Done"), button -> this.onClose()));
+        this.addButton(new ButtonWidget(10, this.height, 150, 20, new LiteralText("Done"), button -> this.onClose()));
 
         for (int i = 0; i < VTDMod.categories.size(); ++i) {
             JsonObject category = VTDMod.categories.get(i).getAsJsonObject();
@@ -28,5 +29,10 @@ public class VTDScreen extends Screen {
                 // TODO
             }));
         }
+    }
+
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderBackgroundTexture(0);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 }
