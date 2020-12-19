@@ -6,14 +6,8 @@ out/
 classes/
 
 # idea
+.idea/
 
-!.idea/
-
-.idea/*
-!.idea/modules/
-!.idea/runConfigurations/
-!.idea/gradle.xml
-!.idea/misc.xml
 *.ipr
 *.iws
 
