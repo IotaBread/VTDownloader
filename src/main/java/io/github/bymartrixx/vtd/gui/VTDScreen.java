@@ -1,5 +1,6 @@
 package io.github.bymartrixx.vtd.gui;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
 import net.minecraft.client.gui.screen.Screen;
@@ -56,15 +57,27 @@ public class VTDScreen extends Screen {
             String categoryName = category.get("category").getAsString();
 
             this.addButton(new ButtonWidget(i * 130 + 110, 10, 120, 20, new LiteralText(categoryName), button -> {
-                if (this.selectedTab != index)
+                if (this.selectedTab != index) {
                     this.selectedTab = index;
-                // TODO: Init entries
+                    this.loadPacks(category.get("packs").getAsJsonArray());
+                }
             }));
         }
+
+        // Load the selected category packs
+        this.loadPacks(VTDMod.categories.get(selectedTab).getAsJsonObject().get("packs").getAsJsonArray());
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 30, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
+    }
+
+    private void loadPacks(JsonArray packs) {
+        for (int i = 0; i < packs.size(); ++i) {
+            JsonObject pack = packs.get(i).getAsJsonObject();
+            // TODO
+        }
     }
 }
