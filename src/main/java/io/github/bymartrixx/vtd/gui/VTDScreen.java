@@ -35,7 +35,6 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.children.add(packSelectionList);
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
         this.addButton(new ButtonWidget(10, 30, 40, 20, new LiteralText("<-"), button -> {
@@ -74,6 +73,7 @@ public class VTDScreen extends Screen {
 
         // Load the selected category packs
         this.loadPacks(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
+        this.children.add(this.packSelectionList);
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
