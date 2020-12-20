@@ -30,7 +30,7 @@ public class VTDScreen extends Screen {
     protected void init() {
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
-        this.addButton(new ButtonWidget(10, 10, 40, 20, new LiteralText("<-"), button -> {
+        this.addButton(new ButtonWidget(10, 30, 40, 20, new LiteralText("<-"), button -> {
             if (this.tabIndex > 0) {
                 --this.tabIndex;
 
@@ -39,7 +39,7 @@ public class VTDScreen extends Screen {
                 this.init();
             }
         }));
-        this.addButton(new ButtonWidget(60, 10, 40, 20, new LiteralText("->"), button -> {
+        this.addButton(new ButtonWidget(60, 30, 40, 20, new LiteralText("->"), button -> {
             if (this.tabIndex <= VTDMod.categories.size() - getMaxTabNum(this.width)) {
                 ++this.tabIndex;
 
@@ -56,7 +56,7 @@ public class VTDScreen extends Screen {
             JsonObject category = VTDMod.categories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
 
-            this.addButton(new ButtonWidget(i * 130 + 110, 10, 120, 20, new LiteralText(categoryName), button -> {
+            this.addButton(new ButtonWidget(i * 130 + 110, 30, 120, 20, new LiteralText(categoryName), button -> {
                 if (this.selectedTab != index) {
                     this.selectedTab = index;
                     this.loadPacks(category.get("packs").getAsJsonArray());
@@ -70,7 +70,7 @@ public class VTDScreen extends Screen {
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 30, 16777215);
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
     }
 
