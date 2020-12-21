@@ -17,7 +17,9 @@ import java.io.File;
 
 @Mixin(PackScreen.class)
 public class PackScreenMixin extends Screen {
-    @Shadow @Final private File file;
+    @Shadow
+    @Final
+    private File file;
 
     protected PackScreenMixin(Text title) {
         super(title);

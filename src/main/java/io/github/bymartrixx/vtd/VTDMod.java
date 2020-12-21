@@ -20,7 +20,7 @@ public class VTDMod implements ClientModInitializer {
     public static final String MOD_NAME = "VTDownloader";
     private static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     private static final String baseUrl = "https://vanillatweaks.net";
-    
+
     public static final Logger LOGGER = LogManager.getLogger();
     public static JsonArray categories;
 
@@ -37,9 +37,9 @@ public class VTDMod implements ClientModInitializer {
 
         log(Level.INFO, "Initialized {} version {}", MOD_NAME, VERSION);
     }
-    
-    public static void log(Level level, String message, Object ... fields) {
-        LOGGER.log(level, "[" + MOD_NAME +"] " + message, fields);
+
+    public static void log(Level level, String message, Object... fields) {
+        LOGGER.log(level, "[" + MOD_NAME + "] " + message, fields);
     }
 
     public static void log(Level level, String message) {

@@ -87,7 +87,7 @@ public class VTDScreen extends Screen {
                     this.selectedTabIndex = index;
             });
 
-            this.tabButtons.set(i, buttonWidget);
+            this.tabButtons.add(i, buttonWidget);
         }
     }
 }
