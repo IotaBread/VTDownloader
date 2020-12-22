@@ -18,25 +18,10 @@ import java.util.Scanner;
 public class VTDMod implements ClientModInitializer {
     public static final String MOD_ID = "vt_downloader";
     public static final String MOD_NAME = "VTDownloader";
+    public static final Logger LOGGER = LogManager.getLogger();
     private static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     private static final String baseUrl = "https://vanillatweaks.net";
-
-    public static final Logger LOGGER = LogManager.getLogger();
     public static JsonArray categories;
-
-    @Override
-    public void onInitializeClient() {
-        log(Level.INFO, "Initializing {} version {}...", MOD_NAME, VERSION);
-
-        // TODO: Mod Initializer
-        try {
-            getCategories();
-        } catch (IOException e) {
-            logError("Encountered an exception while getting the categories.", e);
-        }
-
-        log(Level.INFO, "Initialized {} version {}", MOD_NAME, VERSION);
-    }
 
     public static void log(Level level, String message, Object... fields) {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message, fields);
@@ -72,5 +57,20 @@ public class VTDMod implements ClientModInitializer {
 
             categories = new JsonParser().parse(responseContent.toString()).getAsJsonObject().get("categories").getAsJsonArray();
         }
+    }
+
+    @Override
+    public void onInitializeClient() {
+        log(Level.INFO, "Initializing {} version {}...", MOD_NAME, VERSION);
+
+        // TODO: Mod Initializer
+        try {
+            getCategories();
+        } catch (IOException e) {
+            logError("Encountered an exception while getting the categories.", e);
+            categories = new JsonArray(); // Prevent NPE
+        }
+
+        log(Level.INFO, "Initialized {} version {}", MOD_NAME, VERSION);
     }
 }

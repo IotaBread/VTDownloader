@@ -1,22 +1,39 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 
 public class VTDScreen extends Screen {
+    private static final Gson GSON = new Gson();
+
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
@@ -43,6 +60,40 @@ public class VTDScreen extends Screen {
         return (width - 80) / 120 + 1;
     }
 
+    private static void download(JsonObject selectedPacks, MinecraftClient minecraftClient) throws IOException {
+        // Get the download link
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost("https://vanillatweaks.net/assets/server/zipresourcepacks.php");
+
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("version", "1.16"));
+            params.add(new BasicNameValuePair("packs", GSON.toJson(selectedPacks)));
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+            HttpResponse response = client.execute(httpPost);
+
+            int responseStatus = response.getStatusLine().getStatusCode();
+
+            if (responseStatus != 200) {
+                VTDMod.log(Level.WARN, "The download link request responded with an unexpected status code: {}", responseStatus);
+                return;
+            }
+
+            StringBuilder responseBody = new StringBuilder();
+            Scanner scanner = new Scanner(response.getEntity().getContent());
+
+            while (scanner.hasNext()) {
+                responseBody.append(scanner.nextLine());
+            }
+
+            String downloadLink = GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
+            String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
+
+            // Download the resource pack
+            FileUtils.copyURLToFile(new URL(downloadLink), new File(minecraftClient.getResourcePackDir(), fileName), 500, 4000);
+        }
+    }
+
     protected void init() {
         this.tabLeftButton = this.addButton(new ButtonWidget(10, 30, 20, 20, new LiteralText("<="), button -> {
             --this.tabIndex;
@@ -57,12 +108,14 @@ public class VTDScreen extends Screen {
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
         this.downloadButton = this.addButton(new ButtonWidget(this.width - 260, this.height - 30, 120, 20, new LiteralText("Download"), button -> {
-            System.out.println("Placeholder button!");
-
             // Save current category before downloading
             this.savePacks(this.listWidget);
 
-            // TODO
+            try {
+                download(this.selectedPacks, this.client);
+            } catch (IOException e) {
+                VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
+            }
         }));
 
         JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
@@ -96,7 +149,7 @@ public class VTDScreen extends Screen {
         this.tabLeftButton.active = this.tabIndex > 0;
         this.tabRightButton.active = this.tabIndex <= VTDMod.categories.size() - getTabNum(this.width);
 
-        this.downloadButton.active = false; // TODO
+        this.updateDownloadButton();
 
         this.tabButtons.clear();
 
@@ -121,6 +174,7 @@ public class VTDScreen extends Screen {
 //                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
                     this.savePacks(this.listWidget);
+                    this.updateDownloadButton();
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new VTDScreen.PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                 }
@@ -129,6 +183,10 @@ public class VTDScreen extends Screen {
             this.tabButtons.add(i, buttonWidget);
             this.children.add(buttonWidget);
         }
+    }
+
+    private void updateDownloadButton() {
+        this.downloadButton.active = this.selectedPacks.size() > 0;
     }
 
     private void savePacks(PackListWidget packListWidget) {
@@ -199,6 +257,9 @@ public class VTDScreen extends Screen {
                     this.selectedEntries.add(entry);
                 else
                     this.selectedEntries.remove(entry);
+
+                VTDScreen.this.savePacks(this);
+                VTDScreen.this.updateDownloadButton();
             }
         }
 
