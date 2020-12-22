@@ -93,8 +93,12 @@ public class VTDScreen extends Screen {
             JsonObject category = VTDMod.categories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
             ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 70, 30, 120, 20, new LiteralText(categoryName), button -> {
-                if (this.selectedTabIndex != index)
+                if (this.selectedTabIndex != index) {
                     this.selectedTabIndex = index;
+
+                    this.children.remove(this.listWidget);
+                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
+                }
             });
 
             this.tabButtons.add(i, buttonWidget);
