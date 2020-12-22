@@ -115,7 +115,7 @@ public class VTDScreen extends Screen {
     }
 
     class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
-        private List<Integer> selectedIndexes = new ArrayList<>();
+        private final List<VTDScreen.PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
 
         public PackListWidget(JsonArray packs) {
             super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
@@ -134,7 +134,7 @@ public class VTDScreen extends Screen {
         }
 
         protected void replaceEntries(JsonArray newPacks) {
-            this.selectedIndexes.clear();
+            this.selectedEntries.clear();
 
             List<PackEntry> newEntries = new ArrayList<>();
 
@@ -146,21 +146,27 @@ public class VTDScreen extends Screen {
         }
 
         public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry) {
-            if (this.children().contains(entry))
-                this.selectedIndexes.add(this.children().indexOf(entry));
+            if (this.children().contains(entry)) {
+                if (!this.selectedEntries.contains(entry))
+                    this.selectedEntries.add(entry);
+                else
+                    this.selectedEntries.remove(entry);
+            }
         }
 
         public boolean isSelected(VTDScreen.PackListWidget.PackEntry entry) {
             if (!this.children().contains(entry)) return false;
 
-            return this.selectedIndexes.contains(this.children().indexOf(entry));
+            return this.selectedEntries.contains(entry);
         }
 
         protected boolean isSelectedItem(int index) {
             return this.isSelected(this.children().get(index));
         }
 
-        // TODO: getSelectedEntries()
+        public List<PackEntry> getSelectedEntries() {
+            return this.selectedEntries;
+        }
 
         class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
             private final String name;
