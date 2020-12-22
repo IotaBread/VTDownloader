@@ -5,9 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
-import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -143,6 +141,18 @@ public class VTDScreen extends Screen {
                 }
 
                 this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
+            }
+
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                if (button == 0) {
+                    this.setSelected();
+                }
+
+                return false;
+            }
+
+            private void setSelected() {
+                PackListWidget.this.setSelected(this);
             }
 
             public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
