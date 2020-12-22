@@ -105,7 +105,10 @@ public class VTDScreen extends Screen {
                     this.selectedTabIndex = index;
 
                     this.children.remove(this.listWidget);
-                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
+                    // Doesn't work as expected :/
+//                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
+
+                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
                 }
             });
 
