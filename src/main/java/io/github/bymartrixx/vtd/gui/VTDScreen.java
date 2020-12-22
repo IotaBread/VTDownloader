@@ -1,7 +1,6 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,15 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public class VTDScreen extends Screen {
-    private static final Gson GSON = new Gson();
-
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
-    private JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
+    private final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
     private ButtonWidget downloadButton;
-    private ButtonWidget doneButton;
     private PackListWidget listWidget;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
@@ -57,7 +53,9 @@ public class VTDScreen extends Screen {
             this.updateTabButtons();
         }));
 
-        this.doneButton = this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
+        // Done button
+        this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
+
         this.downloadButton = this.addButton(new ButtonWidget(this.width - 260, this.height - 30, 120, 20, new LiteralText("Download"), button -> {
             System.out.println("Placeholder button!");
 
@@ -68,6 +66,10 @@ public class VTDScreen extends Screen {
         }));
 
         JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+
+        if (this.listWidget != null)
+            this.savePacks(this.listWidget);
+
         this.listWidget = this.addChild(new VTDScreen.PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
 
         this.updateTabButtons();
@@ -79,8 +81,8 @@ public class VTDScreen extends Screen {
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215); // Render title
 
         // Render tabButtons
-        for (int i = 0; i < this.tabButtons.size(); ++i) {
-            this.tabButtons.get(i).render(matrices, mouseX, mouseY, delta);
+        for (ButtonWidget tabButton : this.tabButtons) {
+            tabButton.render(matrices, mouseX, mouseY, delta);
         }
 
         super.render(matrices, mouseX, mouseY, delta);
@@ -180,9 +182,8 @@ public class VTDScreen extends Screen {
 
             for (int i = 0; i < newPacks.size(); ++i) {
                 JsonObject pack = newPacks.get(i).getAsJsonObject();
-                boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
 
-                newEntries.add(new PackEntry(pack, selected));
+                newEntries.add(new PackEntry(pack));
             }
 
             super.replaceEntries(newEntries);
