@@ -1,14 +1,18 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class VTDScreen extends Screen {
     private final Screen previousScreen;
@@ -17,6 +21,7 @@ public class VTDScreen extends Screen {
     private ButtonWidget tabRightButton;
     private ButtonWidget downloadButton;
     private ButtonWidget doneButton;
+    private PackListWidget listWidget;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
 
@@ -51,11 +56,14 @@ public class VTDScreen extends Screen {
             // TODO
         }));
 
+        this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
+
         this.updateTabButtons();
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215);
 
         // Render tabButtons
         for (int i = 0; i < this.tabButtons.size(); ++i) {
@@ -88,6 +96,43 @@ public class VTDScreen extends Screen {
             });
 
             this.tabButtons.add(i, buttonWidget);
+        }
+    }
+
+    class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
+        public PackListWidget(JsonArray packs) {
+            super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 42, VTDScreen.this.height - 61, 32);
+
+            for (int i = 0; i < packs.size(); ++i) {
+                this.addEntry(new PackEntry(packs.get(i).getAsJsonObject()));
+            }
+        }
+
+        class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
+            private final String name;
+            private final String displayName;
+            private final String description;
+            private final String[] incompatiblePacks;
+
+            PackEntry(JsonObject pack) {
+                this.name = pack.get("name").getAsString();
+
+                this.displayName = pack.get("display").getAsString();
+                this.description = pack.get("description").getAsString();
+
+                Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
+                ArrayList<String> incompatiblePacks = new ArrayList<>();
+
+                while (incompatiblePacksIterator.hasNext()) {
+                    incompatiblePacks.add(incompatiblePacksIterator.next().getAsString());
+                }
+
+                this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
+            }
+
+            public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+                VTDScreen.this.textRenderer.drawWithShadow(matrices, this.displayName, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(this.displayName) / 2)), y + 1, 16777215);
+            }
         }
     }
 }
