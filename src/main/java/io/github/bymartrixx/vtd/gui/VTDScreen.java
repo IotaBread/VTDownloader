@@ -19,6 +19,7 @@ import java.util.List;
 public class VTDScreen extends Screen {
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
+    private JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
     private ButtonWidget downloadButton;
@@ -30,6 +31,7 @@ public class VTDScreen extends Screen {
     public VTDScreen(Screen previousScreen) {
         super(new LiteralText("VTDownloader"));
         this.previousScreen = previousScreen;
+        this.selectedPacks = new JsonObject();
     }
 
     /**
@@ -55,10 +57,15 @@ public class VTDScreen extends Screen {
         this.doneButton = this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
         this.downloadButton = this.addButton(new ButtonWidget(this.width - 260, this.height - 30, 120, 20, new LiteralText("Download"), button -> {
             System.out.println("Placeholder button!");
+
+            // Save current category before downloading
+            this.savePacks(this.listWidget);
+
             // TODO
         }));
 
-        this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
+        JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+        this.listWidget = this.addChild(new VTDScreen.PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
 
         this.updateTabButtons();
     }
@@ -108,7 +115,9 @@ public class VTDScreen extends Screen {
                     // Doesn't work as expected :/
 //                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
-                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
+                    this.savePacks(this.listWidget);
+                    JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                 }
             });
 
@@ -117,11 +126,32 @@ public class VTDScreen extends Screen {
         }
     }
 
+    private void savePacks(PackListWidget packListWidget) {
+        List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
+
+        JsonArray packsArray;
+        if (this.selectedPacks.has(packListWidget.categoryName)) {
+            packsArray = this.selectedPacks.get(packListWidget.categoryName).getAsJsonArray();
+            this.selectedPacks.remove(packListWidget.categoryName);
+        } else {
+            packsArray = new JsonArray();
+        }
+
+        for (PackListWidget.PackEntry entry : selectedEntries) {
+            packsArray.add(entry.name);
+        }
+
+        this.selectedPacks.add(packListWidget.categoryName, packsArray);
+    }
+
     class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
+        public final String categoryName;
         private final List<VTDScreen.PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
 
-        public PackListWidget(JsonArray packs) {
+        public PackListWidget(JsonArray packs, String categoryName) {
             super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
+
+            this.categoryName = categoryName;
 
             for (int i = 0; i < packs.size(); ++i) {
                 this.addEntry(new PackEntry(packs.get(i).getAsJsonObject()));
@@ -135,6 +165,8 @@ public class VTDScreen extends Screen {
         protected int getScrollbarPositionX() {
             return this.width - 10;
         }
+
+        // TODO: Incompatible packs warning
 
         protected void replaceEntries(JsonArray newPacks) {
             this.selectedEntries.clear();
