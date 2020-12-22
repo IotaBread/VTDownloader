@@ -63,7 +63,8 @@ public class VTDScreen extends Screen {
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215);
+        this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215); // Render title
 
         // Render tabButtons
         for (int i = 0; i < this.tabButtons.size(); ++i) {
@@ -101,7 +102,7 @@ public class VTDScreen extends Screen {
 
     class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
         public PackListWidget(JsonArray packs) {
-            super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 42, VTDScreen.this.height - 61, 32);
+            super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
 
             for (int i = 0; i < packs.size(); ++i) {
                 this.addEntry(new PackEntry(packs.get(i).getAsJsonObject()));
