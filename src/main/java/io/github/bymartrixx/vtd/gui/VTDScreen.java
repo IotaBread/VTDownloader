@@ -5,12 +5,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.StringVisitable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -86,6 +87,13 @@ public class VTDScreen extends Screen {
         this.downloadButton.active = false; // TODO
 
         this.tabButtons.clear();
+
+        // Remove old buttons from this.children
+        for (JsonElement category : VTDMod.categories) {
+            String categoryName = category.getAsJsonObject().get("category").getAsString();
+            this.children.removeIf(element -> element instanceof ButtonWidget && ((ButtonWidget) element).getMessage().asString().equals(categoryName));
+        }
+
         for (int i = 0; i < getTabNum(this.width); ++i) {
             int index = i + this.tabIndex;
             if (index >= VTDMod.categories.size()) break;
@@ -102,6 +110,7 @@ public class VTDScreen extends Screen {
             });
 
             this.tabButtons.add(i, buttonWidget);
+            this.children.add(buttonWidget);
         }
     }
 
