@@ -10,6 +10,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.StringVisitable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -133,6 +134,18 @@ public class VTDScreen extends Screen {
 
             public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
                 VTDScreen.this.textRenderer.drawWithShadow(matrices, this.displayName, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(this.displayName) / 2)), y + 1, 16777215);
+                this.renderDescription(matrices, y);
+            }
+
+            private void renderDescription(MatrixStack matrices, int y) {
+                int textWidth = VTDScreen.this.textRenderer.getWidth(this.description);
+
+                if (textWidth > 245) {
+                    String description = VTDScreen.this.textRenderer.trimToWidth(this.description, 245 - VTDScreen.this.textRenderer.getWidth("...")) + "...";
+                    VTDScreen.this.textRenderer.drawWithShadow(matrices, description, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(description) / 2)), y + 13, 16777215);
+                } else {
+                    VTDScreen.this.textRenderer.drawWithShadow(matrices, this.description, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(this.description) / 2)), y + 13, 16777215);
+                }
             }
         }
     }
