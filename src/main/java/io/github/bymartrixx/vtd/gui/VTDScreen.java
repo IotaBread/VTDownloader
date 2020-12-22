@@ -129,12 +129,9 @@ public class VTDScreen extends Screen {
     private void savePacks(PackListWidget packListWidget) {
         List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
 
-        JsonArray packsArray;
+        JsonArray packsArray = new JsonArray();
         if (this.selectedPacks.has(packListWidget.categoryName)) {
-            packsArray = this.selectedPacks.get(packListWidget.categoryName).getAsJsonArray();
             this.selectedPacks.remove(packListWidget.categoryName);
-        } else {
-            packsArray = new JsonArray();
         }
 
         for (PackListWidget.PackEntry entry : selectedEntries) {
@@ -154,7 +151,10 @@ public class VTDScreen extends Screen {
             this.categoryName = categoryName;
 
             for (int i = 0; i < packs.size(); ++i) {
-                this.addEntry(new PackEntry(packs.get(i).getAsJsonObject()));
+                JsonObject pack = packs.get(i).getAsJsonObject();
+                boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
+
+                this.addEntry(new PackEntry(pack));
             }
         }
 
@@ -174,7 +174,10 @@ public class VTDScreen extends Screen {
             List<PackEntry> newEntries = new ArrayList<>();
 
             for (int i = 0; i < newPacks.size(); ++i) {
-                newEntries.add(new PackEntry(newPacks.get(i).getAsJsonObject()));
+                JsonObject pack = newPacks.get(i).getAsJsonObject();
+                boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
+
+                newEntries.add(new PackEntry(pack));
             }
 
             super.replaceEntries(newEntries);
@@ -210,6 +213,10 @@ public class VTDScreen extends Screen {
             private final String[] incompatiblePacks;
 
             PackEntry(JsonObject pack) {
+                this(pack, false);
+            }
+
+            PackEntry(JsonObject pack, boolean selected) {
                 this.name = pack.get("name").getAsString();
 
                 this.displayName = pack.get("display").getAsString();
@@ -223,6 +230,9 @@ public class VTDScreen extends Screen {
                 }
 
                 this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
+
+                if (selected)
+                    this.setSelected();
             }
 
             public boolean mouseClicked(double mouseX, double mouseY, int button) {
