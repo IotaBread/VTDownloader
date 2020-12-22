@@ -1,6 +1,7 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -17,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class VTDScreen extends Screen {
+    private static final Gson GSON = new Gson();
+
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
@@ -134,6 +137,8 @@ public class VTDScreen extends Screen {
             this.selectedPacks.remove(packListWidget.categoryName);
         }
 
+        if (selectedEntries.size() == 0) return;
+
         for (PackListWidget.PackEntry entry : selectedEntries) {
             packsArray.add(entry.name);
         }
@@ -154,7 +159,7 @@ public class VTDScreen extends Screen {
                 JsonObject pack = packs.get(i).getAsJsonObject();
                 boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
 
-                this.addEntry(new PackEntry(pack));
+                this.addEntry(new PackEntry(pack, selected));
             }
         }
 
@@ -177,14 +182,18 @@ public class VTDScreen extends Screen {
                 JsonObject pack = newPacks.get(i).getAsJsonObject();
                 boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
 
-                newEntries.add(new PackEntry(pack));
+                newEntries.add(new PackEntry(pack, selected));
             }
 
             super.replaceEntries(newEntries);
         }
 
         public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry) {
-            if (this.children().contains(entry)) {
+            this.setSelected(entry, true);
+        }
+
+        public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry, boolean child) {
+            if (this.children().contains(entry) || !child) {
                 if (!this.selectedEntries.contains(entry))
                     this.selectedEntries.add(entry);
                 else
@@ -232,7 +241,7 @@ public class VTDScreen extends Screen {
                 this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
 
                 if (selected)
-                    this.setSelected();
+                    PackListWidget.this.setSelected(this, false);
             }
 
             public boolean mouseClicked(double mouseX, double mouseY, int button) {
