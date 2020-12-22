@@ -10,9 +10,11 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class VTDScreen extends Screen {
     private final Screen previousScreen;
@@ -103,7 +105,7 @@ public class VTDScreen extends Screen {
                     this.selectedTabIndex = index;
 
                     this.children.remove(this.listWidget);
-                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray()));
+                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
                 }
             });
 
@@ -113,6 +115,8 @@ public class VTDScreen extends Screen {
     }
 
     class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
+        private List<Integer> selectedIndexes = new ArrayList<>();
+
         public PackListWidget(JsonArray packs) {
             super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
 
@@ -120,6 +124,43 @@ public class VTDScreen extends Screen {
                 this.addEntry(new PackEntry(packs.get(i).getAsJsonObject()));
             }
         }
+
+        public int getRowWidth() {
+            return this.width - 20;
+        }
+
+        protected int getScrollbarPositionX() {
+            return this.width - 10;
+        }
+
+        protected void replaceEntries(JsonArray newPacks) {
+            this.selectedIndexes.clear();
+
+            List<PackEntry> newEntries = new ArrayList<>();
+
+            for (int i = 0; i < newPacks.size(); ++i) {
+                newEntries.add(new PackEntry(newPacks.get(i).getAsJsonObject()));
+            }
+
+            super.replaceEntries(newEntries);
+        }
+
+        public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry) {
+            if (this.children().contains(entry))
+                this.selectedIndexes.add(this.children().indexOf(entry));
+        }
+
+        public boolean isSelected(VTDScreen.PackListWidget.PackEntry entry) {
+            if (!this.children().contains(entry)) return false;
+
+            return this.selectedIndexes.contains(this.children().indexOf(entry));
+        }
+
+        protected boolean isSelectedItem(int index) {
+            return this.isSelected(this.children().get(index));
+        }
+
+        // TODO: getSelectedEntries()
 
         class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
             private final String name;
