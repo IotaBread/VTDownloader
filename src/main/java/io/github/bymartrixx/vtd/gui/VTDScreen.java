@@ -90,7 +90,7 @@ public class VTDScreen extends Screen {
             String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
             // Download the resource pack
-            FileUtils.copyURLToFile(new URL(downloadLink), new File(minecraftClient.getResourcePackDir(), fileName), 500, 4000);
+            FileUtils.copyURLToFile(new URL("https://vanillatweaks.net" + downloadLink), new File(minecraftClient.getResourcePackDir(), fileName), 500, 4000);
         }
     }
 
