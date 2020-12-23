@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
+import io.github.bymartrixx.vtd.gui.widget.DownloadButtonWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -39,7 +40,7 @@ public class VTDScreen extends Screen {
     private final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
-    private ButtonWidget downloadButton;
+    private DownloadButtonWidget downloadButton;
     private PackListWidget listWidget;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
@@ -107,14 +108,16 @@ public class VTDScreen extends Screen {
         // Done button
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
-        this.downloadButton = this.addButton(new ButtonWidget(this.width - 260, this.height - 30, 120, 20, new LiteralText("Download"), button -> {
+        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
             // Save current category before downloading
             this.savePacks(this.listWidget);
 
             try {
                 download(this.selectedPacks, this.client);
+                this.downloadButton.setSuccess(true);
             } catch (IOException e) {
                 VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
+                this.downloadButton.setSuccess(false);
             }
         }));
 
@@ -139,6 +142,10 @@ public class VTDScreen extends Screen {
         }
 
         super.render(matrices, mouseX, mouseY, delta);
+    }
+
+    public void tick() {
+        this.downloadButton.tick();
     }
 
     public void onClose() {
