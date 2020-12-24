@@ -11,8 +11,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -141,6 +144,9 @@ public class VTDScreen extends Screen {
             tabButton.render(matrices, mouseX, mouseY, delta);
         }
 
+        // TODO: Add download progress bar ( see SplashScreen#renderProgressBar )
+        // TODO: Add Selected Packs list
+
         super.render(matrices, mouseX, mouseY, delta);
     }
 
@@ -220,6 +226,8 @@ public class VTDScreen extends Screen {
         public PackListWidget(JsonArray packs, String categoryName) {
             super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
 
+            this.setRenderHeader(true, 10);
+
             this.categoryName = categoryName;
 
             boolean hasCategory = VTDScreen.this.selectedPacks.has(this.categoryName);
@@ -284,6 +292,11 @@ public class VTDScreen extends Screen {
 
         public List<PackEntry> getSelectedEntries() {
             return this.selectedEntries;
+        }
+
+        protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
+            Text text = new LiteralText(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
+            VTDScreen.this.textRenderer.draw(matrices, text, ((float) (x + this.width / 2 - VTDScreen.this.textRenderer.getWidth(text))), Math.min(this.top + 3, y), 16777215);
         }
 
         class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
