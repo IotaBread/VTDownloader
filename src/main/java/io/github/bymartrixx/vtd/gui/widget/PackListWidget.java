@@ -1,0 +1,156 @@
+package io.github.bymartrixx.vtd.gui.widget;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.github.bymartrixx.vtd.gui.VTDScreen;
+import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
+    public final String categoryName;
+    public final List<PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
+
+    public PackListWidget(JsonArray packs, String categoryName) {
+        super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
+
+        this.setRenderHeader(true, 16);
+
+        this.categoryName = categoryName;
+
+        boolean hasCategory = VTDScreen.getInstance().selectedPacks.has(this.categoryName);
+        JsonArray category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName).getAsJsonArray() : new JsonArray();
+        for (int i = 0; i < packs.size(); ++i) {
+            JsonObject pack = packs.get(i).getAsJsonObject();
+            boolean selected = hasCategory && category.contains(pack.get("name"));
+
+            this.addEntry(new PackListWidget.PackEntry(pack, selected));
+        }
+    }
+
+    public int getRowWidth() {
+        return this.width - 20;
+    }
+
+    protected int getScrollbarPositionX() {
+        return this.width - 10;
+    }
+
+    // TODO: Incompatible packs warning
+
+    protected void replaceEntries(JsonArray newPacks) {
+        this.selectedEntries.clear();
+
+        List<PackListWidget.PackEntry> newEntries = new ArrayList<>();
+
+        for (int i = 0; i < newPacks.size(); ++i) {
+            JsonObject pack = newPacks.get(i).getAsJsonObject();
+
+            newEntries.add(new PackListWidget.PackEntry(pack));
+        }
+
+        super.replaceEntries(newEntries);
+    }
+
+    public void setSelected(@Nullable PackListWidget.PackEntry entry) {
+        this.setSelected(entry, true);
+    }
+
+    public void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child) {
+        if (this.children().contains(entry) || !child) {
+            if (!this.selectedEntries.contains(entry))
+                this.selectedEntries.add(entry);
+            else
+                this.selectedEntries.remove(entry);
+
+            VTDScreen.getInstance().savePacks(this);
+            VTDScreen.getInstance().updateDownloadButton();
+        }
+    }
+
+    public boolean isSelected(PackListWidget.PackEntry entry) {
+        if (!this.children().contains(entry)) return false;
+
+        return this.selectedEntries.contains(entry);
+    }
+
+    protected boolean isSelectedItem(int index) {
+        return this.isSelected(this.children().get(index));
+    }
+
+    public List<PackListWidget.PackEntry> getSelectedEntries() {
+        return this.selectedEntries;
+    }
+
+    protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
+        Text text = new LiteralText(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
+    }
+
+    public class PackEntry extends EntryListWidget.Entry<PackListWidget.PackEntry> {
+        public final String name;
+        public final String displayName;
+        public final String description;
+        public final String[] incompatiblePacks;
+
+        PackEntry(JsonObject pack) {
+            this(pack, false);
+        }
+
+        PackEntry(JsonObject pack, boolean selected) {
+            this.name = pack.get("name").getAsString();
+
+            this.displayName = pack.get("display").getAsString();
+            this.description = pack.get("description").getAsString();
+
+            Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
+            ArrayList<String> incompatiblePacks = new ArrayList<>();
+
+            while (incompatiblePacksIterator.hasNext()) {
+                incompatiblePacks.add(incompatiblePacksIterator.next().getAsString());
+            }
+
+            this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
+
+            if (selected)
+                PackListWidget.this.setSelected(this, false);
+        }
+
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == 0) {
+                this.setSelected();
+            }
+
+            return false;
+        }
+
+        private void setSelected() {
+            PackListWidget.this.setSelected(this);
+        }
+
+        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)), y + 1, 16777215);
+            this.renderDescription(matrices, y);
+        }
+
+        private void renderDescription(MatrixStack matrices, int y) {
+            int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(this.description);
+
+            if (textWidth > 245) {
+                String description = VTDScreen.getInstance().getTextRenderer().trimToWidth(this.description, 245 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
+            } else {
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
+            }
+        }
+    }
+}

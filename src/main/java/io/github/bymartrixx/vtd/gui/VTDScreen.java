@@ -7,15 +7,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.widget.DownloadButtonWidget;
+import io.github.bymartrixx.vtd.gui.widget.PackListWidget;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -25,22 +23,20 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
 public class VTDScreen extends Screen {
     private static final Gson GSON = new Gson();
-
+    private static VTDScreen instance;
+    public final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
-    private final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
     private DownloadButtonWidget downloadButton;
@@ -52,6 +48,8 @@ public class VTDScreen extends Screen {
         super(new LiteralText("VTDownloader"));
         this.previousScreen = previousScreen;
         this.selectedPacks = new JsonObject();
+
+        VTDScreen.instance = this;
     }
 
     /**
@@ -98,6 +96,10 @@ public class VTDScreen extends Screen {
         }
     }
 
+    public static VTDScreen getInstance() {
+        return instance;
+    }
+
     protected void init() {
         this.tabLeftButton = this.addButton(new ButtonWidget(10, 30, 20, 20, new LiteralText("<="), button -> {
             --this.tabIndex;
@@ -129,7 +131,7 @@ public class VTDScreen extends Screen {
         if (this.listWidget != null)
             this.savePacks(this.listWidget);
 
-        this.listWidget = this.addChild(new VTDScreen.PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
+        this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
 
         this.updateTabButtons();
     }
@@ -190,7 +192,7 @@ public class VTDScreen extends Screen {
                     this.savePacks(this.listWidget);
                     this.updateDownloadButton();
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
-                    this.listWidget = this.addChild(new VTDScreen.PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
+                    this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                 }
             });
 
@@ -199,11 +201,11 @@ public class VTDScreen extends Screen {
         }
     }
 
-    private void updateDownloadButton() {
+    public void updateDownloadButton() {
         this.downloadButton.active = this.selectedPacks.size() > 0;
     }
 
-    private void savePacks(PackListWidget packListWidget) {
+    public void savePacks(PackListWidget packListWidget) {
         List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
 
         JsonArray packsArray = new JsonArray();
@@ -220,142 +222,11 @@ public class VTDScreen extends Screen {
         this.selectedPacks.add(packListWidget.categoryName, packsArray);
     }
 
-    class PackListWidget extends EntryListWidget<VTDScreen.PackListWidget.PackEntry> {
-        public final String categoryName;
-        private final List<VTDScreen.PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
+    public MinecraftClient getClient() {
+        return this.client;
+    }
 
-        public PackListWidget(JsonArray packs, String categoryName) {
-            super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
-
-            this.setRenderHeader(true, 16);
-
-            this.categoryName = categoryName;
-
-            boolean hasCategory = VTDScreen.this.selectedPacks.has(this.categoryName);
-            JsonArray category = hasCategory ? VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray() : new JsonArray();
-            for (int i = 0; i < packs.size(); ++i) {
-                JsonObject pack = packs.get(i).getAsJsonObject();
-                boolean selected = hasCategory && category.contains(pack.get("name"));
-
-                this.addEntry(new PackEntry(pack, selected));
-            }
-        }
-
-        public int getRowWidth() {
-            return this.width - 20;
-        }
-
-        protected int getScrollbarPositionX() {
-            return this.width - 10;
-        }
-
-        // TODO: Incompatible packs warning
-
-        protected void replaceEntries(JsonArray newPacks) {
-            this.selectedEntries.clear();
-
-            List<PackEntry> newEntries = new ArrayList<>();
-
-            for (int i = 0; i < newPacks.size(); ++i) {
-                JsonObject pack = newPacks.get(i).getAsJsonObject();
-
-                newEntries.add(new PackEntry(pack));
-            }
-
-            super.replaceEntries(newEntries);
-        }
-
-        public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry) {
-            this.setSelected(entry, true);
-        }
-
-        public void setSelected(@Nullable VTDScreen.PackListWidget.PackEntry entry, boolean child) {
-            if (this.children().contains(entry) || !child) {
-                if (!this.selectedEntries.contains(entry))
-                    this.selectedEntries.add(entry);
-                else
-                    this.selectedEntries.remove(entry);
-
-                VTDScreen.this.savePacks(this);
-                VTDScreen.this.updateDownloadButton();
-            }
-        }
-
-        public boolean isSelected(VTDScreen.PackListWidget.PackEntry entry) {
-            if (!this.children().contains(entry)) return false;
-
-            return this.selectedEntries.contains(entry);
-        }
-
-        protected boolean isSelectedItem(int index) {
-            return this.isSelected(this.children().get(index));
-        }
-
-        public List<PackEntry> getSelectedEntries() {
-            return this.selectedEntries;
-        }
-
-        protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-            Text text = new LiteralText(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
-            VTDScreen.this.textRenderer.draw(matrices, text, ((float) (this.width / 2 - VTDScreen.this.textRenderer.getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
-        }
-
-        class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
-            private final String name;
-            private final String displayName;
-            private final String description;
-            private final String[] incompatiblePacks;
-
-            PackEntry(JsonObject pack) {
-                this(pack, false);
-            }
-
-            PackEntry(JsonObject pack, boolean selected) {
-                this.name = pack.get("name").getAsString();
-
-                this.displayName = pack.get("display").getAsString();
-                this.description = pack.get("description").getAsString();
-
-                Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
-                ArrayList<String> incompatiblePacks = new ArrayList<>();
-
-                while (incompatiblePacksIterator.hasNext()) {
-                    incompatiblePacks.add(incompatiblePacksIterator.next().getAsString());
-                }
-
-                this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
-
-                if (selected)
-                    PackListWidget.this.setSelected(this, false);
-            }
-
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                if (button == 0) {
-                    this.setSelected();
-                }
-
-                return false;
-            }
-
-            private void setSelected() {
-                PackListWidget.this.setSelected(this);
-            }
-
-            public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-                VTDScreen.this.textRenderer.drawWithShadow(matrices, this.displayName, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(this.displayName) / 2)), y + 1, 16777215);
-                this.renderDescription(matrices, y);
-            }
-
-            private void renderDescription(MatrixStack matrices, int y) {
-                int textWidth = VTDScreen.this.textRenderer.getWidth(this.description);
-
-                if (textWidth > 245) {
-                    String description = VTDScreen.this.textRenderer.trimToWidth(this.description, 245 - VTDScreen.this.textRenderer.getWidth("...")) + "...";
-                    VTDScreen.this.textRenderer.drawWithShadow(matrices, description, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(description) / 2)), y + 13, 16777215);
-                } else {
-                    VTDScreen.this.textRenderer.drawWithShadow(matrices, this.description, ((float) (VTDScreen.this.width / 2 - VTDScreen.this.textRenderer.getWidth(this.description) / 2)), y + 13, 16777215);
-                }
-            }
-        }
+    public TextRenderer getTextRenderer() {
+        return this.textRenderer;
     }
 }
