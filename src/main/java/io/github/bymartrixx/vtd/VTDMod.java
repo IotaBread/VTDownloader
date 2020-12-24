@@ -32,7 +32,7 @@ public class VTDMod implements ClientModInitializer {
     }
 
     public static void logError(String message, Throwable t) {
-        LOGGER.log(Level.ERROR, "[" + MOD_NAME + "]" + message, t);
+        LOGGER.log(Level.ERROR, "[" + MOD_NAME + "] " + message, t);
     }
 
     protected static void getCategories() throws IOException {

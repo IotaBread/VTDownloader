@@ -146,6 +146,7 @@ public class VTDScreen extends Screen {
 
         // TODO: Add download progress bar ( see SplashScreen#renderProgressBar )
         // TODO: Add Selected Packs list
+        // TODO: Make some categories ( OptionsBackground and MenuPanoramas ) have only one entry selected at one
 
         super.render(matrices, mouseX, mouseY, delta);
     }
@@ -226,7 +227,7 @@ public class VTDScreen extends Screen {
         public PackListWidget(JsonArray packs, String categoryName) {
             super(VTDScreen.this.client, VTDScreen.this.width, VTDScreen.this.height, 60, VTDScreen.this.height - 40, 32);
 
-            this.setRenderHeader(true, 10);
+            this.setRenderHeader(true, 16);
 
             this.categoryName = categoryName;
 
@@ -296,7 +297,7 @@ public class VTDScreen extends Screen {
 
         protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
             Text text = new LiteralText(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
-            VTDScreen.this.textRenderer.draw(matrices, text, ((float) (x + this.width / 2 - VTDScreen.this.textRenderer.getWidth(text))), Math.min(this.top + 3, y), 16777215);
+            VTDScreen.this.textRenderer.draw(matrices, text, ((float) (this.width / 2 - VTDScreen.this.textRenderer.getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
         }
 
         class PackEntry extends EntryListWidget.Entry<VTDScreen.PackListWidget.PackEntry> {
