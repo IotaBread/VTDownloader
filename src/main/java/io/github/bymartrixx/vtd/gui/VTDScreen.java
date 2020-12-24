@@ -59,7 +59,10 @@ public class VTDScreen extends Screen {
      * @return The max number of "tabs"
      */
     private static int getTabNum(int width) {
-        return (width - 80) / 120 + 1;
+        // 80 is the 2 buttons (20 * 2) and the margin between (10 between both buttons, 10 to the right of the right button and 10 * 2 for both sides of the screen)
+        // The 130 is the width of the "tab" buttons and the margin (120 + 10)
+        // The 1 is to allow the max number of buttons
+        return (width - 80) / 130 + 1;
     }
 
     private static void download(JsonObject selectedPacks, MinecraftClient minecraftClient) throws IOException {
