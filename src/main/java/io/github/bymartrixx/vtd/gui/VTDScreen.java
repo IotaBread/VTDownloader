@@ -148,7 +148,6 @@ public class VTDScreen extends Screen {
 
         // TODO: Add download progress bar ( see SplashScreen#renderProgressBar )
         // TODO: Add Selected Packs list
-        // TODO: Make some categories ( OptionsBackground and MenuPanoramas ) have only one entry selected at one
 
         super.render(matrices, mouseX, mouseY, delta);
     }

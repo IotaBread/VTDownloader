@@ -19,6 +19,7 @@ import java.util.List;
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     public final String categoryName;
     public final List<PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
+    public final boolean oneEntry; // If it should keep only one entry selected at once
 
     public PackListWidget(JsonArray packs, String categoryName) {
         super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
@@ -26,6 +27,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         this.setRenderHeader(true, 16);
 
         this.categoryName = categoryName;
+        this.oneEntry = this.categoryName.equals("Menu Panoramas") || this.categoryName.equals("Options Background");
 
         boolean hasCategory = VTDScreen.getInstance().selectedPacks.has(this.categoryName);
         JsonArray category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName).getAsJsonArray() : new JsonArray();
@@ -67,9 +69,13 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
     public void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child) {
         if (this.children().contains(entry) || !child) {
-            if (!this.selectedEntries.contains(entry))
+            if (!this.selectedEntries.contains(entry)) {
+                if (this.oneEntry) {
+                    this.selectedEntries.clear();
+                }
+
                 this.selectedEntries.add(entry);
-            else
+            } else
                 this.selectedEntries.remove(entry);
 
             VTDScreen.getInstance().savePacks(this);
