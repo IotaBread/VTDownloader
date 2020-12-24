@@ -222,9 +222,11 @@ public class VTDScreen extends Screen {
 
             this.categoryName = categoryName;
 
+            boolean hasCategory = VTDScreen.this.selectedPacks.has(this.categoryName);
+            JsonArray category = hasCategory ? VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray() : new JsonArray();
             for (int i = 0; i < packs.size(); ++i) {
                 JsonObject pack = packs.get(i).getAsJsonObject();
-                boolean selected = VTDScreen.this.selectedPacks.has(this.categoryName) && VTDScreen.this.selectedPacks.get(this.categoryName).getAsJsonArray().contains(pack.get("name"));
+                boolean selected = hasCategory && category.contains(pack.get("name"));
 
                 this.addEntry(new PackEntry(pack, selected));
             }
