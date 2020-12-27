@@ -22,7 +22,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     public final boolean oneEntry; // If it should keep only one entry selected at once
 
     public PackListWidget(JsonArray packs, String categoryName) {
-        super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
+        super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width - 140, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
 
         this.setRenderHeader(true, 16);
 

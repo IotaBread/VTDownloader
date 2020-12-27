@@ -150,7 +150,6 @@ public class VTDScreen extends Screen {
         }
 
         // TODO: Add download progress bar ( see SplashScreen#renderProgressBar )
-        // TODO: Add Selected Packs list
 
         super.render(matrices, mouseX, mouseY, delta);
     }
