@@ -29,8 +29,8 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         this.categoryName = categoryName;
         this.oneEntry = this.categoryName.equals("Menu Panoramas") || this.categoryName.equals("Options Background");
 
-        boolean hasCategory = VTDScreen.getInstance().getSelectedPacks().has(this.categoryName);
-        JsonArray category = hasCategory ? VTDScreen.getInstance().getSelectedPacks().get(this.categoryName).getAsJsonArray() : new JsonArray();
+        boolean hasCategory = VTDScreen.getInstance().selectedPacks.containsKey(this.categoryName);
+        JsonArray category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName) : new JsonArray();
         for (int i = 0; i < packs.size(); ++i) {
             JsonObject pack = packs.get(i).getAsJsonObject();
             boolean selected = hasCategory && category.contains(pack.get("name"));

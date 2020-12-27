@@ -1,7 +1,6 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -31,9 +30,8 @@ import java.net.URL;
 import java.util.*;
 
 public class VTDScreen extends Screen {
-    private static final Gson GSON = new Gson();
     private static VTDScreen instance;
-    private JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
+    public final Map<String, JsonArray> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
@@ -47,7 +45,7 @@ public class VTDScreen extends Screen {
     public VTDScreen(Screen previousScreen) {
         super(new LiteralText("VTDownloader"));
         this.previousScreen = previousScreen;
-        this.selectedPacks = new JsonObject();
+        this.selectedPacks = new LinkedHashMap<>();
 
         VTDScreen.instance = this;
     }
@@ -65,6 +63,10 @@ public class VTDScreen extends Screen {
         return (width - 80) / 130 + 1;
     }
 
+    private static void download(JsonElement selectedPacks, MinecraftClient minecraftClient) throws IOException {
+        download(selectedPacks.getAsJsonObject(), minecraftClient);
+    }
+
     private static void download(JsonObject selectedPacks, MinecraftClient minecraftClient) throws IOException {
         // Get the download link
         try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -72,7 +74,7 @@ public class VTDScreen extends Screen {
 
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("version", "1.16"));
-            params.add(new BasicNameValuePair("packs", GSON.toJson(selectedPacks)));
+            params.add(new BasicNameValuePair("packs", VTDMod.GSON.toJson(selectedPacks)));
             httpPost.setEntity(new UrlEncodedFormEntity(params));
 
             HttpResponse response = client.execute(httpPost);
@@ -91,7 +93,7 @@ public class VTDScreen extends Screen {
                 responseBody.append(scanner.nextLine());
             }
 
-            String downloadLink = GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
+            String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
             String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
             // Download the resource pack
@@ -118,7 +120,7 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
             try {
-                download(this.selectedPacks, this.client);
+                download(VTDMod.GSON.toJsonTree(this.selectedPacks).getAsJsonObject(), this.client);
                 this.downloadButton.setSuccess(true);
             } catch (IOException e) {
                 VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
@@ -210,39 +212,23 @@ public class VTDScreen extends Screen {
         List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
 
         JsonArray packsArray = new JsonArray();
-        boolean categoryWasSelected = this.selectedPacks.has(packListWidget.categoryName);
+        boolean categoryExisted = this.selectedPacks.containsKey(packListWidget.categoryName);
 
         for (PackListWidget.PackEntry entry : selectedEntries) {
             packsArray.add(entry.name);
         }
 
-        if (!categoryWasSelected) {
-            this.selectedPacks.add(packListWidget.categoryName, packsArray);
-        } else {
-            JsonObject newSelectedPacks = new JsonObject();
-            // Keep the selected packs order
-            // Basically transfers all the values from #selectedPacks to newSelectedPacks, but
-            // changes the values of the key with the packListWidget.categoryName key. Then
-            // sets #selectedPacks to newSelectedPacks
-            for (Map.Entry<String, JsonElement> entry : this.selectedPacks.entrySet()) {
-                String categoryName = entry.getKey();
-
-                this.selectedPacks.remove(categoryName);
-                if (categoryName.equals(packListWidget.categoryName)) {
-                    newSelectedPacks.add(categoryName, packsArray);
-                } else {
-                    newSelectedPacks.add(categoryName, entry.getValue());
-                }
+        if (categoryExisted) {
+            if (packsArray.size() > 0) {
+                this.selectedPacks.replace(packListWidget.categoryName, packsArray);
+            } else {
+                this.selectedPacks.remove(packListWidget.categoryName);
             }
-
-            this.selectedPacks = newSelectedPacks;
+        } else if (packsArray.size() > 0) {
+            this.selectedPacks.put(packListWidget.categoryName, packsArray);
         }
 
         this.updateDownloadButton();
-    }
-
-    public JsonObject getSelectedPacks() {
-        return this.selectedPacks;
     }
 
     public MinecraftClient getClient() {

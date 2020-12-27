@@ -3,6 +3,7 @@ package io.github.bymartrixx.vtd.gui.widget;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.Tessellator;
@@ -19,7 +20,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         super(VTDScreen.getInstance().getClient(), 160, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
         this.setRenderHeader(true, 16);
 
-        JsonObject selectedPacks = VTDScreen.getInstance().getSelectedPacks();
+        JsonObject selectedPacks = VTDMod.GSON.toJsonTree(VTDScreen.getInstance().selectedPacks).getAsJsonObject();
         Set<Map.Entry<String, JsonElement>> selectedPacksCategories = selectedPacks.entrySet();
 
         for (Map.Entry<String, JsonElement> category : selectedPacksCategories) {
