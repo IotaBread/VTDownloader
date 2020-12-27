@@ -90,7 +90,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 text = VTDScreen.getInstance().getTextRenderer().trimToWidth(text, 152 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
             }
 
-            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, this.isCategory ? 0 : 16, y + 1, 16777215);
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, (this.isCategory ? 0 : 16) + VTDScreen.getInstance().width - 170, y + 1, 16777215);
         }
     }
 }
