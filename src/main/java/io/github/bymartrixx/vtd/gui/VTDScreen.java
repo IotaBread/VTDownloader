@@ -195,7 +195,6 @@ public class VTDScreen extends Screen {
 
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
-                    this.initSelectedPacksListWidget();
                 }
             });
 
@@ -229,6 +228,7 @@ public class VTDScreen extends Screen {
         }
 
         this.updateDownloadButton();
+        this.initSelectedPacksListWidget();
     }
 
     public MinecraftClient getClient() {
