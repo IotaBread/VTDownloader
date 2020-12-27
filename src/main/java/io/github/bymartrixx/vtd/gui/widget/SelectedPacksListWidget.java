@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWidget.Entry> {
     public SelectedPacksListWidget() {
-        super(VTDScreen.getInstance().getClient(), 120, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
+        super(VTDScreen.getInstance().getClient(), 160, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
         this.setRenderHeader(true, 16);
 
         JsonObject selectedPacks = VTDScreen.getInstance().selectedPacks;
@@ -83,11 +83,14 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            if (this.isCategory) {
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.categoryName, 0, y + 1, 16777215);
-            } else {
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.packName, 20, y + 1, 16777215);
+            String text = this.isCategory ? this.categoryName : this.packName;
+            int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(text);
+
+            if (textWidth > 152) {
+                text = VTDScreen.getInstance().getTextRenderer().trimToWidth(text, 152 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
             }
+
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, this.isCategory ? 0 : 16, y + 1, 16777215);
         }
     }
 }

@@ -137,9 +137,14 @@ public class VTDScreen extends Screen {
             this.savePacks(this.listWidget);
 
         this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
-        this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
+        this.initSelectedPacksListWidget();
 
         this.updateTabButtons();
+    }
+
+    private void initSelectedPacksListWidget() {
+        this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
+        this.selectedPacksListWidget.setLeftPos(this.width - 170);
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
@@ -198,7 +203,7 @@ public class VTDScreen extends Screen {
                     this.updateDownloadButton();
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
-                    this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
+                    this.initSelectedPacksListWidget();
                 }
             });
 
