@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.widget.DownloadButtonWidget;
 import io.github.bymartrixx.vtd.gui.widget.PackListWidget;
+import io.github.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -41,6 +42,7 @@ public class VTDScreen extends Screen {
     private ButtonWidget tabRightButton;
     private DownloadButtonWidget downloadButton;
     private PackListWidget listWidget;
+    private SelectedPacksListWidget selectedPacksListWidget;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
 
@@ -135,6 +137,7 @@ public class VTDScreen extends Screen {
             this.savePacks(this.listWidget);
 
         this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
+        this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
 
         this.updateTabButtons();
     }
@@ -142,6 +145,7 @@ public class VTDScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
+        this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215); // Render title
 
         // Render tabButtons
@@ -194,6 +198,7 @@ public class VTDScreen extends Screen {
                     this.updateDownloadButton();
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
+                    this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
                 }
             });
 

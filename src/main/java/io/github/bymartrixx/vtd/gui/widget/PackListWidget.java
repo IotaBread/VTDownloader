@@ -144,7 +144,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         }
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)), y + 1, 16777215);
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)), y + 1, 16777215);
             this.renderDescription(matrices, y);
         }
 
@@ -153,9 +153,9 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
             if (textWidth > 245) {
                 String description = VTDScreen.getInstance().getTextRenderer().trimToWidth(this.description, 245 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
             } else {
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (VTDScreen.getInstance().width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
             }
         }
     }
