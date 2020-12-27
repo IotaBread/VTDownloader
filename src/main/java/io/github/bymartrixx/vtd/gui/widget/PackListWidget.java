@@ -114,14 +114,17 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         if (this.displayEntries) {
             super.render(matrices, mouseX, mouseY, delta);
         } else {
-            String msgHeader = "There was an error while trying to get the packs.";
-            Text msgHeaderText = new LiteralText(msgHeader).formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgHeader = new LiteralText("There was an error").formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgHeader2 = new LiteralText("while trying to get the packs.").formatted(Formatting.BOLD, Formatting.ITALIC);
             String msgBody = "Please check your internet connection";
-            String msgBody2 = "and that the site https://vanillatweaks.net is working properly";
+            String msgBody2 = "and that the site";
+            String msgBody3 = "https://vanillatweaks.net is working properly";
 
-            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeaderText, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeaderText) / 2)), ((float) (this.height / 2)), 16777215);
-            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody) / 2)), ((float) (this.height / 2)), 16777215);
-            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody2) / 2)), ((float) (this.height / 2)), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader) / 2)), ((float) (this.height / 2)), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader2) / 2)), ((float) (this.height / 2) + 16), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody) / 2)), ((float) (this.height / 2) + 32), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody2) / 2)), ((float) (this.height / 2) + 48), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody3, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody3) / 2)), ((float) (this.height / 2) + 64), 16777215);
         }
     }
 
