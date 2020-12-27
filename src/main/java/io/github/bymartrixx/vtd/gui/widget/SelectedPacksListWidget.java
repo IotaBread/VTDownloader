@@ -19,7 +19,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         super(VTDScreen.getInstance().getClient(), 160, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
         this.setRenderHeader(true, 16);
 
-        JsonObject selectedPacks = VTDScreen.getInstance().selectedPacks;
+        JsonObject selectedPacks = VTDScreen.getInstance().getSelectedPacks();
         Set<Map.Entry<String, JsonElement>> selectedPacksCategories = selectedPacks.entrySet();
 
         for (Map.Entry<String, JsonElement> category : selectedPacksCategories) {

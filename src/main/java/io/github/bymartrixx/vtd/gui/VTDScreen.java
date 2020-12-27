@@ -221,6 +221,9 @@ public class VTDScreen extends Screen {
         } else {
             JsonObject newSelectedPacks = new JsonObject();
             // Keep the selected packs order
+            // Basically transfers all the values from #selectedPacks to newSelectedPacks, but
+            // changes the values of the key with the packListWidget.categoryName key. Then
+            // sets #selectedPacks to newSelectedPacks
             for (Map.Entry<String, JsonElement> entry : this.selectedPacks.entrySet()) {
                 String categoryName = entry.getKey();
 
