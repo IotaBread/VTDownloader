@@ -41,7 +41,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     protected int getScrollbarPositionX() {
-        return this.width - 10;
+        return VTDScreen.getInstance().width - 10;
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {

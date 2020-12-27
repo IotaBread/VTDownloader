@@ -78,8 +78,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             } else
                 this.selectedEntries.remove(entry);
 
-            VTDScreen.getInstance().savePacks(this);
-            VTDScreen.getInstance().updateDownloadButton();
+            VTDScreen.getInstance().updateSelectedPacks(this);
         }
     }
 

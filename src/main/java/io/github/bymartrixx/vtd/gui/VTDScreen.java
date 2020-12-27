@@ -28,14 +28,12 @@ import org.apache.logging.log4j.Level;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class VTDScreen extends Screen {
     private static final Gson GSON = new Gson();
     private static VTDScreen instance;
-    public final JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
+    private JsonObject selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
@@ -119,9 +117,6 @@ public class VTDScreen extends Screen {
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
-            // Save current category before downloading
-            this.savePacks(this.listWidget);
-
             try {
                 download(this.selectedPacks, this.client);
                 this.downloadButton.setSuccess(true);
@@ -132,9 +127,6 @@ public class VTDScreen extends Screen {
         }));
 
         JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
-
-        if (this.listWidget != null)
-            this.savePacks(this.listWidget);
 
         this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
         this.initSelectedPacksListWidget();
@@ -199,8 +191,6 @@ public class VTDScreen extends Screen {
                     // Doesn't work as expected :/
 //                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
-                    this.savePacks(this.listWidget);
-                    this.updateDownloadButton();
                     JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                     this.initSelectedPacksListWidget();
@@ -216,21 +206,40 @@ public class VTDScreen extends Screen {
         this.downloadButton.active = this.selectedPacks.size() > 0;
     }
 
-    public void savePacks(PackListWidget packListWidget) {
+    public void updateSelectedPacks(PackListWidget packListWidget) {
         List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
 
         JsonArray packsArray = new JsonArray();
-        if (this.selectedPacks.has(packListWidget.categoryName)) {
-            this.selectedPacks.remove(packListWidget.categoryName);
-        }
-
-        if (selectedEntries.size() == 0) return;
+        boolean categoryWasSelected = this.selectedPacks.has(packListWidget.categoryName);
 
         for (PackListWidget.PackEntry entry : selectedEntries) {
             packsArray.add(entry.name);
         }
 
-        this.selectedPacks.add(packListWidget.categoryName, packsArray);
+        if (!categoryWasSelected) {
+            this.selectedPacks.add(packListWidget.categoryName, packsArray);
+        } else {
+            JsonObject newSelectedPacks = new JsonObject();
+            // Keep the selected packs order
+            for (Map.Entry<String, JsonElement> entry : this.selectedPacks.entrySet()) {
+                String categoryName = entry.getKey();
+
+                this.selectedPacks.remove(categoryName);
+                if (categoryName.equals(packListWidget.categoryName)) {
+                    newSelectedPacks.add(categoryName, packsArray);
+                } else {
+                    newSelectedPacks.add(categoryName, entry.getValue());
+                }
+            }
+
+            this.selectedPacks = newSelectedPacks;
+        }
+
+        this.updateDownloadButton();
+    }
+
+    public JsonObject getSelectedPacks() {
+        return this.selectedPacks;
     }
 
     public MinecraftClient getClient() {
