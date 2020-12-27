@@ -128,7 +128,7 @@ public class VTDScreen extends Screen {
             }
         }));
 
-        boolean exceptionFound = VTDMod.categories != null && VTDMod.categories.size() > 0;
+        boolean exceptionFound = VTDMod.categories == null || VTDMod.categories.size() == 0;
 
         if (!exceptionFound) {
             JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
