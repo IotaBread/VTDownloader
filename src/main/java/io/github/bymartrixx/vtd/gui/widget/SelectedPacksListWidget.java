@@ -46,7 +46,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
         Text text = new LiteralText("Selected packs").formatted(Formatting.BOLD, Formatting.UNDERLINE);
-        VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
+        VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2) + (VTDScreen.getInstance().width - 170)), Math.min(this.top + 3, y), 16777215);
     }
 
     public class Entry extends EntryListWidget.Entry<SelectedPacksListWidget.Entry> {
