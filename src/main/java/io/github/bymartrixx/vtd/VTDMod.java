@@ -65,7 +65,6 @@ public class VTDMod implements ClientModInitializer {
     public void onInitializeClient() {
         log(Level.INFO, "Initializing {} version {}...", MOD_NAME, VERSION);
 
-        // TODO: Mod Initializer
         try {
             getCategories();
         } catch (IOException e) {

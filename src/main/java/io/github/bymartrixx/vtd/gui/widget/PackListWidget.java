@@ -17,12 +17,14 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
+    private final boolean displayEntries;
     public final String categoryName;
     public final List<PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
     public final boolean oneEntry; // If it should keep only one entry selected at once
 
     public PackListWidget(JsonArray packs, String categoryName) {
         super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width - 180, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
+        this.displayEntries = true;
 
         this.setRenderHeader(true, 16);
 
@@ -37,6 +39,13 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
             this.addEntry(new PackListWidget.PackEntry(pack, selected));
         }
+    }
+
+    public PackListWidget() {
+        super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width - 180, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
+        this.displayEntries = false;
+        this.categoryName = "Error!";
+        this.oneEntry = false;
     }
 
     public int getRowWidth() {
@@ -99,6 +108,21 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
         Text text = new LiteralText(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
         VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
+    }
+
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        if (this.displayEntries) {
+            super.render(matrices, mouseX, mouseY, delta);
+        } else {
+            String msgHeader = "There was an error while trying to get the packs.";
+            Text msgHeaderText = new LiteralText(msgHeader).formatted(Formatting.BOLD, Formatting.ITALIC);
+            String msgBody = "Please check your internet connection";
+            String msgBody2 = "and that the site https://vanillatweaks.net is working properly";
+
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeaderText, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeaderText) / 2)), ((float) (this.height / 2)), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody) / 2)), ((float) (this.height / 2)), 16777215);
+            VTDScreen.getInstance().getTextRenderer().draw(matrices, msgBody2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgBody2) / 2)), ((float) (this.height / 2)), 16777215);
+        }
     }
 
     public class PackEntry extends EntryListWidget.Entry<PackListWidget.PackEntry> {

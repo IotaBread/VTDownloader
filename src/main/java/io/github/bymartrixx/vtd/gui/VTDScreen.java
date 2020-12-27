@@ -128,14 +128,28 @@ public class VTDScreen extends Screen {
             }
         }));
 
-        JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+        boolean exceptionFound = VTDMod.categories != null && VTDMod.categories.size() > 0;
 
-        this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
+        if (!exceptionFound) {
+            JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+
+            this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
+        } else {
+            this.listWidget = this.addChild(new PackListWidget());
+        }
+
         this.selectedPacksListWidget = new SelectedPacksListWidget();
         this.selectedPacksListWidget.setLeftPos(this.width - 170);
         this.addChild(this.selectedPacksListWidget);
 
-        this.updateTabButtons();
+        if (!exceptionFound) {
+            this.updateTabButtons();
+        } else {
+            this.tabLeftButton.active = false;
+            this.tabRightButton.active = false;
+
+            this.downloadButton.active = false;
+        }
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
