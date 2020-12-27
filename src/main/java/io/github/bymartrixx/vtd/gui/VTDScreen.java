@@ -120,7 +120,7 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
             try {
-                download(VTDMod.GSON.toJsonTree(this.selectedPacks).getAsJsonObject(), this.client);
+                download(VTDMod.GSON.toJsonTree(this.selectedPacks), this.client);
                 this.downloadButton.setSuccess(true);
             } catch (IOException e) {
                 VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
@@ -131,14 +131,11 @@ public class VTDScreen extends Screen {
         JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
 
         this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
-        this.initSelectedPacksListWidget();
+        this.selectedPacksListWidget = new SelectedPacksListWidget();
+        this.selectedPacksListWidget.setLeftPos(this.width - 170);
+        this.addChild(this.selectedPacksListWidget);
 
         this.updateTabButtons();
-    }
-
-    private void initSelectedPacksListWidget() {
-        this.selectedPacksListWidget = this.addChild(new SelectedPacksListWidget());
-        this.selectedPacksListWidget.setLeftPos(this.width - 170);
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
@@ -228,7 +225,7 @@ public class VTDScreen extends Screen {
         }
 
         this.updateDownloadButton();
-        this.initSelectedPacksListWidget();
+        this.selectedPacksListWidget.updateEntries();
     }
 
     public MinecraftClient getClient() {

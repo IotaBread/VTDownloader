@@ -20,6 +20,25 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         super(VTDScreen.getInstance().getClient(), 160, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
         this.setRenderHeader(true, 16);
 
+        this.updateEntries();
+    }
+
+    public int getRowWidth() {
+        return this.width - 20;
+    }
+
+    protected int getScrollbarPositionX() {
+        return VTDScreen.getInstance().width - 10;
+    }
+
+    protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
+        Text text = new LiteralText("Selected packs").formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2) + (VTDScreen.getInstance().width - 170)), Math.min(this.top + 3, y), 16777215);
+    }
+
+    public void updateEntries() {
+        this.children().clear();
+
         JsonObject selectedPacks = VTDMod.GSON.toJsonTree(VTDScreen.getInstance().selectedPacks).getAsJsonObject();
         Set<Map.Entry<String, JsonElement>> selectedPacksCategories = selectedPacks.entrySet();
 
@@ -35,19 +54,6 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 this.addEntry(new Entry(false, categoryName, pack));
             }
         }
-    }
-
-    public int getRowWidth() {
-        return this.width - 20;
-    }
-
-    protected int getScrollbarPositionX() {
-        return VTDScreen.getInstance().width - 10;
-    }
-
-    protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-        Text text = new LiteralText("Selected packs").formatted(Formatting.BOLD, Formatting.UNDERLINE);
-        VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2) + (VTDScreen.getInstance().width - 170)), Math.min(this.top + 3, y), 16777215);
     }
 
     public class Entry extends EntryListWidget.Entry<SelectedPacksListWidget.Entry> {
