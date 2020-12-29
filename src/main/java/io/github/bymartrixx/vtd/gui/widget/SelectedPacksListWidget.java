@@ -150,23 +150,21 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         private boolean canMoveUp() {
-//            if (this.isCategory) {
-//                return !VTDScreen.getInstance().selectedPacks.keySet().toArray()[0].equals(this.categoryName);
-//            } else {
-//                return !VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray()[0].equals(this.packName);
-//            }
-            return true;
+            if (this.isCategory) {
+                return !VTDScreen.getInstance().selectedPacks.keySet().toArray()[0].equals(this.categoryName);
+            } else {
+                return !VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray()[0].equals(this.packName);
+            }
         }
 
         private boolean canMoveDown() {
-//            if (this.isCategory) {
-//                String[] categories = (String[]) VTDScreen.getInstance().selectedPacks.keySet().toArray();
-//                return !categories[categories.length - 1].equals(this.categoryName);
-//            } else {
-//                String[] packs = (String[]) VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray();
-//                return !packs[packs.length - 1].equals(this.packName);
-//            }
-            return true;
+            if (this.isCategory) {
+                String[] categories = (String[]) VTDScreen.getInstance().selectedPacks.keySet().toArray();
+                return !categories[categories.length - 1].equals(this.categoryName);
+            } else {
+                String[] packs = (String[]) VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray();
+                return !packs[packs.length - 1].equals(this.packName);
+            }
         }
 
         private void moveUp() {
