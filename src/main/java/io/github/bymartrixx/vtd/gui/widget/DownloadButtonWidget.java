@@ -1,5 +1,6 @@
 package io.github.bymartrixx.vtd.gui.widget;
 
+import io.github.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
@@ -63,7 +64,10 @@ public class DownloadButtonWidget extends ButtonWidget {
     }
 
     public void tick() {
-        if (this.messageTicks > 0)
+        if (this.messageTicks > 0) {
             --this.messageTicks;
+            if (this.messageTicks == 0)
+                VTDScreen.getInstance().resetDownloadProgress();
+        }
     }
 }

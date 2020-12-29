@@ -10,10 +10,12 @@ import io.github.bymartrixx.vtd.gui.widget.PackListWidget;
 import io.github.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -41,6 +43,12 @@ public class VTDScreen extends Screen {
     private SelectedPacksListWidget selectedPacksListWidget;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
+    /**
+     * The download progress. A percentage represented as a float.
+     * The value {@code 1.0F} means that the download progress bar should not be rendered.
+     * Use {@link #resetDownloadProgress()} to set the progress to {@code 1.0F}.
+     */
+    private float downloadProgress = -1.0F;
 
     public VTDScreen(Screen previousScreen) {
         super(new LiteralText("VTDownloader"));
@@ -63,11 +71,11 @@ public class VTDScreen extends Screen {
         return (width - 80) / 130 + 1;
     }
 
-    private static void download(JsonElement selectedPacks, MinecraftClient minecraftClient) throws IOException {
-        download(selectedPacks.getAsJsonObject(), minecraftClient);
-    }
+    private static void download(VTDScreen screen) throws IOException {
+        JsonObject selectedPacks = VTDMod.GSON.toJsonTree(screen.selectedPacks).getAsJsonObject();
+        MinecraftClient minecraftClient = screen.client;
+        screen.downloadProgress = 0.0F;
 
-    private static void download(JsonObject selectedPacks, MinecraftClient minecraftClient) throws IOException {
         // Get the download link
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost("https://vanillatweaks.net/assets/server/zipresourcepacks.php");
@@ -78,6 +86,7 @@ public class VTDScreen extends Screen {
             httpPost.setEntity(new UrlEncodedFormEntity(params));
 
             HttpResponse response = client.execute(httpPost);
+            screen.downloadProgress = 0.1F;
 
             int responseStatus = response.getStatusLine().getStatusCode();
 
@@ -92,12 +101,14 @@ public class VTDScreen extends Screen {
             while (scanner.hasNext()) {
                 responseBody.append(scanner.nextLine());
             }
+            screen.downloadProgress = 0.35F;
 
             String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
             String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
             // Download the resource pack
             FileUtils.copyURLToFile(new URL("https://vanillatweaks.net" + downloadLink), new File(minecraftClient.getResourcePackDir(), fileName), 500, 4000);
+            screen.downloadProgress = 1.0F;
         }
     }
 
@@ -120,7 +131,7 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
             try {
-                download(VTDMod.GSON.toJsonTree(this.selectedPacks), this.client);
+                download(this);
                 this.downloadButton.setSuccess(true);
             } catch (IOException e) {
                 VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
@@ -142,6 +153,7 @@ public class VTDScreen extends Screen {
         this.selectedPacksListWidget.setLeftPos(this.width - 170);
         this.addChild(this.selectedPacksListWidget);
 
+        this.resetDownloadProgress();
         if (!exceptionFound) {
             this.updateTabButtons();
         } else {
@@ -163,9 +175,37 @@ public class VTDScreen extends Screen {
             tabButton.render(matrices, mouseX, mouseY, delta);
         }
 
-        // TODO: Add download progress bar ( see SplashScreen#renderProgressBar )
-
         super.render(matrices, mouseX, mouseY, delta);
+
+        if (this.downloadProgress != -1.0F)
+        this.renderDownloadProgressBar(matrices, 10, this.height - 25, 110, this.height - 15, 0.9F);
+    }
+
+    /**
+     * Renders the download progress bar.
+     * The width of it will be {@code x2 - x1}, and the height will be {@code y2 - y1}.
+     * The progress of the bar will be the value of {@link #downloadProgress}
+     *
+     * @param matrices I don't actually know what this is for lol.
+     * @param x1       the bar top left corner/start x position.
+     * @param y1       the bar top left corner/start y position.
+     * @param x2       the bar bottom right corner/end x position.
+     * @param y2       the bar bottom right corner/end y position.
+     * @param opacity  the opacity of the progress bar
+     */
+    private void renderDownloadProgressBar(MatrixStack matrices, int x1, int y1, int x2, int y2, float opacity) {
+        int progressWidth = MathHelper.ceil((float) (x2 - x1 - 2) * this.downloadProgress);
+        int alpha = Math.round(opacity * 255.0F);
+        int color = BackgroundHelper.ColorMixer.getArgb(alpha, 255, 255, 255);
+
+        // Draw progress bar outline
+        fill(matrices, x1 + 1, y1, x2 - 1, y1 + 1, color); // Top line
+        fill(matrices, x1 + 1, y2, x2 - 1, y2 - 1, color); // Bottom line
+        fill(matrices, x1, y1, x1 + 1, y2, color); // Left line
+        fill(matrices, x2, y1, x2 - 1, y2, color); // Right line
+
+        // Draw progress bar "progress"
+        fill(matrices, x1 + 2, y1 + 2, x1 + progressWidth, y2 - 2, color);
     }
 
     public void tick() {
@@ -248,5 +288,12 @@ public class VTDScreen extends Screen {
 
     public TextRenderer getTextRenderer() {
         return this.textRenderer;
+    }
+
+    /**
+     * Sets {@link #downloadProgress} back to the default.
+     */
+    public void resetDownloadProgress() {
+        this.downloadProgress = -1.0F;
     }
 }

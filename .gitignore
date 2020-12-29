@@ -21,11 +21,6 @@ bin/
 
 # fabric
 
-!run/
-run/*
-!run/resourcepacks/
-!run/options.txt
+run/
 
-!run_server/
-run_server/*
-!run_server/server.properties
+run_server/

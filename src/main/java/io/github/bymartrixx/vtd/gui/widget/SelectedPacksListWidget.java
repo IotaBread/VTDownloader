@@ -57,6 +57,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     public class Entry extends EntryListWidget.Entry<SelectedPacksListWidget.Entry> {
+        // TODO: Add buttons to move the entry up/down
         /**
          * If the entry is a category or a pack under one category.
          */
