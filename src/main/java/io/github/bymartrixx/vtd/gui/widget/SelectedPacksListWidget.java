@@ -159,10 +159,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         private boolean canMoveDown() {
             if (this.isCategory) {
-                String[] categories = (String[]) VTDScreen.getInstance().selectedPacks.keySet().toArray();
+                Object[] categories = VTDScreen.getInstance().selectedPacks.keySet().toArray();
                 return !categories[categories.length - 1].equals(this.categoryName);
             } else {
-                String[] packs = (String[]) VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray();
+                Object[] packs = VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray();
                 return !packs[packs.length - 1].equals(this.packName);
             }
         }
