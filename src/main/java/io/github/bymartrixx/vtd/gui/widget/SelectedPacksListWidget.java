@@ -5,17 +5,20 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.VTDScreen;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWidget.Entry> {
+    private static final Identifier RESOURCE_PACKS_TEXTURE = new Identifier("textures/gui/resource_packs.png");
+
     public SelectedPacksListWidget() {
         super(VTDScreen.getInstance().getClient(), 160, VTDScreen.getInstance().height, 80, VTDScreen.getInstance().height - 60, 16);
         this.setRenderHeader(true, 16);
@@ -46,18 +49,17 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             String categoryName = category.getKey();
             JsonArray packs = category.getValue().getAsJsonArray();
 
-            this.addEntry(new Entry(true, categoryName));
+            this.addEntry(new Entry(this, true, categoryName));
 
             for (int i = 0; i < packs.size(); ++i) {
                 String pack = packs.get(i).getAsString();
 
-                this.addEntry(new Entry(false, categoryName, pack));
+                this.addEntry(new Entry(this, false, categoryName, pack));
             }
         }
     }
 
     public class Entry extends EntryListWidget.Entry<SelectedPacksListWidget.Entry> {
-        // TODO: Add buttons to move the entry up/down
         /**
          * If the entry is a category or a pack under one category.
          */
@@ -66,18 +68,20 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
          * If {@link #isCategory} is true, the name of the category, if it is false, the name of the parent category.
          */
         public final String categoryName;
+        private final SelectedPacksListWidget widget;
         /**
          * If {@link #isCategory} is false, keeps the name of the pack.
          * Use {@link #getPackName()} to get the value.
          */
         private String packName = "";
 
-        Entry(boolean isCategory, String categoryName, String packName) {
-            this(isCategory, categoryName);
+        Entry(SelectedPacksListWidget widget, boolean isCategory, String categoryName, String packName) {
+            this(widget, isCategory, categoryName);
             this.packName = packName;
         }
 
-        Entry(boolean isCategory, String categoryName) {
+        Entry(SelectedPacksListWidget widget, boolean isCategory, String categoryName) {
+            this.widget = widget;
             this.isCategory = isCategory;
             this.categoryName = categoryName;
         }
@@ -99,6 +103,216 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             }
 
             VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, (this.isCategory ? 0 : 16) + VTDScreen.getInstance().width - 170, y + 1, 16777215);
+
+            // Render up/down buttons
+            if (hovered) {
+                int localMouseX = mouseX - x;
+                int localMouseY = mouseY - y;
+                int width = this.widget.getRowWidth(); // Entry width
+
+                VTDScreen.getInstance().getClient().getTextureManager().bindTexture(RESOURCE_PACKS_TEXTURE);
+
+                if (this.canMoveUp()) {
+                    if (localMouseX > width - 8 && localMouseY < 8) {
+                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 96.0F, 32.0F, 32, 32, 256, 256);
+                    } else {
+                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 96.0F, 0.0F, 32, 32, 256, 256);
+                    }
+                }
+
+                if (this.canMoveDown()) {
+                    if (localMouseX > width - 8 && localMouseY > 8) {
+                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 64.0F, 32.0F, 32, 32, 256, 256);
+                    } else {
+                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 64.0F, 0.0F, 32, 32, 256, 256);
+                    }
+                }
+            }
+        }
+
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            double x = mouseX - this.widget.getRowLeft();
+            double y = mouseY - this.widget.getRowTop(this.widget.children().indexOf(this));
+
+            if (x > this.widget.getRowWidth() - 8) {
+                if (y < 8 && this.canMoveUp()) {
+                    this.moveUp();
+                    return true;
+                }
+
+                if (y > 8 && this.canMoveDown()) {
+                    this.moveDown();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private boolean canMoveUp() {
+//            if (this.isCategory) {
+//                return !VTDScreen.getInstance().selectedPacks.keySet().toArray()[0].equals(this.categoryName);
+//            } else {
+//                return !VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray()[0].equals(this.packName);
+//            }
+            return true;
+        }
+
+        private boolean canMoveDown() {
+//            if (this.isCategory) {
+//                String[] categories = (String[]) VTDScreen.getInstance().selectedPacks.keySet().toArray();
+//                return !categories[categories.length - 1].equals(this.categoryName);
+//            } else {
+//                String[] packs = (String[]) VTDScreen.getInstance().selectedPacks.get(this.categoryName).toArray();
+//                return !packs[packs.length - 1].equals(this.packName);
+//            }
+            return true;
+        }
+
+        private void moveUp() {
+            if (this.isCategory) {
+                Map<String, List<String>> selectedPacks = VTDScreen.getInstance().selectedPacks;
+                Iterator<String> categoriesIterator = selectedPacks.keySet().iterator();
+
+                String previousCategoryName = "";
+                // Save previous category name, if this category name is found, keep previous category name
+                while (categoriesIterator.hasNext()) {
+                    String categoryName = categoriesIterator.next();
+
+                    if (categoryName.equals(this.categoryName)) {
+                        break;
+                    }
+
+                    previousCategoryName = categoryName;
+                }
+
+                if (!previousCategoryName.equals("")) {
+                    Map<String, List<String>> newSelectedPacks = new LinkedHashMap<>();
+
+                    // Copy values to new map, where the order is changed
+                    // When the previous entry is found, put this entry (in the place of the previous entry), skip, and put the previous entry
+                    for (int i = 0; i < selectedPacks.size(); ++i) {
+                        String categoryName = (String) selectedPacks.keySet().toArray()[i];
+
+                        if (!categoryName.equals(previousCategoryName)) {
+                            newSelectedPacks.put(categoryName, selectedPacks.get(categoryName));
+                        } else {
+                            newSelectedPacks.put(this.categoryName, selectedPacks.get(this.categoryName)); // Put this entry
+                            ++i; // Skip
+                            newSelectedPacks.put(previousCategoryName, selectedPacks.get(previousCategoryName)); // Put the previous entry
+                        }
+                    }
+
+                    VTDScreen.getInstance().selectedPacks.clear();
+                    VTDScreen.getInstance().selectedPacks.putAll(newSelectedPacks);
+                }
+            } else {
+                List<String> selectedPacksOfCategory = VTDScreen.getInstance().selectedPacks.get(this.categoryName);
+                Iterator<String> packsIterator = selectedPacksOfCategory.iterator();
+
+                String previousPackName = "";
+                // Save previous category name, if this category name is found, keep previous category name
+                while (packsIterator.hasNext()) {
+                    String packName = packsIterator.next();
+
+                    if (packName.equals(this.packName)) {
+                        break;
+                    }
+
+                    previousPackName = packName;
+                }
+
+                if (!previousPackName.equals("")) {
+                    List<String> newSelectedPacksOfCategory = new ArrayList<>();
+
+                    // Copy values to new list, where the order is changed
+                    // When the previous entry is found, put this entry (in the place of the previous entry), skip, and put the previous entry
+                    for (int i = 0; i < selectedPacksOfCategory.size(); ++i) {
+                        String packName = selectedPacksOfCategory.get(i);
+
+                        if (!packName.equals(previousPackName)) {
+                            newSelectedPacksOfCategory.add(packName);
+                        } else {
+                            newSelectedPacksOfCategory.add(this.packName); // Put this entry
+                            ++i; // Skip
+                            newSelectedPacksOfCategory.add(previousPackName); // Put the previous entry
+                        }
+                    }
+
+                    VTDScreen.getInstance().selectedPacks.replace(this.categoryName, newSelectedPacksOfCategory);
+                }
+            }
+        }
+
+        private void moveDown() {
+            if (this.isCategory) {
+                Map<String, List<String>> selectedPacks = VTDScreen.getInstance().selectedPacks;
+                Iterator<String> categoriesIterator = selectedPacks.keySet().iterator();
+
+                String nextCategoryName = "";
+                while (categoriesIterator.hasNext()) {
+                    String categoryName = categoriesIterator.next();
+
+                    if (categoryName.equals(this.categoryName)) {
+                        nextCategoryName = categoriesIterator.next();
+                        break;
+                    }
+                }
+
+                if (!nextCategoryName.equals("")) {
+                    Map<String, List<String>> newSelectedPacks = new LinkedHashMap<>();
+
+                    // Copy values to new map, where the order is changed
+                    // When this entry is found, put next entry (in the place of this entry), skip, and put this entry
+                    for (int i = 0; i < selectedPacks.size(); ++i) {
+                        String categoryName = (String) selectedPacks.keySet().toArray()[i];
+
+                        if (!categoryName.equals(this.categoryName)) {
+                            newSelectedPacks.put(categoryName, selectedPacks.get(categoryName));
+                        } else {
+                            newSelectedPacks.put(nextCategoryName, selectedPacks.get(nextCategoryName)); // Put next entry
+                            ++i; // Skip
+                            newSelectedPacks.put(this.categoryName, selectedPacks.get(this.categoryName)); // Put this entry
+                        }
+                    }
+
+                    VTDScreen.getInstance().selectedPacks.clear();
+                    VTDScreen.getInstance().selectedPacks.putAll(newSelectedPacks);
+                }
+            } else {
+                List<String> selectedPacksOfCategory = VTDScreen.getInstance().selectedPacks.get(this.categoryName);
+                Iterator<String> packsIterator = selectedPacksOfCategory.iterator();
+
+                String nextPackName = "";
+                while (packsIterator.hasNext()) {
+                    String packName = packsIterator.next();
+
+                    if (packName.equals(this.packName)) {
+                        nextPackName = packsIterator.next();
+                        break;
+                    }
+                }
+
+                if (!nextPackName.equals("")) {
+                    List<String> newSelectedPacksOfCategory = new ArrayList<>();
+
+                    // Copy values to new list, where the order is changed
+                    // When this entry is found, put next entry (in the place of this entry), skip, and put this entry
+                    for (int i = 0; i < selectedPacksOfCategory.size(); ++i) {
+                        String packName = selectedPacksOfCategory.get(i);
+
+                        if (!packName.equals(this.packName)) {
+                            newSelectedPacksOfCategory.add(packName);
+                        } else {
+                            newSelectedPacksOfCategory.add(nextPackName); // Put next entry
+                            ++i; // Skip
+                            newSelectedPacksOfCategory.add(this.packName); // Put this entry
+                        }
+                    }
+
+                    VTDScreen.getInstance().selectedPacks.replace(this.categoryName, newSelectedPacksOfCategory);
+                }
+            }
         }
     }
 }

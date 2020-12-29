@@ -1,7 +1,6 @@
 package io.github.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
@@ -33,7 +32,7 @@ import java.util.*;
 
 public class VTDScreen extends Screen {
     private static VTDScreen instance;
-    public final Map<String, JsonArray> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
+    public final Map<String, List<String>> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
@@ -261,7 +260,7 @@ public class VTDScreen extends Screen {
     public void updateSelectedPacks(PackListWidget packListWidget) {
         List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
 
-        JsonArray packsArray = new JsonArray();
+        List<String> packsArray = new ArrayList<>();
         boolean categoryExisted = this.selectedPacks.containsKey(packListWidget.categoryName);
 
         for (PackListWidget.PackEntry entry : selectedEntries) {
