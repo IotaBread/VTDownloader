@@ -295,4 +295,12 @@ public class VTDScreen extends Screen {
     public void resetDownloadProgress() {
         this.downloadProgress = -1.0F;
     }
+
+    public String getSelectedCategory() {
+        return this.listWidget.categoryName;
+    }
+
+    public void updateListWidgetSelectedEntries() {
+        this.listWidget.updateSelectedEntries();
+    }
 }

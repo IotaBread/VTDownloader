@@ -240,6 +240,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                     }
 
                     VTDScreen.getInstance().selectedPacks.replace(this.categoryName, newSelectedPacksOfCategory);
+
+                    if (this.categoryName.equals(VTDScreen.getInstance().getSelectedCategory())) {
+                        VTDScreen.getInstance().updateListWidgetSelectedEntries();
+                    }
                 }
             }
         }

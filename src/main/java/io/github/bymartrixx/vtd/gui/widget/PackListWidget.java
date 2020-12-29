@@ -56,6 +56,18 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         return this.width - 10;
     }
 
+    public void updateSelectedEntries() {
+        boolean hasCategory = VTDScreen.getInstance().selectedPacks.containsKey(this.categoryName);
+        List<String> category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName) : new ArrayList<>();
+
+        for (int i = 0; i < this.children().size(); ++i) {
+            PackListWidget.PackEntry entry = this.children().get(i);
+            boolean selected = hasCategory && category.contains(entry.name);
+
+            this.setSelected(entry, true, selected);
+        }
+    }
+
     // TODO: Incompatible packs warning
 
     protected void replaceEntries(JsonArray newPacks) {
@@ -88,6 +100,18 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
                 this.selectedEntries.remove(entry);
 
             VTDScreen.getInstance().updateSelectedPacks(this);
+        }
+    }
+
+    private void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child, boolean selected) {
+        if (this.children().contains(entry) || !child) {
+            if (selected && !this.selectedEntries.contains(entry)) {
+                if (this.oneEntry) this.selectedEntries.clear();
+
+                this.selectedEntries.add(entry);
+            } else if (!selected) {
+                this.selectedEntries.remove(entry);
+            }
         }
     }
 
