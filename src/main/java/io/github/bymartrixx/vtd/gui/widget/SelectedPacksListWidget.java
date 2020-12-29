@@ -98,11 +98,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             String text = this.isCategory ? this.categoryName : this.packName;
             int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(text);
 
-            if (textWidth > 136) {
-                text = VTDScreen.getInstance().getTextRenderer().trimToWidth(text, 136 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
+            if (textWidth > this.widget.getRowWidth() - (this.isCategory ? 24 : 36)) {
+                text = VTDScreen.getInstance().getTextRenderer().trimToWidth(text, this.widget.getRowWidth() - (this.isCategory ? 24 : 36) - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
             }
 
-            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, (this.isCategory ? 0 : 16) + VTDScreen.getInstance().width - 170, y + 1, 16777215);
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, (this.isCategory ? 4 : 16) + VTDScreen.getInstance().width - 170, y + 4, 16777215);
 
             // Render up/down buttons
             if (hovered) {
