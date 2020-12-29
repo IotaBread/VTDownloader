@@ -137,11 +137,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             if (x > this.widget.getRowWidth() - 8) {
                 if (y < 8 && this.canMoveUp()) {
                     this.moveUp();
+                    this.widget.updateEntries();
                     return true;
                 }
 
                 if (y > 8 && this.canMoveDown()) {
                     this.moveDown();
+                    this.widget.updateEntries();
                     return true;
                 }
             }
