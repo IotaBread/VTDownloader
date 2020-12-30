@@ -19,7 +19,6 @@ import java.util.List;
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     private final boolean displayEntries;
     public final String categoryName;
-    public final List<PackListWidget.PackEntry> selectedEntries = new ArrayList<>();
     public final boolean oneEntry; // If it should keep only one entry selected at once
 
     public PackListWidget(JsonArray packs, String categoryName) {
@@ -70,47 +69,32 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
     // TODO: Incompatible packs warning
 
-    protected void replaceEntries(JsonArray newPacks) {
-        this.selectedEntries.clear();
-
-        List<PackListWidget.PackEntry> newEntries = new ArrayList<>();
-
-        for (int i = 0; i < newPacks.size(); ++i) {
-            JsonObject pack = newPacks.get(i).getAsJsonObject();
-
-            newEntries.add(new PackListWidget.PackEntry(pack));
-        }
-
-        super.replaceEntries(newEntries);
-    }
-
     public void setSelected(@Nullable PackListWidget.PackEntry entry) {
         this.setSelected(entry, true);
     }
 
     public void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child) {
+        if (entry == null) return;
+
         if (this.children().contains(entry) || !child) {
-            if (!this.selectedEntries.contains(entry)) {
-                if (this.oneEntry) {
-                    this.selectedEntries.clear();
-                }
-
-                this.selectedEntries.add(entry);
-            } else
-                this.selectedEntries.remove(entry);
-
-            VTDScreen.getInstance().updateSelectedPacks(this);
+            String packName = entry.name;
+            if (!VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
+                VTDScreen.getInstance().addSelectedPack(this.categoryName, packName, this.oneEntry);
+            } else {
+                VTDScreen.getInstance().removeSelectedPack(this.categoryName, packName);
+            }
         }
     }
 
     private void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child, boolean selected) {
-        if (this.children().contains(entry) || !child) {
-            if (selected && !this.selectedEntries.contains(entry)) {
-                if (this.oneEntry) this.selectedEntries.clear();
+        if (entry == null) return;
 
-                this.selectedEntries.add(entry);
-            } else if (!selected) {
-                this.selectedEntries.remove(entry);
+        if (this.children().contains(entry) || !child) {
+            String packName = entry.name;
+            if (selected && !VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
+                VTDScreen.getInstance().addSelectedPack(this.categoryName, packName, this.oneEntry);
+            } else if (!selected && VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
+                VTDScreen.getInstance().removeSelectedPack(this.categoryName, packName);
             }
         }
     }
@@ -118,15 +102,11 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     public boolean isSelected(PackListWidget.PackEntry entry) {
         if (!this.children().contains(entry)) return false;
 
-        return this.selectedEntries.contains(entry);
+        return VTDScreen.getInstance().isPackSelected(this.categoryName, entry.name);
     }
 
     protected boolean isSelectedItem(int index) {
         return this.isSelected(this.children().get(index));
-    }
-
-    public List<PackListWidget.PackEntry> getSelectedEntries() {
-        return this.selectedEntries;
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
@@ -207,6 +187,19 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             } else {
                 VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof String) {
+                return equals((String) obj);
+            }
+
+            return super.equals(obj);
+        }
+
+        public boolean equals(String packName) {
+            return this.name.equals(packName);
         }
     }
 }

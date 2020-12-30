@@ -257,28 +257,30 @@ public class VTDScreen extends Screen {
         this.downloadButton.active = this.selectedPacks.size() > 0;
     }
 
-    public void updateSelectedPacks(PackListWidget packListWidget) {
-        List<PackListWidget.PackEntry> selectedEntries = packListWidget.selectedEntries;
+    public void addSelectedPack(String categoryName, String packName) {
+        this.addSelectedPack(categoryName, packName, false);
+    }
 
-        List<String> packsArray = new ArrayList<>();
-        boolean categoryExisted = this.selectedPacks.containsKey(packListWidget.categoryName);
-
-        for (PackListWidget.PackEntry entry : selectedEntries) {
-            packsArray.add(entry.name);
+    public void addSelectedPack(String categoryName, String packName, boolean oneEntry) {
+        if (!this.selectedPacks.containsKey(categoryName)) {
+            this.selectedPacks.put(categoryName, new ArrayList<>(Collections.singleton(packName)));
+        } else if (!this.isPackSelected(categoryName, packName)) {
+            List<String> packs = oneEntry ? new ArrayList<>() : this.selectedPacks.get(categoryName);
+            packs.add(packName);
+            this.selectedPacks.replace(categoryName, packs);
         }
+    }
 
-        if (categoryExisted) {
-            if (packsArray.size() > 0) {
-                this.selectedPacks.replace(packListWidget.categoryName, packsArray);
-            } else {
-                this.selectedPacks.remove(packListWidget.categoryName);
-            }
-        } else if (packsArray.size() > 0) {
-            this.selectedPacks.put(packListWidget.categoryName, packsArray);
-        }
+    public boolean isPackSelected(String categoryName, String packName) {
+        if (!this.selectedPacks.containsKey(categoryName)) return false;
 
-        this.updateDownloadButton();
-        this.selectedPacksListWidget.updateEntries();
+        return this.selectedPacks.get(categoryName).contains(packName);
+    }
+
+    public void removeSelectedPack(String categoryName, String packName) {
+        if (!isPackSelected(categoryName, packName)) return;
+
+        this.selectedPacks.get(categoryName).remove(packName);
     }
 
     public MinecraftClient getClient() {
