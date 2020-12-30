@@ -288,6 +288,10 @@ public class VTDScreen extends Screen {
 
         this.selectedPacks.get(categoryName).remove(packName);
 
+        if (this.selectedPacks.get(categoryName).size() == 0) {
+            this.selectedPacks.remove(categoryName);
+        }
+
         this.updateDownloadButton();
         this.selectedPacksListWidget.updateEntries();
     }
