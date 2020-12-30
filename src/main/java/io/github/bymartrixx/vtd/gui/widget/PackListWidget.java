@@ -29,7 +29,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         this.categoryName = categoryName;
         this.oneEntry = this.categoryName.equals("Menu Panoramas") || this.categoryName.equals("Options Background");
 
-        VTDScreen screen = VTDScreen.getInstance();
         for (int i = 0; i < packs.size(); ++i) {
             JsonObject pack = packs.get(i).getAsJsonObject();
 
@@ -145,9 +144,10 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
         private void renderDescription(MatrixStack matrices, int y) {
             int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(this.description);
+            int maxWidth = Math.min(280, PackListWidget.this.getRowWidth() - 4);
 
-            if (textWidth > 245) {
-                String description = VTDScreen.getInstance().getTextRenderer().trimToWidth(this.description, 245 - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
+            if (textWidth > maxWidth) {
+                String description = VTDScreen.getInstance().getTextRenderer().trimToWidth(this.description, maxWidth - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
                 VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
             } else {
                 VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);

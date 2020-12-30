@@ -192,6 +192,7 @@ public class VTDScreen extends Screen {
      * @param y2       the bar bottom right corner/end y position.
      * @param opacity  the opacity of the progress bar
      */
+    @SuppressWarnings("SameParameterValue")
     private void renderDownloadProgressBar(MatrixStack matrices, int x1, int y1, int x2, int y2, float opacity) {
         int progressWidth = MathHelper.ceil((float) (x2 - x1 - 2) * this.downloadProgress);
         int alpha = Math.round(opacity * 255.0F);
