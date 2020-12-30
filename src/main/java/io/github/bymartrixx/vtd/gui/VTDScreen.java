@@ -310,8 +310,4 @@ public class VTDScreen extends Screen {
     public String getSelectedCategory() {
         return this.listWidget.categoryName;
     }
-
-    public void updateListWidgetSelectedEntries() {
-        this.listWidget.updateSelectedEntries();
-    }
 }

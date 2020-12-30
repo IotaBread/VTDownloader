@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     public final String categoryName;
@@ -30,13 +29,11 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         this.categoryName = categoryName;
         this.oneEntry = this.categoryName.equals("Menu Panoramas") || this.categoryName.equals("Options Background");
 
-        boolean hasCategory = VTDScreen.getInstance().selectedPacks.containsKey(this.categoryName);
-        List<String> category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName) : new ArrayList<>();
+        VTDScreen screen = VTDScreen.getInstance();
         for (int i = 0; i < packs.size(); ++i) {
             JsonObject pack = packs.get(i).getAsJsonObject();
-            boolean selected = hasCategory && category.contains(pack.get("name").getAsString());
 
-            this.addEntry(new PackListWidget.PackEntry(pack, selected));
+            this.addEntry(new PackListWidget.PackEntry(pack));
         }
     }
 
@@ -55,18 +52,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         return this.width - 10;
     }
 
-    public void updateSelectedEntries() {
-        boolean hasCategory = VTDScreen.getInstance().selectedPacks.containsKey(this.categoryName);
-        List<String> category = hasCategory ? VTDScreen.getInstance().selectedPacks.get(this.categoryName) : new ArrayList<>();
-
-        for (int i = 0; i < this.children().size(); ++i) {
-            PackListWidget.PackEntry entry = this.children().get(i);
-            boolean selected = hasCategory && category.contains(entry.name);
-
-            this.setSelected(entry, true, selected);
-        }
-    }
-
     // TODO: Incompatible packs warning
 
     public void setSelected(@Nullable PackListWidget.PackEntry entry) {
@@ -81,19 +66,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             if (!VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
                 VTDScreen.getInstance().addSelectedPack(this.categoryName, packName, this.oneEntry);
             } else {
-                VTDScreen.getInstance().removeSelectedPack(this.categoryName, packName);
-            }
-        }
-    }
-
-    private void setSelected(@Nullable PackListWidget.PackEntry entry, boolean child, boolean selected) {
-        if (entry == null) return;
-
-        if (this.children().contains(entry) || !child) {
-            String packName = entry.name;
-            if (selected && !VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
-                VTDScreen.getInstance().addSelectedPack(this.categoryName, packName, this.oneEntry);
-            } else if (!selected && VTDScreen.getInstance().isPackSelected(this.categoryName, packName)) {
                 VTDScreen.getInstance().removeSelectedPack(this.categoryName, packName);
             }
         }
@@ -139,10 +111,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         public final String[] incompatiblePacks;
 
         PackEntry(JsonObject pack) {
-            this(pack, false);
-        }
-
-        PackEntry(JsonObject pack, boolean selected) {
             this.name = pack.get("name").getAsString();
 
             this.displayName = pack.get("display").getAsString();
@@ -156,9 +124,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             }
 
             this.incompatiblePacks = incompatiblePacks.toArray(new String[0]);
-
-            if (selected)
-                PackListWidget.this.setSelected(this, false);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
