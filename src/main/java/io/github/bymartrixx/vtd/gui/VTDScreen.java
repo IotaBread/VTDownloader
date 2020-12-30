@@ -70,49 +70,60 @@ public class VTDScreen extends Screen {
         return (width - 80) / 130 + 1;
     }
 
-    private static void download(VTDScreen screen) throws IOException {
-        JsonObject selectedPacks = VTDMod.GSON.toJsonTree(screen.selectedPacks).getAsJsonObject();
-        MinecraftClient minecraftClient = screen.client;
-        screen.downloadProgress = 0.0F;
-
-        // Get the download link
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost("https://vanillatweaks.net/assets/server/zipresourcepacks.php");
-
-            List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("version", "1.16"));
-            params.add(new BasicNameValuePair("packs", VTDMod.GSON.toJson(selectedPacks)));
-            httpPost.setEntity(new UrlEncodedFormEntity(params));
-
-            HttpResponse response = client.execute(httpPost);
-            screen.downloadProgress = 0.1F;
-
-            int responseStatus = response.getStatusLine().getStatusCode();
-
-            if (responseStatus != 200) {
-                VTDMod.log(Level.WARN, "The download link request responded with an unexpected status code: {}", responseStatus);
-                return;
-            }
-
-            StringBuilder responseBody = new StringBuilder();
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-
-            while (scanner.hasNext()) {
-                responseBody.append(scanner.nextLine());
-            }
-            screen.downloadProgress = 0.35F;
-
-            String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
-            String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
-
-            // Download the resource pack
-            FileUtils.copyURLToFile(new URL("https://vanillatweaks.net" + downloadLink), new File(minecraftClient.getResourcePackDir(), fileName), 500, 4000);
-            screen.downloadProgress = 1.0F;
-        }
-    }
-
     public static VTDScreen getInstance() {
         return instance;
+    }
+
+    private void download(DownloadButtonWidget button) {
+        Thread downloadThread = new Thread(() -> {
+            try {
+                JsonObject selectedPacks = VTDMod.GSON.toJsonTree(this.selectedPacks).getAsJsonObject();
+                this.downloadProgress = 0.0F;
+
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                    // Get the download link
+                    HttpPost httpPost = new HttpPost("https://vanillatweaks.net/assets/server/zipresourcepacks.php");
+
+                    List<NameValuePair> params = new ArrayList<>();
+                    params.add(new BasicNameValuePair("version", "1.16"));
+                    params.add(new BasicNameValuePair("packs", VTDMod.GSON.toJson(selectedPacks)));
+                    httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+                    HttpResponse response = client.execute(httpPost);
+                    this.downloadProgress = 0.1F;
+
+                    int responseStatus = response.getStatusLine().getStatusCode();
+
+                    if (responseStatus != 200) {
+                        VTDMod.log(Level.WARN, "The download link request responded with an unexpected status code: {}", responseStatus);
+                        return;
+                    }
+
+                    StringBuilder responseBody = new StringBuilder();
+                    Scanner scanner = new Scanner(response.getEntity().getContent());
+
+                    while (scanner.hasNext()) {
+                        responseBody.append(scanner.nextLine());
+                    }
+                    this.downloadProgress = 0.35F;
+
+                    String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
+                    String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
+
+                    // Download the resource pack
+                    FileUtils.copyURLToFile(new URL("https://vanillatweaks.net" + downloadLink), new File(this.client.getResourcePackDir(), fileName), 500, 4000);
+                    this.downloadProgress = 1.0F;
+                }
+
+                button.setSuccess(true);
+            } catch (IOException e) {
+                VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
+                button.setSuccess(false);
+            }
+        });
+
+        downloadThread.setName("VT Download");
+        downloadThread.start();
     }
 
     protected void init() {
@@ -128,15 +139,7 @@ public class VTDScreen extends Screen {
         // Done button
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
 
-        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> {
-            try {
-                download(this);
-                this.downloadButton.setSuccess(true);
-            } catch (IOException e) {
-                VTDMod.logError("Encountered an exception while trying to download the resource pack.", e);
-                this.downloadButton.setSuccess(false);
-            }
-        }));
+        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> this.download((DownloadButtonWidget) button)));
 
         boolean exceptionFound = VTDMod.categories == null || VTDMod.categories.size() == 0;
 
