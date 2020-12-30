@@ -177,7 +177,7 @@ public class VTDScreen extends Screen {
         super.render(matrices, mouseX, mouseY, delta);
 
         if (this.downloadProgress != -1.0F)
-        this.renderDownloadProgressBar(matrices, 10, this.height - 25, 110, this.height - 15, 0.9F);
+            this.renderDownloadProgressBar(matrices, 10, this.height - 25, 110, this.height - 15, 0.9F);
     }
 
     /**
@@ -264,10 +264,16 @@ public class VTDScreen extends Screen {
     public void addSelectedPack(String categoryName, String packName, boolean oneEntry) {
         if (!this.selectedPacks.containsKey(categoryName)) {
             this.selectedPacks.put(categoryName, new ArrayList<>(Collections.singleton(packName)));
+
+            this.updateDownloadButton();
+            this.selectedPacksListWidget.updateEntries();
         } else if (!this.isPackSelected(categoryName, packName)) {
             List<String> packs = oneEntry ? new ArrayList<>() : this.selectedPacks.get(categoryName);
             packs.add(packName);
             this.selectedPacks.replace(categoryName, packs);
+
+            this.updateDownloadButton();
+            this.selectedPacksListWidget.updateEntries();
         }
     }
 
@@ -281,6 +287,9 @@ public class VTDScreen extends Screen {
         if (!isPackSelected(categoryName, packName)) return;
 
         this.selectedPacks.get(categoryName).remove(packName);
+
+        this.updateDownloadButton();
+        this.selectedPacksListWidget.updateEntries();
     }
 
     public MinecraftClient getClient() {

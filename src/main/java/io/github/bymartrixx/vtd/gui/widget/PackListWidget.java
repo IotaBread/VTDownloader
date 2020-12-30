@@ -17,9 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
-    private final boolean displayEntries;
     public final String categoryName;
     public final boolean oneEntry; // If it should keep only one entry selected at once
+    private final boolean displayEntries;
 
     public PackListWidget(JsonArray packs, String categoryName) {
         super(VTDScreen.getInstance().getClient(), VTDScreen.getInstance().width - 180, VTDScreen.getInstance().height, 60, VTDScreen.getInstance().height - 40, 32);
