@@ -31,7 +31,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     protected int getScrollbarPositionX() {
-        return VTDScreen.getInstance().width - 10;
+        return this.method_31383(); // this.getRowLeft() + this.getRowWidth();
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
@@ -57,6 +57,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 this.addEntry(new Entry(this, false, categoryName, pack));
             }
         }
+
+        this.setScrollAmount(this.getScrollAmount()); // Update scrollbar
     }
 
     public class Entry extends EntryListWidget.Entry<SelectedPacksListWidget.Entry> {
@@ -96,7 +98,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             if (hovered) {
-                fill(matrices, x, y, x + entryWidth, y + entryHeight, -1601138544);
+                fill(matrices, x, y, x + entryWidth, y + 16, -1601138544);
             }
 
             String text = this.isCategory ? this.categoryName : this.packName;
@@ -106,7 +108,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 text = VTDScreen.getInstance().getTextRenderer().trimToWidth(text, this.widget.getRowWidth() - (this.isCategory ? 24 : 36) - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
             }
 
-            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, (this.isCategory ? 4 : 16) + VTDScreen.getInstance().width - 170, y + 4, 16777215);
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, text, x + (this.isCategory ? 4 : 16), y + 4, 16777215);
 
             // Render up/down buttons
             if (hovered) {
