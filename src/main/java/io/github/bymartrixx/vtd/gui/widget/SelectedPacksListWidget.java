@@ -95,6 +95,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            if (hovered) {
+                fill(matrices, x, y, x + entryWidth, y + entryHeight, -1601138544);
+            }
+
             String text = this.isCategory ? this.categoryName : this.packName;
             int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(text);
 
@@ -108,23 +112,22 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             if (hovered) {
                 int localMouseX = mouseX - x;
                 int localMouseY = mouseY - y;
-                int width = this.widget.getRowWidth(); // Entry width
 
                 VTDScreen.getInstance().getClient().getTextureManager().bindTexture(RESOURCE_PACKS_TEXTURE);
 
                 if (this.canMoveUp()) {
-                    if (localMouseX > width - 8 && localMouseY < 8) {
-                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 96.0F, 32.0F, 32, 32, 256, 256);
+                    if (localMouseX > entryWidth - 8 && localMouseY < 8) {
+                        DrawableHelper.drawTexture(matrices, x + entryWidth - 16, y, 16, 16, 96.0F, 32.0F, 32, 32, 256, 256);
                     } else {
-                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 96.0F, 0.0F, 32, 32, 256, 256);
+                        DrawableHelper.drawTexture(matrices, x + entryWidth - 16, y, 16, 16, 96.0F, 0.0F, 32, 32, 256, 256);
                     }
                 }
 
                 if (this.canMoveDown()) {
-                    if (localMouseX > width - 8 && localMouseY > 8) {
-                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 64.0F, 32.0F, 32, 32, 256, 256);
+                    if (localMouseX > entryWidth - 8 && localMouseY > 8) {
+                        DrawableHelper.drawTexture(matrices, x + entryWidth - 16, y, 16, 16, 64.0F, 32.0F, 32, 32, 256, 256);
                     } else {
-                        DrawableHelper.drawTexture(matrices, x + width - 16, y, 16, 16, 64.0F, 0.0F, 32, 32, 256, 256);
+                        DrawableHelper.drawTexture(matrices, x + entryWidth - 16, y, 16, 16, 64.0F, 0.0F, 32, 32, 256, 256);
                     }
                 }
             }
