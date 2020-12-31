@@ -2,7 +2,10 @@ plugins {
 	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.jfrog.bintray' version '1.8.5'
+	id 'com.modrinth.minotaur' version '1.1.0'
 }
+
+import com.modrinth.minotaur.TaskModrinthUpload
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -64,11 +67,26 @@ jar {
 	from "LICENSE"
 }
 
+task modrinth (type: TaskModrinthUpload) {
+	token = project.hasProperty('modrinthToken') ? project.property('modrinthToken') : System.getenv('MODRINTH_TOKEN')
+	projectId = '1E2sq1cp'
+	versionNumber = project.version
+	uploadFile = remapJar
+	addGameVersion('1.16')
+	addGameVersion('1.16.1')
+	addGameVersion('1.16.2')
+	addGameVersion('1.16.3')
+	addGameVersion('1.16.4')
+	addLoader('fabric')
+	addFile(sourcesJar)
+	addFile(remapSourcesJar)
+}
+
 bintray {
 	user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
 	key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
 	publications = ["mavenJava"]
-	publish = false
+	publish = true
 	pkg {
 		repo = 'maven'
 		name = 'VTDownloader'
