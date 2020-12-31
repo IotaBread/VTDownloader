@@ -11,7 +11,9 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 archivesBaseName = project.archives_base_name
-version = project.mod_version
+
+boolean ghBuild = System.getenv('GITHUB_WORKFLOW') == "Java CI with Gradle"
+version = !ghBuild ? project.mod_version : "${project.mod_verion}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 group = project.maven_group
 
 repositories {
