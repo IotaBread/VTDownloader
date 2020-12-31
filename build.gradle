@@ -67,7 +67,7 @@ jar {
 	from "LICENSE"
 }
 
-task modrinth (type: TaskModrinthUpload) {
+task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	token = project.hasProperty('modrinthToken') ? project.property('modrinthToken') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
@@ -78,8 +78,13 @@ task modrinth (type: TaskModrinthUpload) {
 	addGameVersion('1.16.3')
 	addGameVersion('1.16.4')
 	addLoader('fabric')
-	addFile(sourcesJar)
-	addFile(remapSourcesJar)
+
+	FileTree files = fileTree(dir: './build/libs')
+	files.each {f ->
+		if (f.name != "${archivesBaseName}-${version}.jar") { // don't upload the remapJar file again
+			addFile(f)
+		}
+	}
 }
 
 bintray {
