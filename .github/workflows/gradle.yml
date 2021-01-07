@@ -9,7 +9,7 @@ on: [ pull_request, push ]
 
 jobs:
   build:
-    name: Build on Java ${{ matrix.java-version }}
+    name: Build on Java ${{ matrix.java }}
     strategy:
       matrix:
         # Use these Java versions
