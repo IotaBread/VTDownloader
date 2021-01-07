@@ -15,7 +15,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -27,7 +26,10 @@ import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class VTDScreen extends Screen {
@@ -111,7 +113,9 @@ public class VTDScreen extends Screen {
                     String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
                     // Download the resource pack
-                    FileUtils.copyURLToFile(new URL("https://vanillatweaks.net" + downloadLink), new File(this.client.getResourcePackDir(), fileName), 500, 4000);
+                    InputStream in = new URL("https://vanillatweaks.net" + downloadLink).openStream();
+                    Files.copy(in, new File(this.client.getResourcePackDir(), fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+
                     this.downloadProgress = 1.0F;
                 }
 
