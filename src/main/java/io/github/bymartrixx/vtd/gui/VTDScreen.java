@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -113,7 +114,13 @@ public class VTDScreen extends Screen {
                     String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
                     // Download the resource pack
-                    InputStream in = new URL("https://vanillatweaks.net" + downloadLink).openStream();
+                    URL url = new URL("https://vanillatweaks.net" + downloadLink);
+                    URLConnection connection = url.openConnection();
+                    connection.addRequestProperty("User-Agent", "VTDownloader v" + VTDMod.VERSION);
+                    connection.setConnectTimeout(500);
+                    connection.setConnectTimeout(4000);
+
+                    InputStream in = connection.getInputStream();
                     Files.copy(in, new File(this.client.getResourcePackDir(), fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
 
                     this.downloadProgress = 1.0F;

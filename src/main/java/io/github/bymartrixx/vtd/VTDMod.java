@@ -21,7 +21,7 @@ public class VTDMod implements ClientModInitializer {
     public static final String MOD_NAME = "VTDownloader";
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Gson GSON = new Gson();
-    private static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
+    public static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     private static final String baseUrl = "https://vanillatweaks.net";
     public static JsonArray categories;
 
