@@ -22,7 +22,7 @@ public class VTDMod implements ClientModInitializer {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Gson GSON = new Gson();
     public static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
-    private static final String baseUrl = "https://vanillatweaks.net";
+    public static final String BASE_URL = "https://vanillatweaks.net";
     public static JsonArray categories;
 
     public static void log(Level level, String message, Object... fields) {
@@ -39,7 +39,7 @@ public class VTDMod implements ClientModInitializer {
 
     protected static void getCategories() throws IOException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(baseUrl + "/assets/resources/json/1.16/rpcategories.json");
+            HttpGet request = new HttpGet(BASE_URL + "/assets/resources/json/1.16/rpcategories.json");
             HttpResponse response = client.execute(request);
 
             int responseStatus = response.getStatusLine().getStatusCode();

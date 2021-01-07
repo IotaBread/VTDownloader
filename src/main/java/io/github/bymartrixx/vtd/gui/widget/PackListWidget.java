@@ -3,6 +3,7 @@ package io.github.bymartrixx.vtd.gui.widget;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.Tessellator;
@@ -93,7 +94,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             Text msgHeader2 = new LiteralText("while trying to get the packs.").formatted(Formatting.BOLD, Formatting.ITALIC);
             String msgBody = "Please check your internet connection";
             String msgBody2 = "and that the site";
-            String msgBody3 = "https://vanillatweaks.net is working properly";
+            String msgBody3 = VTDMod.BASE_URL + " is working properly";
 
             VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader) / 2)), ((float) (this.height / 2) - 32), 16777215);
             VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader2) / 2)), ((float) (this.height / 2) - 16), 16777215);

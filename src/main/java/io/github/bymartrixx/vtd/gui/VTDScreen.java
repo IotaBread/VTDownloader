@@ -85,7 +85,7 @@ public class VTDScreen extends Screen {
 
                 try (CloseableHttpClient client = HttpClients.createDefault()) {
                     // Get the download link
-                    HttpPost httpPost = new HttpPost("https://vanillatweaks.net/assets/server/zipresourcepacks.php");
+                    HttpPost httpPost = new HttpPost(VTDMod.BASE_URL + "/assets/server/zipresourcepacks.php");
 
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("version", "1.16"));
@@ -114,7 +114,7 @@ public class VTDScreen extends Screen {
                     String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
 
                     // Download the resource pack
-                    URL url = new URL("https://vanillatweaks.net" + downloadLink);
+                    URL url = new URL(VTDMod.BASE_URL + downloadLink);
                     URLConnection connection = url.openConnection();
                     connection.addRequestProperty("User-Agent", "VTDownloader v" + VTDMod.VERSION);
                     connection.setConnectTimeout(500);
