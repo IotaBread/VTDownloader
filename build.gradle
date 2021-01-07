@@ -11,10 +11,10 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 archivesBaseName = project.archives_base_name
-
-boolean ghBuild = System.getenv('GITHUB_WORKFLOW') == "Java CI with Gradle"
-version = !ghBuild ? project.mod_version : "${project.mod_version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 group = project.maven_group
+
+boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
+version = !isBuild ? project.mod_version : "${project.mod_version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 
 repositories {
 	maven {
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-	//to change the versions see the gradle.properties file
+	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -50,27 +50,37 @@ processResources {
 	}
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
+tasks.withType(JavaCompile).configureEach {
+	// ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+	// If Javadoc is generated, this must be specified in that task too.
+	it.options.encoding = "UTF-8"
+
+	// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
+	// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
+	// We'll use that if it's available, but otherwise we'll use the older option.
+	def targetVersion = 8
+	if (JavaVersion.current().isJava9Compatible()) {
+		 it.options.release = targetVersion
+	}
 }
 
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
-	from sourceSets.main.allSource
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
 }
 
 jar {
-	from "LICENSE"
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
 }
 
 task modrinth (type: TaskModrinthUpload, dependsOn: build) {
-	token = project.hasProperty('modrinthToken') ? project.property('modrinthToken') : System.getenv('MODRINTH_TOKEN')
+	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
 	uploadFile = remapJar
@@ -81,7 +91,7 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	addGameVersion('1.16.4')
 	addLoader('fabric')
 
-	FileTree files = fileTree(dir: './build/libs')
+	FileTree files = fileTree(dir: './build/libs/')
 	files.each {f ->
 		if (f.name != "${archivesBaseName}-${version}.jar") { // don't upload the remapJar file again
 			addFile(f)
@@ -90,9 +100,9 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 }
 
 bintray {
-	user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-	key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
-	publications = ["mavenJava"]
+	user = project.hasProperty('bintray_user') ? project.property('bintray_user') : System.getenv('BINTRAY_USER')
+	key = project.hasProperty('bintray_key') ? project.property('bintray_key') : System.getenv('BINTRAY_KEY')
+	publications = ['mavenJava']
 	publish = true
 	pkg {
 		repo = 'maven'
@@ -123,21 +133,21 @@ publishing {
 			artifact(sourcesJar) {
 				builtBy remapSourcesJar
 			}
+
 			pom.withXml {
 				def root = asNode()
 				root.appendNode('description', 'VTDownloader')
 				root.appendNode('name', 'VTDownloader')
 				root.appendNode('url', 'https://github.com/ByMartrixx/VTDownloader')
 			}
-			groupId("${project.maven_group}")
+			groupId("${group}")
 			artifactId 'VTDownloader'
 		}
 	}
 
-	// select the repositories you want to publish to
+	// Select the repositories you want to publish to
+	// To publish to maven local, no extra repositories are necessary. Just use the task `publishToMavenLocal`.
 	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
+		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	}
 }
-
