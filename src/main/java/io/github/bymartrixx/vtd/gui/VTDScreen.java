@@ -71,10 +71,10 @@ public class VTDScreen extends Screen {
      * @return The max number of "tabs"
      */
     private static int getTabNum(int width) {
-        // 80 is the 2 buttons (20 * 2) and the margin between (10 between both buttons, 10 to the right of the right button and 10 * 2 for both sides of the screen)
+        // 110 is the 3 buttons (20 * 3) and the margin between (10 between the buttons, 10 to the right of the right button and 10 * 2 for both sides of the screen)
         // The 130 is the width of the "tab" buttons and the margin (120 + 10)
-        // The 1 is to allow the max number of buttons
-        return (width - 80) / 130 + 1;
+        // The 1 is to make an "overflow" effect
+        return (width - 110) / 130 + 1;
     }
 
     public static VTDScreen getInstance() {
@@ -142,25 +142,24 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.tabLeftButton = this.addButton(new ButtonWidget(10, 30, 20, 20, new LiteralText("<="), button -> {
+        this.tabLeftButton = this.addButton(new ButtonWidget(40, 30, 20, 20, new LiteralText("<="), button -> {
             --this.tabIndex;
             this.updateTabButtons();
         }));
-        this.tabRightButton = this.addButton(new ButtonWidget(40, 30, 20, 20, new LiteralText("=>"), button -> {
+        this.tabRightButton = this.addButton(new ButtonWidget(70, 30, 20, 20, new LiteralText("=>"), button -> {
             ++this.tabIndex;
             this.updateTabButtons();
         }));
 
+        // Reload button
+        this.addButton(new ButtonWidget(10, 30, 20, 20, new LiteralText("↻"), button -> {
+            VTDMod.reloadRPCategories();
+            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle));
+        }));
         // Done button
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
-
-        // Reload button
-        this.addButton(new ButtonWidget(this.width - 30, 30, 20, 20, new LiteralText("🔄"), button -> {
-            VTDMod.reloadRPCategories();
-            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle));
-        }));
 
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
@@ -243,7 +242,7 @@ public class VTDScreen extends Screen {
 
     private void updateTabButtons() {
         this.tabLeftButton.active = this.tabIndex > 0;
-        this.tabRightButton.active = this.tabIndex <= VTDMod.rpCategories.size() - getTabNum(this.width);
+        this.tabRightButton.active = this.tabIndex < VTDMod.rpCategories.size() - 1;
 
         this.updateDownloadButton();
 
@@ -261,7 +260,7 @@ public class VTDScreen extends Screen {
 
             JsonObject category = VTDMod.rpCategories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
-            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 70, 30, 120, 20, new LiteralText(categoryName), button -> {
+            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, new LiteralText(categoryName), button -> {
                 if (this.selectedTabIndex != index) {
                     this.selectedTabIndex = index;
 
