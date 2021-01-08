@@ -142,11 +142,11 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.tabLeftButton = this.addButton(new ButtonWidget(40, 30, 20, 20, new LiteralText("<="), button -> {
+        this.tabLeftButton = this.addButton(new ButtonWidget(40, 30, 20, 20, new LiteralText("⇦"), button -> {
             --this.tabIndex;
             this.updateTabButtons();
         }));
-        this.tabRightButton = this.addButton(new ButtonWidget(70, 30, 20, 20, new LiteralText("=>"), button -> {
+        this.tabRightButton = this.addButton(new ButtonWidget(70, 30, 20, 20, new LiteralText("⇨"), button -> {
             ++this.tabIndex;
             this.updateTabButtons();
         }));
