@@ -29,7 +29,7 @@ public class PackScreenMixin extends Screen {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.file == this.client.getResourcePackDir()) {
-            this.addButton(new ButtonWidget(this.width / 2 - 60, this.height - 24, 120, 20, new LiteralText("Download VT Pack"), button -> {
+            this.addButton(new ButtonWidget(this.width / 2 - 60, this.height - 24, 150, 20, new LiteralText("Download VT Resource Pack"), button -> {
                 this.client.openScreen(new VTDScreen(this));
             }));
         }
