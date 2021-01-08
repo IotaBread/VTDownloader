@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
+import io.github.bymartrixx.vtd.gui.widget.ArrowButtonWidget;
 import io.github.bymartrixx.vtd.gui.widget.DownloadButtonWidget;
 import io.github.bymartrixx.vtd.gui.widget.PackListWidget;
 import io.github.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
@@ -12,6 +13,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -142,17 +144,17 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.tabLeftButton = this.addButton(new ButtonWidget(40, 30, 20, 20, new LiteralText("⇦"), button -> {
+        this.tabLeftButton = this.addButton(new ArrowButtonWidget(40, 30, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {
             --this.tabIndex;
             this.updateTabButtons();
         }));
-        this.tabRightButton = this.addButton(new ButtonWidget(70, 30, 20, 20, new LiteralText("⇨"), button -> {
+        this.tabRightButton = this.addButton(new ArrowButtonWidget(70, 30, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {
             ++this.tabIndex;
             this.updateTabButtons();
         }));
 
         // Reload button
-        this.addButton(new ButtonWidget(10, 30, 20, 20, new LiteralText("↻"), button -> {
+        this.addButton(new ArrowButtonWidget(10, 30, 20, 20, ArrowButtonWidget.ArrowType.CLOCKWISE, button -> {
             VTDMod.reloadRPCategories();
             this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle));
         }));
