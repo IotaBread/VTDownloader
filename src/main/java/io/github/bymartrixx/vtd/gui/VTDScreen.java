@@ -186,7 +186,7 @@ public class VTDScreen extends Screen {
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
         this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 16777215); // Render title
-        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 1677215); // Render subtitle
+        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 16777215); // Render subtitle
 
         // Render tabButtons
         for (ButtonWidget tabButton : this.tabButtons) {
