@@ -14,8 +14,7 @@
     },
 
     "custom": {
-        "modmenu:api": false,
-        "modmenu:clientsideOnly": true
+        "modmenu:api": false
     },
 
     "license": "MIT",
