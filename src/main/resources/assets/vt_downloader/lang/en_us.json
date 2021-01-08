@@ -9,6 +9,7 @@
     "vtd.packError.title.1": "There was an error",
     "vtd.packError.title.2": "while trying to get the packs.",
     "vtd.resourcePack.button": "Download VT Resource Pack",
+    "vtd.resourcePack.subtitle": "Select Resource Packs",
     "vtd.selectedPacks": "Selected packs",
     "vtd.title": "VTDownloader"
 }

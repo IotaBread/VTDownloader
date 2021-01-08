@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.apache.http.HttpResponse;
@@ -38,6 +39,7 @@ public class VTDScreen extends Screen {
     private static VTDScreen instance;
     public final Map<String, List<String>> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     private final Screen previousScreen;
+    protected final Text subtitle;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
@@ -53,10 +55,11 @@ public class VTDScreen extends Screen {
      */
     private float downloadProgress = -1.0F;
 
-    public VTDScreen(Screen previousScreen) {
+    public VTDScreen(Screen previousScreen, Text subtitle) {
         super(new TranslatableText("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = new LinkedHashMap<>();
+        this.subtitle = subtitle;
 
         VTDScreen.instance = this;
     }
@@ -182,7 +185,8 @@ public class VTDScreen extends Screen {
         this.renderBackgroundTexture(0);
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
         this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 10, 16777215); // Render title
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 16777215); // Render title
+        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 1677215); // Render subtitle
 
         // Render tabButtons
         for (ButtonWidget tabButton : this.tabButtons) {
