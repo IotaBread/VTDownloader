@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -53,7 +54,7 @@ public class VTDScreen extends Screen {
     private float downloadProgress = -1.0F;
 
     public VTDScreen(Screen previousScreen) {
-        super(new LiteralText("VTDownloader"));
+        super(new TranslatableText("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = new LinkedHashMap<>();
 
@@ -148,9 +149,9 @@ public class VTDScreen extends Screen {
         }));
 
         // Done button
-        this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new LiteralText("Done"), button -> this.onClose()));
+        this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
 
-        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> this.download((DownloadButtonWidget) button)));
+        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 

@@ -11,6 +11,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
@@ -35,7 +36,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-        Text text = new LiteralText("Selected packs").formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        Text text = new TranslatableText("vtd.selectedPacks").formatted(Formatting.BOLD, Formatting.UNDERLINE);
         VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2) + (VTDScreen.getInstance().width - 170)), Math.min(this.top + 3, y), 16777215);
     }
 

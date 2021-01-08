@@ -10,6 +10,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,11 +91,11 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         if (this.displayEntries) {
             super.render(matrices, mouseX, mouseY, delta);
         } else {
-            Text msgHeader = new LiteralText("There was an error").formatted(Formatting.BOLD, Formatting.ITALIC);
-            Text msgHeader2 = new LiteralText("while trying to get the packs.").formatted(Formatting.BOLD, Formatting.ITALIC);
-            String msgBody = "Please check your internet connection";
-            String msgBody2 = "and that the site";
-            String msgBody3 = VTDMod.BASE_URL + " is working properly";
+            Text msgHeader = new TranslatableText("vtd.packError.title.1").formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgHeader2 = new TranslatableText("vtd.packError.title.2").formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgBody = new TranslatableText("vtd.packError.body.1");
+            Text msgBody2 = new TranslatableText("vtd.packError.body.2");
+            Text msgBody3 = new TranslatableText("vtd.packError.body.3", VTDMod.BASE_URL);
 
             VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader) / 2)), ((float) (this.height / 2) - 32), 16777215);
             VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader2, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader2) / 2)), ((float) (this.height / 2) - 16), 16777215);
