@@ -24,17 +24,17 @@ public class ArrowButtonWidget extends ButtonWidget {
         float v;
         switch (arrowType) {
             case CLOCKWISE:
-                u = 192.0F;
-                v = 192.0F;
+                u = 176.0F;
+                v = 176.0F;
                 break;
             case LEFT:
-                u = 112.0F;
-                v = 240.0F;
+                u = 96.0F;
+                v = 224.0F;
                 break;
             case RIGHT:
             default:
-                u = 144.0F;
-                v = 240.0F;
+                u = 128.0F;
+                v = 224.0F;
                 break;
         }
 
