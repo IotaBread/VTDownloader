@@ -152,10 +152,10 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new LiteralText("Download"), new LiteralText("Pack downloaded!"), new LiteralText("Unexpected error!"), button -> this.download((DownloadButtonWidget) button)));
 
-        boolean exceptionFound = VTDMod.categories == null || VTDMod.categories.size() == 0;
+        boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
         if (!exceptionFound) {
-            JsonObject category = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+            JsonObject category = VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject();
 
             this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
         } else {
@@ -232,23 +232,23 @@ public class VTDScreen extends Screen {
 
     private void updateTabButtons() {
         this.tabLeftButton.active = this.tabIndex > 0;
-        this.tabRightButton.active = this.tabIndex <= VTDMod.categories.size() - getTabNum(this.width);
+        this.tabRightButton.active = this.tabIndex <= VTDMod.rpCategories.size() - getTabNum(this.width);
 
         this.updateDownloadButton();
 
         this.tabButtons.clear();
 
         // Remove old buttons from this.children
-        for (JsonElement category : VTDMod.categories) {
+        for (JsonElement category : VTDMod.rpCategories) {
             String categoryName = category.getAsJsonObject().get("category").getAsString();
             this.children.removeIf(element -> element instanceof ButtonWidget && ((ButtonWidget) element).getMessage().asString().equals(categoryName));
         }
 
         for (int i = 0; i < getTabNum(this.width); ++i) {
             int index = i + this.tabIndex;
-            if (index >= VTDMod.categories.size()) break;
+            if (index >= VTDMod.rpCategories.size()) break;
 
-            JsonObject category = VTDMod.categories.get(index).getAsJsonObject();
+            JsonObject category = VTDMod.rpCategories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
             ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 70, 30, 120, 20, new LiteralText(categoryName), button -> {
                 if (this.selectedTabIndex != index) {
@@ -256,9 +256,9 @@ public class VTDScreen extends Screen {
 
                     this.children.remove(this.listWidget);
                     // Doesn't work as expected :/
-//                    this.listWidget.replaceEntries(VTDMod.categories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
+//                    this.listWidget.replaceEntries(VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
-                    JsonObject category2 = VTDMod.categories.get(selectedTabIndex).getAsJsonObject();
+                    JsonObject category2 = VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject();
                     this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                 }
             });
