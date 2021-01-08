@@ -64,16 +64,20 @@ public class VTDMod implements ClientModInitializer {
         rpCategories = VTDMod.getCategories("/assets/resources/json/1.16/rpcategories.json");
     }
 
-    @Override
-    public void onInitializeClient() {
-        log(Level.INFO, "Initializing {} version {}...", MOD_NAME, VERSION);
-
+    public static void reloadRPCategories() {
         try {
             getRPCategories();
         } catch (IOException e) {
             logError("Encountered an exception while getting the resource pack categories.", e);
             rpCategories = new JsonArray(); // Prevent NPE
         }
+    }
+
+    @Override
+    public void onInitializeClient() {
+        log(Level.INFO, "Initializing {} version {}...", MOD_NAME, VERSION);
+
+        reloadRPCategories();
 
         log(Level.INFO, "Initialized {} version {}", MOD_NAME, VERSION);
     }

@@ -156,6 +156,12 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
+        // Reload button
+        this.addButton(new ButtonWidget(this.width - 30, 30, 20, 20, new LiteralText("🔄"), button -> {
+            VTDMod.reloadRPCategories();
+            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle));
+        }));
+
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
         if (!exceptionFound) {
