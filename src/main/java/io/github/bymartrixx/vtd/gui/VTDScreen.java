@@ -65,6 +65,15 @@ public class VTDScreen extends Screen {
         VTDScreen.instance = this;
     }
 
+    public VTDScreen(Screen previousScreen, Text subtitle, Map<String, List<String>> selectedPacks) {
+        super(new TranslatableText("vtd.title"));
+        this.previousScreen = previousScreen;
+        this.selectedPacks = selectedPacks;
+        this.subtitle = subtitle;
+
+        VTDScreen.instance = this;
+    }
+
     /**
      * Get the number of "tabs" that should be generated/rendered.
      *
@@ -155,7 +164,7 @@ public class VTDScreen extends Screen {
         // Reload button
         this.addButton(new ArrowButtonWidget(10, 30, 20, 20, ArrowButtonWidget.ArrowType.CLOCKWISE, button -> {
             VTDMod.reloadRPCategories();
-            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle));
+            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
         this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
