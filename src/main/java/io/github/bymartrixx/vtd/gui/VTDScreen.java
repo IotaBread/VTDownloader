@@ -39,8 +39,8 @@ import java.util.*;
 public class VTDScreen extends Screen {
     private static VTDScreen instance;
     public final Map<String, List<String>> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
-    private final Screen previousScreen;
     protected final Text subtitle;
+    private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
@@ -94,7 +94,23 @@ public class VTDScreen extends Screen {
     private void download(DownloadButtonWidget button) {
         Thread downloadThread = new Thread(() -> {
             try {
-                JsonObject selectedPacks = VTDMod.GSON.toJsonTree(this.selectedPacks).getAsJsonObject();
+                // Reverse this.selectedPacks order
+                Map<String, List<String>> selectedPacks2 = new LinkedHashMap<>();
+                ArrayList<String> keys = new ArrayList<>(this.selectedPacks.keySet());
+
+                for (int i = keys.size() - 1; i >= 0; --i) {
+                    String key = keys.get(i);
+                    List<String> values = this.selectedPacks.get(key);
+
+                    List<String> valuesReverse = new ArrayList<>();
+                    for (int j = values.size() - 1; j >= 0; --j) {
+                        valuesReverse.add(values.get(j));
+                    }
+
+                    selectedPacks2.put(key, valuesReverse);
+                }
+
+                JsonObject selectedPacks = VTDMod.GSON.toJsonTree(selectedPacks2).getAsJsonObject();
                 this.downloadProgress = 0.0F;
 
                 try (CloseableHttpClient client = HttpClients.createDefault()) {
