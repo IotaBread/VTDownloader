@@ -22,6 +22,7 @@ public class ArrowButtonWidget extends ButtonWidget {
 
         float u;
         float v;
+        int textureXOffset = 4; // Center the texture in a 16 x 16 area
         switch (arrowType) {
             case CLOCKWISE:
                 u = 176.0F;
@@ -38,7 +39,7 @@ public class ArrowButtonWidget extends ButtonWidget {
                 break;
         }
 
-        DrawableHelper.drawTexture(matrices, x, y, 20, 20, u, v, 16, 16, 256, 256);
+        DrawableHelper.drawTexture(matrices, x + textureXOffset + 2, y + 2, u, v, 16, 16, 256, 256);
     }
 
     @Override
