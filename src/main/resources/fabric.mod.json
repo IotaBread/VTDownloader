@@ -4,7 +4,7 @@
     "version": "${version}",
 
     "name": "VTDownloader",
-    "description": "VTDownloader",
+    "description": "Pick and download Vanilla Tweaks resource packs directly from your Minecraft client!\n\nCredits:\nVanilla Tweaks: https://vanillatweaks.net/",
     "authors": [
         "ByMartrixx"
     ],
