@@ -4,15 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.bymartrixx.vtd.VTDMod;
-import io.github.bymartrixx.vtd.gui.widget.ArrowButtonWidget;
-import io.github.bymartrixx.vtd.gui.widget.DownloadButtonWidget;
-import io.github.bymartrixx.vtd.gui.widget.PackListWidget;
-import io.github.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
+import io.github.bymartrixx.vtd.gui.widget.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -37,9 +35,16 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class VTDScreen extends Screen {
+
     private static VTDScreen instance;
     public final Map<String, List<String>> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     protected final Text subtitle;
+    private final PackNameTextFieldWidget.TooltipSupplier RESERVED_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
+            this.renderTooltip(matrices, new TranslatableText("vtd.reservedFileName"), textField.x, textField.y - textField.getHeight());
+    private final PackNameTextFieldWidget.TooltipSupplier REGEX_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
+            this.renderTooltip(matrices, new TranslatableText("vtd.fileNameInvalid"), textField.x, textField.y - textField.getHeight());
+    private final PackNameTextFieldWidget.TooltipSupplier FILE_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
+            this.renderTooltip(matrices, new TranslatableText("vtd.packAlreadyExists"), textField.x, textField.y - textField.getHeight());
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
@@ -47,6 +52,7 @@ public class VTDScreen extends Screen {
     private DownloadButtonWidget downloadButton;
     private PackListWidget listWidget;
     private SelectedPacksListWidget selectedPacksListWidget;
+    private TextFieldWidget packNameField;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
     /**
@@ -141,7 +147,8 @@ public class VTDScreen extends Screen {
                     this.downloadProgress = 0.35F;
 
                     String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
-                    String fileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
+                    String defaultFileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
+                    String fileName = !this.packNameField.getText().equals("") ? this.packNameField.getText() : defaultFileName;
 
                     // Download the resource pack
                     URL url = new URL(VTDMod.BASE_URL + downloadLink);
@@ -186,6 +193,16 @@ public class VTDScreen extends Screen {
         this.addButton(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
+
+        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 120, this.height - 30, this.width - 330, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), (textField, valid) -> {
+            if (!valid) {
+                this.downloadButton.active = false; // Disable button if name is invalid
+            } else {
+                this.updateDownloadButton();
+            }
+        }, RESERVED_TOOLTIP_SUPPLIER, REGEX_TOOLTIP_SUPPLIER, FILE_TOOLTIP_SUPPLIER);
+        this.packNameField.setMaxLength(64);
+        this.children.add(this.packNameField);
 
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
@@ -303,6 +320,23 @@ public class VTDScreen extends Screen {
             this.children.add(buttonWidget);
         }
     }
+
+//    private static boolean isFileNameValid(String fileName) {
+//        if (fileName.equals("")) {
+//            return true;
+//        }
+//
+//        // On Windows the max path length is of 260 characters. The path to
+//        // the resource packs folder is normally about 50 characters long,
+//        // and the path to a data packs folder is about 60 characters long.
+//        // That means there are 200 characters left to use for a data/resource
+//        // pack file name, but that number may vary greatly.
+//        if (fileName.length() > 64) {
+//            return false;
+//        }
+//
+//        return true;
+//    }
 
     public void updateDownloadButton() {
         this.downloadButton.active = this.selectedPacks.size() > 0;

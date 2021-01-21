@@ -1,14 +1,18 @@
 {
+    "vtd.fileNameInvalid": "The file name must match %s",
     "vtd.done": "Done",
     "vtd.download": "Download",
     "vtd.download.failure": "Unexpected error!",
     "vtd.download.success": "Pack downloaded!",
+    "vtd.packAlreadyExists": "A pack with that name already exists!",
     "vtd.packError.body.1": "Please check your internet connection",
     "vtd.packError.body.2": "and that the site",
     "vtd.packError.body.3": "%s is working properly.",
     "vtd.packError.title.1": "There was an error",
     "vtd.packError.title.2": "while trying to get the packs.",
+    "vtd.reservedFileName": "That file name is a reserved Windows name!",
     "vtd.resourcePack.button": "Download VT Resource Pack",
+    "vtd.resourcePack.nameField": "Resource pack name...",
     "vtd.resourcePack.subtitle": "Select Resource Packs",
     "vtd.selectedPacks": "Selected packs",
     "vtd.title": "VTDownloader"
