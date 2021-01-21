@@ -183,9 +183,9 @@ public class VTDScreen extends Screen {
             this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
-        this.addButton(new ButtonWidget(this.width - 130, this.height - 30, 120, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
+        this.addButton(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
 
-        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 300, this.height - 30, 160, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
+        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
