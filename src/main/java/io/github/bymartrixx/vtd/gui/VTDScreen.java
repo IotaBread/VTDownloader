@@ -164,7 +164,7 @@ public class VTDScreen extends Screen {
 
                     String downloadLink = VTDMod.GSON.fromJson(responseBody.toString(), JsonObject.class).get("link").getAsString();
                     String defaultFileName = downloadLink.split("/")[downloadLink.split("/").length - 1];
-                    String fileName = !this.packNameField.getText().equals("") ? this.packNameField.getText() : defaultFileName;
+                    String fileName = !this.packNameField.getText().equals("") ? this.packNameField.getText() + ".zip" : defaultFileName;
 
                     // Download the resource pack
                     URL url = new URL(VTDMod.BASE_URL + downloadLink);
@@ -174,7 +174,7 @@ public class VTDScreen extends Screen {
                     connection.setConnectTimeout(4000);
 
                     InputStream in = connection.getInputStream();
-                    Files.copy(in, new File(this.client.getResourcePackDir(), fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(in, new File(this.client.getResourcePackDir(), fileName.trim()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 
                     this.downloadProgress = 1.0F;
                 }
