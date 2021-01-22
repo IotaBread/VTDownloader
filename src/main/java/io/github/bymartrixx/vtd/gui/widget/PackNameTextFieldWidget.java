@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 public class PackNameTextFieldWidget extends TextFieldWidget {
-    public static final String fileNameRegex = "^[\\w,\\s-]+$";
+    public static final String fileNameRegex = "^[\\w,.\\s-]+$";
     private static final Pattern reservedWindowsName = Pattern.compile("^(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?$");
     private static final Pattern invalidWindowsName = Pattern.compile("^.*\\.$");
 
