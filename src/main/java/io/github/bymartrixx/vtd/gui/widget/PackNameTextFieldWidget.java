@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 public class PackNameTextFieldWidget extends TextFieldWidget {
-    public static final String fileNameRegex = "^[\\w,\\s-]+[^ \\t]$";
+    public static final String fileNameRegex = "^[\\w,\\s-]+$";
     private static final Pattern reservedWindowsName = Pattern.compile("^(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?$");
     private static final Pattern invalidWindowsName = Pattern.compile("^.*\\.$");
 
@@ -37,7 +37,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
             this.nameValidity = NameValidity.INVALID_WINDOWS;
         } else if (!newText.matches(fileNameRegex)) {
             this.nameValidity = NameValidity.REGEX_DOESNT_MATCH;
-        } else if (new File(this.directory, newText + ".zip").exists()) {
+        } else if (new File(this.directory, (newText + ".zip").trim()).exists()) {
             this.nameValidity = NameValidity.FILE_EXISTS;
         } else {
             this.nameValidity = NameValidity.VALID;
