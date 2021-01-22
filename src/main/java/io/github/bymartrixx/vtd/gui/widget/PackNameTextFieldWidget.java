@@ -9,43 +9,38 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 public class PackNameTextFieldWidget extends TextFieldWidget {
-    public static final String fileNameRegex = "^[\\w,\\s-]+$";
-    private static final Pattern reservedWindowsName = Pattern.compile(".*\\.|(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?");
+    public static final String fileNameRegex = "^[\\w,\\s-]+[^ \\t]$";
+    private static final Pattern reservedWindowsName = Pattern.compile("^(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?$");
+    private static final Pattern invalidWindowsName = Pattern.compile("^.*\\.$");
 
     private final File directory;
+    private NameValidity nameValidity = NameValidity.VALID;
     private final OnNameUpdate onNameUpdate;
-    private final TooltipSupplier reservedTooltipSupplier; // Text is a reserved windows filename
-    private final TooltipSupplier regexTooltipSupplier; // Text doesn't match regex
-    private final TooltipSupplier fileTooltipSupplier; // File with name already exists
-    private boolean renderReservedTooltip = false;
-    private boolean renderRegexTooltip = false;
-    private boolean renderFileTooltip = false;
+    private final TooltipSupplier tooltipSupplier;
 
-    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, File directory, OnNameUpdate onNameUpdate, TooltipSupplier reservedTooltipSupplier, TooltipSupplier regexTooltipSupplier, TooltipSupplier fileTooltipSupplier) {
+    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, File directory, OnNameUpdate onNameUpdate, TooltipSupplier tooltipSupplier) {
         super(textRenderer, x, y, width, height, text);
         this.directory = directory;
         this.onNameUpdate = onNameUpdate;
 
-        this.reservedTooltipSupplier = reservedTooltipSupplier;
-        this.regexTooltipSupplier = regexTooltipSupplier;
-        this.fileTooltipSupplier = fileTooltipSupplier;
+        this.tooltipSupplier = tooltipSupplier;
+
+        this.setChangedListener(this::onChange);
     }
 
-    @Override
-    public void write(String string) {
-        super.write(string);
-        if (this.getText().equals("")) {
-            this.renderReservedTooltip = false;
-            this.renderRegexTooltip = false;
-            this.renderFileTooltip = false;
+    private void onChange(String newText) {
+        if (newText.equals("")) {
+            this.nameValidity = NameValidity.VALID;
+        } else if (reservedWindowsName.matcher(newText).matches()) {
+            this.nameValidity = NameValidity.RESERVED_WINDOWS;
+        } else if (invalidWindowsName.matcher(newText).matches()) {
+            this.nameValidity = NameValidity.INVALID_WINDOWS;
+        } else if (!newText.matches(fileNameRegex)) {
+            this.nameValidity = NameValidity.REGEX_DOESNT_MATCH;
+        } else if (new File(this.directory, newText + ".zip").exists()) {
+            this.nameValidity = NameValidity.FILE_EXISTS;
         } else {
-            if (!reservedWindowsName.matcher(this.getText()).matches()) {
-                this.renderReservedTooltip = true;
-            } else if (this.getText().matches(fileNameRegex)) {
-                this.renderRegexTooltip = true;
-            } else if (new File(this.directory, this.getText()).exists()) {
-                this.renderFileTooltip = true;
-            }
+            this.nameValidity = NameValidity.VALID;
         }
 
         this.onNameUpdate.onNameUpdate();
@@ -55,24 +50,26 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         super.renderButton(matrices, mouseX, mouseY, delta);
 
-        if (this.renderReservedTooltip) {
-            this.reservedTooltipSupplier.onTooltip(this, matrices, mouseX, mouseY);
-        } else if (this.renderRegexTooltip) {
-            this.regexTooltipSupplier.onTooltip(this, matrices, mouseX, mouseY);
-        } else if (this.renderFileTooltip) {
-            this.fileTooltipSupplier.onTooltip(this, matrices, mouseX, mouseY);
-        }
+        this.tooltipSupplier.onTooltip(this, this.nameValidity, matrices, mouseX, mouseY);
     }
 
     public boolean isNameValid() {
-        return !(this.renderReservedTooltip || this.renderRegexTooltip || this.renderFileTooltip);
+        return this.nameValidity == NameValidity.VALID;
     }
 
     public interface TooltipSupplier {
-        void onTooltip(PackNameTextFieldWidget textField, MatrixStack matrices, int mouseX, int mouseY);
+        void onTooltip(PackNameTextFieldWidget textField, NameValidity nameValidity, MatrixStack matrices, int mouseX, int mouseY);
     }
 
     public interface OnNameUpdate {
         void onNameUpdate();
+    }
+
+    public enum NameValidity {
+        VALID,
+        RESERVED_WINDOWS,
+        INVALID_WINDOWS,
+        REGEX_DOESNT_MATCH,
+        FILE_EXISTS
     }
 }

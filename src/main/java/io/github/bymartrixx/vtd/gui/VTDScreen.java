@@ -10,7 +10,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -35,16 +34,33 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class VTDScreen extends Screen {
-
     private static VTDScreen instance;
     public final Map<String, List<String>> selectedPacks; // {"$category":["$pack","$pack"],"$category":["$pack"]}
     protected final Text subtitle;
-    private final PackNameTextFieldWidget.TooltipSupplier RESERVED_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
-            this.renderTooltip(matrices, new TranslatableText("vtd.reservedFileName"), textField.x, textField.y - textField.getHeight());
-    private final PackNameTextFieldWidget.TooltipSupplier REGEX_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
-            this.renderTooltip(matrices, new TranslatableText("vtd.fileNameInvalid"), textField.x, textField.y - textField.getHeight());
-    private final PackNameTextFieldWidget.TooltipSupplier FILE_TOOLTIP_SUPPLIER = (textField, matrices, mouseX, mouseY) ->
-            this.renderTooltip(matrices, new TranslatableText("vtd.packAlreadyExists"), textField.x, textField.y - textField.getHeight());
+    private final PackNameTextFieldWidget.TooltipSupplier TOOLTIP_SUPPLIER = (textField, nameValidity, matrices, mouseX, mouseY) -> {
+        Text text = null;
+        switch (nameValidity) {
+            case RESERVED_WINDOWS:
+                text = new TranslatableText("vtd.fileNameValidity.reservedWindows");
+                break;
+            case INVALID_WINDOWS:
+                text = new TranslatableText("vtd.fileNameValidity.invalidWindows");
+                break;
+            case REGEX_DOESNT_MATCH:
+                text = new TranslatableText("vtd.fileNameValidity.regexDoesntMatch", PackNameTextFieldWidget.fileNameRegex);
+                break;
+            case FILE_EXISTS:
+                text = new TranslatableText("vtd.fileNameValidity.fileExists");
+                break;
+            case VALID:
+            default:
+                break;
+        }
+
+        if (text != null) {
+            this.renderTooltip(matrices, text, textField.x, textField.y - (textField.getHeight() / 2));
+        }
+    };
     private final Screen previousScreen;
     private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
     private ButtonWidget tabLeftButton;
@@ -194,7 +210,7 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
-        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 120, this.height - 30, this.width - 330, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, RESERVED_TOOLTIP_SUPPLIER, REGEX_TOOLTIP_SUPPLIER, FILE_TOOLTIP_SUPPLIER);
+        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 120, this.height - 30, this.width - 330, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
         this.packNameField.setMaxLength(64);
         this.children.add(this.packNameField);
 
@@ -227,6 +243,7 @@ public class VTDScreen extends Screen {
         this.renderBackgroundTexture(0);
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
         this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
+        this.packNameField.render(matrices, mouseX, mouseY, delta); // Render pack name text field
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 16777215); // Render title
         drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 16777215); // Render subtitle
 
