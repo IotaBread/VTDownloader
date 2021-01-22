@@ -210,7 +210,11 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
-        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
+        if (this.packNameField != null) {
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
+        } else {
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
+        }
         this.packNameField.setMaxLength(64);
         this.children.add(this.packNameField);
 

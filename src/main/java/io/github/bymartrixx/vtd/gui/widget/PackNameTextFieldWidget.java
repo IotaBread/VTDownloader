@@ -28,6 +28,11 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         this.setChangedListener(this::onChange);
     }
 
+    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, File directory, OnNameUpdate onNameUpdate, TooltipSupplier tooltipSupplier, String text2) {
+        this(textRenderer, x, y, width, height, text, directory, onNameUpdate, tooltipSupplier);
+        this.setText(text2);
+    }
+
     private void onChange(String newText) {
         if (newText.equals("")) {
             this.nameValidity = NameValidity.VALID;
