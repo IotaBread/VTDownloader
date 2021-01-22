@@ -48,7 +48,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
             }
         }
 
-        this.onNameUpdate.onNameUpdate(this, !(renderReservedTooltip || renderRegexTooltip || renderFileTooltip));
+        this.onNameUpdate.onNameUpdate();
     }
 
     @Override
@@ -64,11 +64,15 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         }
     }
 
+    public boolean isNameValid() {
+        return !(this.renderReservedTooltip || this.renderRegexTooltip || this.renderFileTooltip);
+    }
+
     public interface TooltipSupplier {
         void onTooltip(PackNameTextFieldWidget textField, MatrixStack matrices, int mouseX, int mouseY);
     }
 
     public interface OnNameUpdate {
-        void onNameUpdate(PackNameTextFieldWidget textField, boolean valid);
+        void onNameUpdate();
     }
 }

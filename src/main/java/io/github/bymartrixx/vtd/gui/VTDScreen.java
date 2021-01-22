@@ -52,7 +52,7 @@ public class VTDScreen extends Screen {
     private DownloadButtonWidget downloadButton;
     private PackListWidget listWidget;
     private SelectedPacksListWidget selectedPacksListWidget;
-    private TextFieldWidget packNameField;
+    private PackNameTextFieldWidget packNameField;
     private int tabIndex = 0;
     private int selectedTabIndex = 0;
     /**
@@ -194,13 +194,7 @@ public class VTDScreen extends Screen {
 
         this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
-        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 120, this.height - 30, this.width - 330, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), (textField, valid) -> {
-            if (!valid) {
-                this.downloadButton.active = false; // Disable button if name is invalid
-            } else {
-                this.updateDownloadButton();
-            }
-        }, RESERVED_TOOLTIP_SUPPLIER, REGEX_TOOLTIP_SUPPLIER, FILE_TOOLTIP_SUPPLIER);
+        this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 120, this.height - 30, this.width - 330, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, RESERVED_TOOLTIP_SUPPLIER, REGEX_TOOLTIP_SUPPLIER, FILE_TOOLTIP_SUPPLIER);
         this.packNameField.setMaxLength(64);
         this.children.add(this.packNameField);
 
@@ -339,7 +333,7 @@ public class VTDScreen extends Screen {
 //    }
 
     public void updateDownloadButton() {
-        this.downloadButton.active = this.selectedPacks.size() > 0;
+        this.downloadButton.active = this.selectedPacks.size() > 0 && this.packNameField.isNameValid();
     }
 
     public void addSelectedPack(String categoryName, String packName) {
