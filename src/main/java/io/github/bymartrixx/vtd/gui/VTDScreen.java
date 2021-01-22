@@ -255,7 +255,7 @@ public class VTDScreen extends Screen {
         super.render(matrices, mouseX, mouseY, delta);
 
         if (this.downloadProgress != -1.0F)
-            this.renderDownloadProgressBar(matrices, 10, this.height - 25, 110, this.height - 15, 0.9F);
+            this.renderDownloadProgressBar(matrices, this.width - 170, this.height - 50, this.width - 10, this.height - 40, 0.9F);
     }
 
     /**
@@ -272,7 +272,7 @@ public class VTDScreen extends Screen {
      */
     @SuppressWarnings("SameParameterValue")
     private void renderDownloadProgressBar(MatrixStack matrices, int x1, int y1, int x2, int y2, float opacity) {
-        int progressWidth = MathHelper.ceil((float) (x2 - x1 - 2) * this.downloadProgress);
+        int progressWidth = MathHelper.ceil((float) (x2 - x1 - 4) * this.downloadProgress);
         int alpha = Math.round(opacity * 255.0F);
         int color = BackgroundHelper.ColorMixer.getArgb(alpha, 255, 255, 255);
 
@@ -283,7 +283,7 @@ public class VTDScreen extends Screen {
         fill(matrices, x2, y1, x2 - 1, y2, color); // Right line
 
         // Draw progress bar "progress"
-        fill(matrices, x1 + 2, y1 + 2, x1 + progressWidth, y2 - 2, color);
+        fill(matrices, x1 + 2, y1 + 2, x1 + progressWidth + 2, y2 - 2, color);
     }
 
     public void tick() {
