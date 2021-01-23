@@ -248,7 +248,7 @@ public class VTDScreen extends Screen {
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.cursedRenderBackgroundTexture(0);
+        this.renderBackgroundTexture(0);
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
         this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
         this.packNameField.render(matrices, mouseX, mouseY, delta); // Render pack name text field
@@ -272,7 +272,8 @@ public class VTDScreen extends Screen {
      * it's a different method on a different class Bedrockify won't affect it with a mixin.
      */
     @Deprecated
-    public void cursedRenderBackgroundTexture(int vOffset) {
+    @Override
+    public void renderBackgroundTexture(int vOffset) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         this.client.getTextureManager().bindTexture(OPTIONS_BACKGROUND_TEXTURE);

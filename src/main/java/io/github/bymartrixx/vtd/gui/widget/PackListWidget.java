@@ -3,15 +3,21 @@ package io.github.bymartrixx.vtd.gui.widget;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.VTDScreen;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -89,7 +95,101 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if (this.displayEntries) {
-            super.render(matrices, mouseX, mouseY, delta);
+//            super.render(matrices, mouseX, mouseY, delta);
+
+            // Cursed fix for #2, TODO: Remove
+            this.renderBackground(matrices);
+            int i = this.getScrollbarPositionX();
+            int j = i + 6;
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder bufferBuilder = tessellator.getBuffer();
+//            if (this.field_26846) { // Private field, true
+                this.client.getTextureManager().bindTexture(DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
+                RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+                float f = 32.0F;
+                bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+                bufferBuilder.vertex(this.left, this.bottom, 0.0D).texture((float)this.left / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+                bufferBuilder.vertex(this.right, this.bottom, 0.0D).texture((float)this.right / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+                bufferBuilder.vertex(this.right, this.top, 0.0D).texture((float)this.right / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+                bufferBuilder.vertex(this.left, this.top, 0.0D).texture((float)this.left / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+                tessellator.draw();
+//            }
+
+            int k = this.getRowLeft();
+            int l = this.top + 4 - (int)this.getScrollAmount();
+//            if (this.renderHeader) { // Private field, true
+                this.renderHeader(matrices, k, l, tessellator);
+//            }
+
+            this.renderList(matrices, k, l, mouseX, mouseY, delta);
+//            if (this.field_26847) { // Private field, true
+                this.client.getTextureManager().bindTexture(DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
+                RenderSystem.enableDepthTest();
+                RenderSystem.depthFunc(519);
+                float g = 32.0F;
+//                int m = true; // What
+                bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+                bufferBuilder.vertex(this.left, this.top, -100.0D).texture(0.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex((this.left + this.width), this.top, -100.0D).texture((float)this.width / 32.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex((this.left + this.width), 0.0D, -100.0D).texture((float)this.width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex(this.left, 0.0D, -100.0D).texture(0.0F, 0.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex(this.left, this.height, -100.0D).texture(0.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex((this.left + this.width), this.height, -100.0D).texture((float)this.width / 32.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex((this.left + this.width), this.bottom, -100.0D).texture((float)this.width / 32.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
+                bufferBuilder.vertex(this.left, this.bottom, -100.0D).texture(0.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
+                tessellator.draw();
+                RenderSystem.depthFunc(515);
+                RenderSystem.disableDepthTest();
+                RenderSystem.enableBlend();
+                RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ZERO, GlStateManager.DstFactor.ONE);
+                RenderSystem.disableAlphaTest();
+                RenderSystem.shadeModel(7425);
+                RenderSystem.disableTexture();
+//                int n = true; What
+                bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+                bufferBuilder.vertex(this.left, (this.top + 4), 0.0D).texture(0.0F, 1.0F).color(0, 0, 0, 0).next();
+                bufferBuilder.vertex(this.right, (this.top + 4), 0.0D).texture(1.0F, 1.0F).color(0, 0, 0, 0).next();
+                bufferBuilder.vertex(this.right, this.top, 0.0D).texture(1.0F, 0.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(this.left, this.top, 0.0D).texture(0.0F, 0.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(this.left, this.bottom, 0.0D).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(this.right, this.bottom, 0.0D).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(this.right, (this.bottom - 4), 0.0D).texture(1.0F, 0.0F).color(0, 0, 0, 0).next();
+                bufferBuilder.vertex(this.left, (this.bottom - 4), 0.0D).texture(0.0F, 0.0F).color(0, 0, 0, 0).next();
+                tessellator.draw();
+//            }
+
+            int o = this.getMaxScroll();
+            if (o > 0) {
+                RenderSystem.disableTexture();
+                int p = (int)((float)((this.bottom - this.top) * (this.bottom - this.top)) / (float)this.getMaxPosition());
+                p = MathHelper.clamp(p, 32, this.bottom - this.top - 8);
+                int q = (int)this.getScrollAmount() * (this.bottom - this.top - p) / o + this.top;
+                if (q < this.top) {
+                    q = this.top;
+                }
+
+                bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+                bufferBuilder.vertex(i, this.bottom, 0.0D).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(j, this.bottom, 0.0D).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(j, this.top, 0.0D).texture(1.0F, 0.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(i, this.top, 0.0D).texture(0.0F, 0.0F).color(0, 0, 0, 255).next();
+                bufferBuilder.vertex(i, (q + p), 0.0D).texture(0.0F, 1.0F).color(128, 128, 128, 255).next();
+                bufferBuilder.vertex(j, (q + p), 0.0D).texture(1.0F, 1.0F).color(128, 128, 128, 255).next();
+                bufferBuilder.vertex(j, q, 0.0D).texture(1.0F, 0.0F).color(128, 128, 128, 255).next();
+                bufferBuilder.vertex(i, q, 0.0D).texture(0.0F, 0.0F).color(128, 128, 128, 255).next();
+                bufferBuilder.vertex(i, (q + p - 1), 0.0D).texture(0.0F, 1.0F).color(192, 192, 192, 255).next();
+                bufferBuilder.vertex((j - 1), (q + p - 1), 0.0D).texture(1.0F, 1.0F).color(192, 192, 192, 255).next();
+                bufferBuilder.vertex((j - 1), q, 0.0D).texture(1.0F, 0.0F).color(192, 192, 192, 255).next();
+                bufferBuilder.vertex(i, q, 0.0D).texture(0.0F, 0.0F).color(192, 192, 192, 255).next();
+                tessellator.draw();
+            }
+
+            this.renderDecorations(matrices, mouseX, mouseY);
+            RenderSystem.enableTexture();
+            RenderSystem.shadeModel(7424);
+            RenderSystem.enableAlphaTest();
+            RenderSystem.disableBlend();
+            // End of cursed fix for #2
         } else {
             Text msgHeader = new TranslatableText("vtd.packError.title.1").formatted(Formatting.BOLD, Formatting.ITALIC);
             Text msgHeader2 = new TranslatableText("vtd.packError.title.2").formatted(Formatting.BOLD, Formatting.ITALIC);
