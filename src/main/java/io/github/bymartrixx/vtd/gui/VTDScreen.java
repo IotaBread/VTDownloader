@@ -3,6 +3,7 @@ package io.github.bymartrixx.vtd.gui;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.bymartrixx.vtd.VTDMod;
 import io.github.bymartrixx.vtd.gui.widget.*;
 import net.minecraft.client.MinecraftClient;
@@ -10,6 +11,9 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -244,7 +248,7 @@ public class VTDScreen extends Screen {
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(0);
+        this.cursedRenderBackgroundTexture(0);
         this.listWidget.render(matrices, mouseX, mouseY, delta); // Render pack list
         this.selectedPacksListWidget.render(matrices, mouseX, mouseY, delta); // Render selected packs list
         this.packNameField.render(matrices, mouseX, mouseY, delta); // Render pack name text field
@@ -260,6 +264,26 @@ public class VTDScreen extends Screen {
 
         if (this.downloadProgress != -1.0F)
             this.renderDownloadProgressBar(matrices, this.width - 170, this.height - 50, this.width - 10, this.height - 40, 0.9F);
+    }
+
+    /**
+     * A cursed fix to #2. Bedrockify mixins into {@link Screen#renderBackgroundTexture(int)}
+     * and "disables" it. In order to "enable" it again, I have copied the method and, because
+     * it's a different method on a different class Bedrockify won't affect it with a mixin.
+     */
+    @Deprecated
+    public void cursedRenderBackgroundTexture(int vOffset) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        this.client.getTextureManager().bindTexture(OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        float f = 32.0F;
+        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0D, this.height, 0.0D).texture(0.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, this.height, 0.0D).texture((float) this.width / 32.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, 0.0D, 0.0D).texture((float) this.width / 32.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(0.0D, 0.0D, 0.0D).texture(0.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        tessellator.draw();
     }
 
     /**
