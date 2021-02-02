@@ -9,22 +9,23 @@ import net.minecraft.text.TranslatableText;
 /**
  * VanillaTweaks Resource Pack downloading screen.
  */
-public class VTResourcePackScreen extends Screen {
+public class VanillaTweaksResourcePackScreen extends Screen {
     private final Screen previousScreen;
     private final Text subtitle;
 
     /**
-     * Create a new {@link VTResourcePackScreen}.
+     * Create a new {@link VanillaTweaksResourcePackScreen}.
      *
      * @param previousScreen the screen that was opened before this one.
      * @param subtitle the screen subtitle.
      */
-    public VTResourcePackScreen(Screen previousScreen, Text subtitle) {
+    public VanillaTweaksResourcePackScreen(Screen previousScreen, Text subtitle) {
         super(new TranslatableText("vtd.title"));
         this.previousScreen = previousScreen;
         this.subtitle = subtitle;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onClose() {
         // Return to the previous screen
