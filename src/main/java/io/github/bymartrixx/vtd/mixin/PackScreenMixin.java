@@ -1,6 +1,7 @@
 package io.github.bymartrixx.vtd.mixin;
 
 import io.github.bymartrixx.vtd.gui.VTDScreen;
+import io.github.bymartrixx.vtd.gui.screen.VTResourcePackScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -31,9 +32,7 @@ public class PackScreenMixin extends Screen {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.file == this.client.getResourcePackDir()) {
-            this.addButton(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, new TranslatableText("vtd.resourcePack.button"), button -> {
-                this.client.openScreen(new VTDScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
-            }));
+            this.addButton(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, new TranslatableText("vtd.resourcePack.button"), button -> this.client.openScreen(new VTResourcePackScreen(this, VTD_RESOURCE_PACK_SUBTITLE))));
         }
     }
 }
