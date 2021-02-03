@@ -34,11 +34,11 @@ public class MainWidget  extends AbstractParentElement
     protected int width;
     protected int height;
     /**
-     * The height of the top bar.
+     * The Y start of the widget main area.
      */
     protected int top;
     /**
-     * The height of the bottom bar.
+     * The Y end of the widget main area.
      */
     protected int bottom;
     /**
@@ -51,10 +51,6 @@ public class MainWidget  extends AbstractParentElement
     protected int left;
     private double scrollAmount;
     private boolean scrolling;
-    /**
-     * The X position of the scroll bar.
-     */
-    protected int scrollbarPosX;
     /**
      * If to call the {@link #renderHeader(MatrixStack, int, int, Tessellator)} method.
      */
