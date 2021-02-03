@@ -1,5 +1,6 @@
 package io.github.bymartrixx.vtd.gui.screen;
 
+import io.github.bymartrixx.vtd.gui.widget.MainWidget;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -12,6 +13,7 @@ import net.minecraft.text.TranslatableText;
 public class VanillaTweaksResourcePackScreen extends Screen {
     private final Screen previousScreen;
     private final Text subtitle;
+    private MainWidget mainWidget;
 
     /**
      * Create a new {@link VanillaTweaksResourcePackScreen}.
@@ -23,6 +25,11 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         super(new TranslatableText("vtd.title"));
         this.previousScreen = previousScreen;
         this.subtitle = subtitle;
+    }
+
+    protected void init() {
+        this.mainWidget = new MainWidget(this.client, this.width - 20, this.height, 60,
+                this.height - 40, 32);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -42,6 +49,9 @@ public class VanillaTweaksResourcePackScreen extends Screen {
                 8, 16777215);
         DrawableHelper.drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2,
                 20, 16777215);
+
+        // Render main widget
+        this.mainWidget.render(matrices, mouseX, mouseY, delta);
 
         super.render(matrices, mouseX, mouseY, delta);
     }
