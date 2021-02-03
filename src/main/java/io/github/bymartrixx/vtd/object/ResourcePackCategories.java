@@ -31,10 +31,10 @@ import java.util.List;
  *     }
  * </pre>
  */
-public class ResourcePackCategories implements Iterable<PackCategory> {
-    private final List<PackCategory> categories;
+public class ResourcePackCategories implements PackCategories<ResourcePackCategory> {
+    private final List<ResourcePackCategory> categories;
 
-    ResourcePackCategories(List<PackCategory> categories) {
+    public ResourcePackCategories(List<ResourcePackCategory> categories) {
         this.categories = categories;
     }
 
@@ -43,11 +43,11 @@ public class ResourcePackCategories implements Iterable<PackCategory> {
     }
 
     @NotNull
-    public Iterator<PackCategory> iterator() {
+    public Iterator<ResourcePackCategory> iterator() {
         return categories.iterator();
     }
 
-    public PackCategory get(int i) {
+    public ResourcePackCategory get(int i) {
         return categories.get(i);
     }
 }
