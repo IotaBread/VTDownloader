@@ -44,14 +44,14 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         // Render background
         this.renderBackgroundTexture(0);
 
+        // Render main widget
+        this.mainWidget.render(matrices, mouseX, mouseY, delta);
+
         // Render title and subtitle
         DrawableHelper.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2,
                 8, 16777215);
         DrawableHelper.drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2,
                 20, 16777215);
-
-        // Render main widget
-        this.mainWidget.render(matrices, mouseX, mouseY, delta);
 
         super.render(matrices, mouseX, mouseY, delta);
     }

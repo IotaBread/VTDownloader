@@ -226,16 +226,16 @@ public class MainWidget  extends AbstractParentElement
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(this.left, this.bottom, 0.0D)
-                .texture(this.left / 32.0F, this.bottom + (int) this.getScrollAmount() / 32.0F)
+                .texture(this.left / 32.0F, (this.bottom + (int) this.getScrollAmount()) / 32.0F)
                 .color(32, 32, 32, 255).next();
         bufferBuilder.vertex(this.right, this.bottom, 0.0D)
-                .texture(this.right / 32.0F, this.bottom + (int) this.getScrollAmount() / 32.0F)
+                .texture(this.right / 32.0F, (this.bottom + (int) this.getScrollAmount()) / 32.0F)
                 .color(32, 32, 32, 255).next();
         bufferBuilder.vertex(this.right, this.top, 0.0D)
-                .texture(this.right / 32.0F, this.top + (int) this.getScrollAmount() / 32.0F)
+                .texture(this.right / 32.0F, (this.top + (int) this.getScrollAmount()) / 32.0F)
                 .color(32, 32, 32, 255).next();
         bufferBuilder.vertex(this.left, this.top, 0.0D)
-                .texture(this.left / 32.0F, this.top + (int) this.getScrollAmount() / 32.0F)
+                .texture(this.left / 32.0F, (this.top + (int) this.getScrollAmount()) / 32.0F)
                 .color(32, 32, 32, 255).next();
         tessellator.draw();
 
