@@ -13,7 +13,6 @@ import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Collection;
@@ -23,17 +22,15 @@ import java.util.Objects;
 /**
  * A gui widget containing a parentWidget of available and selected resource/data
  * packs.
- *
- * @param <E> the entries class.
  */
-public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentElement
+public class MainWidget  extends AbstractParentElement
         implements Drawable {
     private final MinecraftClient client;
     protected final int entryHeight;
     /**
      * The entries of the available pack parentWidget.
      */
-    private final List<E> entries = Lists.newArrayList();
+    private final List<Entry> entries = Lists.newArrayList();
     protected int width;
     protected int height;
     /**
@@ -128,14 +125,14 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
     /**
      * Mark an entry as selected.
      */
-    public void setSelected(E entry) {
+    public void setSelected(Entry entry) {
         // TODO
     }
 
     /**
      * Mark an entry as not selected.
      */
-    public void setNotSelected(E entry) {
+    public void setNotSelected(Entry entry) {
         // TODO
     }
 
@@ -143,14 +140,14 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
      * Same as {@link #entries()}. Implemented from
      * {@link net.minecraft.client.gui.ParentElement}.
      */
-    public List<E> children() {
+    public List<Entry> children() {
         return this.entries();
     }
 
     /**
      * Get {@linkplain #entries this.entries}.
      */
-    public List<E> entries() {
+    public List<Entry> entries() {
         return this.entries;
     }
 
@@ -161,16 +158,16 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         this.entries.clear();
     }
 
-    protected void replaceEntries(Collection<E> newEntries) {
+    protected void replaceEntries(Collection<Entry> newEntries) {
         this.entries.clear();
         this.entries.addAll(newEntries);
     }
 
-    protected E getEntry(int index) {
+    protected Entry getEntry(int index) {
         return this.entries.get(index);
     }
 
-    public void addEntry(E entry) {
+    public void addEntry(Entry entry) {
         this.entries.add(entry);
     }
 
@@ -182,7 +179,7 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         return false; // TODO
     }
 
-    protected E getEntryAtPosition(double x, double y) {
+    protected Entry getEntryAtPosition(double x, double y) {
         int rowCenter = this.getRowWidth() / 2;
         int widgetCenter = this.getWidgetCenter();
         int rowStartX = widgetCenter - rowCenter;
@@ -379,12 +376,12 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         RenderSystem.disableBlend();
     }
 
-    protected void centerScrollOnEntry(E entry) {
+    protected void centerScrollOnEntry(Entry entry) {
         this.setScrollAmount(this.entries.indexOf(entry) * this.entryHeight
                 + (float) this.entryHeight / 2 - (float) (this.bottom - this.top) / 2);
     }
 
-    protected void ensureEntryVisible(E entry) {
+    protected void ensureEntryVisible(Entry entry) {
         int rowTop = this.getRowTop(this.entries.indexOf(entry));
         int i = rowTop - this.top - 4 - this.entryHeight;
         if (i < 0) {
@@ -441,7 +438,7 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         if (!this.isMouseOver(mouseX, mouseY)) {
             return false;
         } else {
-            E entry = this.getEntryAtPosition(mouseX, mouseY);
+            Entry entry = this.getEntryAtPosition(mouseX, mouseY);
             if (entry != null) {
                 if (entry.mouseClicked(mouseX, mouseY, button)) {
                     this.setFocused(entry);
@@ -518,7 +515,7 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
             int rowBottom = this.getRowBottom(i);
 
             if (rowBottom >= this.top && rowTop <= this.bottom) {
-                E entry = this.getEntry(i);
+                Entry entry = this.getEntry(i);
 
                 int y2 = y + i * this.entryHeight;
                 int y3 = this.entryHeight - 4;
@@ -578,12 +575,12 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         return this.getRowTop(index) + this.entryHeight;
     }
 
-    protected E remove(int index) {
-        E entry = this.entries.get(index);
+    protected Entry remove(int index) {
+        Entry entry = this.entries.get(index);
         return this.removeEntry(this.entries.get(index)) ? entry : null;
     }
 
-    protected boolean removeEntry(E entry) {
+    protected boolean removeEntry(Entry entry) {
         boolean removed = this.entries.remove(entry);
         if (removed) {
             this.setNotSelected(entry);
@@ -596,26 +593,30 @@ public class MainWidget<E extends MainWidget.Entry<E>> extends AbstractParentEle
         return this.left + this.width / 2;
     }
 
-    private void setEntryParent(MainWidget.Entry<E> entry) {
+    private void setEntryParent(MainWidget.Entry entry) {
         entry.parentWidget = this;
     }
 
     /**
      * Entry.
      */
-    public static class Entry<E extends MainWidget.Entry<E>> implements Element {
+    public static class Entry implements Element {
         private final TextRenderer textRenderer;
-        private MainWidget<E> parentWidget;
-        private String displayName;
+        private MainWidget parentWidget;
+        private final String displayName;
 
-        protected Entry(TextRenderer textRenderer, MainWidget<E> parentWidget) {
+        // TODO: The displayName parameter is just a placeholder, replace
+        protected Entry(TextRenderer textRenderer, MainWidget parentWidget, String displayName) {
             this.textRenderer = textRenderer;
             this.parentWidget = parentWidget;
+            this.displayName = displayName;
         }
 
+
+        @SuppressWarnings("unused")
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth,
-                                    int entryHeight, int mouseX, int mouseY, boolean hovered,
-                                    float tickDelta) {
+                           int entryHeight, int mouseX, int mouseY, boolean hovered,
+                           float tickDelta) {
             this.textRenderer.drawWithShadow(matrices, this.displayName,
                     this.parentWidget.getWidgetCenter(), y, 16777215);
         }
