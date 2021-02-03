@@ -8,17 +8,17 @@ package io.github.bymartrixx.vtd.object;
  *     An example of the data:
  *     {
  *       "status": "success",
- *       "link": "\/download\/VanillaTweaks_r341311.zip"
+ *       "link": "\/download\/VanillaTweaks_d253622_UNZIP_ME.zip"
  *     }
  * </pre>
  *
- * @see ZipDataPacksResponse
+ * @see ZipResourcePacksResponse
  */
-public class ZipResourcePacksResponse {
+public class ZipDataPacksResponse {
     public final String status;
     public final String link;
 
-    ZipResourcePacksResponse(String status, String link) {
+    ZipDataPacksResponse(String status, String link) {
         this.status = status;
         this.link = link;
     }
