@@ -39,6 +39,11 @@ public class VanillaTweaksResourcePackScreen extends Screen {
     private int tabIndex = 0;
     private int tabScrollAmount = 0;
 
+    private int tabAreaLeft;
+    private int tabAreaRight;
+    private int tabAreaTop;
+    private int tabAreaBottom;
+
     /**
      * Create a new {@link VanillaTweaksResourcePackScreen}.
      *
@@ -59,6 +64,11 @@ public class VanillaTweaksResourcePackScreen extends Screen {
     }
 
     protected void init() {
+        this.tabAreaLeft = 70;
+        this.tabAreaRight = this.width - 40;
+        this.tabAreaTop = 30;
+        this.tabAreaBottom = 54;
+
         this.tabButtons.clear();
 
         this.mainWidget = new MainWidget(this.client, this.width, this.height, 60,
@@ -68,9 +78,9 @@ public class VanillaTweaksResourcePackScreen extends Screen {
             this.tabButtons.add(new TabButtonWidget(-100, 32, tab.getRight(), 20, tab.getLeft(), button -> {/* TODO */}, this.categoryMap.get(tab.getLeft())));
         }
 
-        this.children.addAll(this.tabButtons);
         this.tabsLeftButton = this.addButton(new ArrowButtonWidget(40, 32, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {/* TODO */}));
         this.tabsRightButton = this.addButton(new ArrowButtonWidget(this.width - 30, 32, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {/* TODO */}));
+        this.updateTabButtons();
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -109,36 +119,43 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
         // Corner positions
-        int left = 70;
-        int right = this.width - 40;
-        int top = 30;
-        int bottom = 54;
-        bufferBuilder.vertex(left, bottom, 0)
-                .texture(left / 32.0F, bottom / 32.0F)
+        bufferBuilder.vertex(this.tabAreaLeft, this.tabAreaBottom, 0)
+                .texture(this.tabAreaLeft / 32.0F, this.tabAreaBottom / 32.0F)
                 .color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(right, bottom, 0)
-                .texture(right / 32.0F, bottom / 32.0F)
+        bufferBuilder.vertex(this.tabAreaRight, this.tabAreaBottom, 0)
+                .texture(this.tabAreaRight / 32.0F, this.tabAreaBottom / 32.0F)
                 .color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(right, top, 0)
-                .texture(right / 32.0F, top / 32.0F)
+        bufferBuilder.vertex(this.tabAreaRight, this.tabAreaTop, 0)
+                .texture(this.tabAreaRight / 32.0F, this.tabAreaTop / 32.0F)
                 .color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(left, top, 0)
-                .texture(left / 32.0F, top / 32.0F)
+        bufferBuilder.vertex(this.tabAreaLeft, this.tabAreaTop, 0)
+                .texture(this.tabAreaLeft / 32.0F, this.tabAreaTop / 32.0F)
                 .color(32, 32, 32, 255).next();
         tessellator.draw();
 
+        // Render the tabButtons
+        for (TabButtonWidget tabButton : this.tabButtons) {
+            // TODO: "Cut" the buttons that go over the borders and remove if?
+            if (tabButton.x >= this.tabAreaLeft + 2 && tabButton.getRight() <= this.tabAreaRight - 2) {
+                tabButton.render(matrices, mouseX, mouseY, delta);
+            }
+        }
+    }
+
+    private void updateTabButtons() {
+        // TODO: enable/disable tab right/left buttons
+        this.children.removeAll(this.tabButtons);
+
         // Position the buttons on the x axis
-        int buttonLeft = left + 2;
+        int buttonLeft = this.tabAreaLeft + 2 - this.tabScrollAmount;
         for (TabButtonWidget tabButton : this.tabButtons) {
             tabButton.x = buttonLeft;
             buttonLeft += tabButton.getWidth() + 4;
         }
 
-        // Render the tabButtons
         for (TabButtonWidget tabButton : this.tabButtons) {
-            // TODO: "Cut" the buttons that go over the borders and remove if?
-            if (tabButton.x >= left + 2 && tabButton.getRight() <= right - 2) {
-                tabButton.render(matrices, mouseX, mouseY, delta);
+            if (tabButton.x >= this.tabAreaLeft + 2 && tabButton.getRight() <= this.tabAreaRight - 2) {
+                this.children.add(tabButton);
             }
         }
     }
