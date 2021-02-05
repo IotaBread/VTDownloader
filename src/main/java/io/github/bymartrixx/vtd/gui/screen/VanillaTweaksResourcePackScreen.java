@@ -78,8 +78,14 @@ public class VanillaTweaksResourcePackScreen extends Screen {
             this.tabButtons.add(new TabButtonWidget(-100, 32, tab.getRight(), 20, tab.getLeft(), button -> {/* TODO */}, this.categoryMap.get(tab.getLeft())));
         }
 
-        this.tabsLeftButton = this.addButton(new ArrowButtonWidget(40, 32, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {/* TODO */}));
-        this.tabsRightButton = this.addButton(new ArrowButtonWidget(this.width - 30, 32, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {/* TODO */}));
+        this.tabsLeftButton = this.addButton(new ArrowButtonWidget(40, 32, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {
+            this.tabScrollAmount -= this.tabButtons.get(--this.tabIndex).getWidth() + 4;
+            this.updateTabButtons();
+        }));
+        this.tabsRightButton = this.addButton(new ArrowButtonWidget(this.width - 30, 32, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {
+            this.tabScrollAmount += this.tabButtons.get(this.tabIndex++).getWidth() + 4;
+            this.updateTabButtons();
+        }));
         this.updateTabButtons();
     }
 
@@ -143,7 +149,9 @@ public class VanillaTweaksResourcePackScreen extends Screen {
     }
 
     private void updateTabButtons() {
-        // TODO: enable/disable tab right/left buttons
+        this.tabsLeftButton.active = this.tabIndex > 0;
+        this.tabsRightButton.active = this.tabIndex < this.categoryMap.size() - 1;
+
         this.children.removeAll(this.tabButtons);
 
         // Position the buttons on the x axis
