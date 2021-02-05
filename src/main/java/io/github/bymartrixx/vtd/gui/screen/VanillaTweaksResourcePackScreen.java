@@ -123,7 +123,7 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         tessellator.draw();
 
         // Position the buttons on the x axis
-        int buttonLeft = left;
+        int buttonLeft = left + 2;
         for (TabButtonWidget tabButton : this.tabButtons) {
             tabButton.x = buttonLeft;
             buttonLeft += tabButton.getWidth() + 10;
@@ -131,7 +131,8 @@ public class VanillaTweaksResourcePackScreen extends Screen {
 
         // Render the tabButtons
         for (TabButtonWidget tabButton : this.tabButtons) {
-            if (tabButton.x >= left && tabButton.getRight() <= right) {
+            // TODO: "Cut" the buttons that go over the borders and remove if?
+            if (tabButton.x >= left + 2 && tabButton.getRight() <= right - 2) {
                 tabButton.render(matrices, mouseX, mouseY, delta);
             }
         }
