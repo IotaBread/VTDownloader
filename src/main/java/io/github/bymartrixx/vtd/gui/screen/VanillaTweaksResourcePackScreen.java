@@ -131,7 +131,7 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         int buttonLeft = left + 2;
         for (TabButtonWidget tabButton : this.tabButtons) {
             tabButton.x = buttonLeft;
-            buttonLeft += tabButton.getWidth() + 10;
+            buttonLeft += tabButton.getWidth() + 4;
         }
 
         // Render the tabButtons
