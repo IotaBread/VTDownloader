@@ -6,6 +6,7 @@ import io.github.bymartrixx.vtd.gui.widget.MainWidget;
 import io.github.bymartrixx.vtd.gui.widget.TabButtonWidget;
 import io.github.bymartrixx.vtd.object.PackCategories;
 import io.github.bymartrixx.vtd.object.PackCategory;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
@@ -51,7 +52,7 @@ public class VanillaTweaksResourcePackScreen extends Screen {
             this.categoryMap.put(new LiteralText(category.name()), category);
         }
 
-        this.tabs = this.categoryMap.keySet().stream().map(text -> new Pair<>(text, this.textRenderer.getWidth(text) + 8)).collect(Collectors.toList());
+        this.tabs = this.categoryMap.keySet().stream().map(text -> new Pair<>(text, MinecraftClient.getInstance().textRenderer.getWidth(text) + 8)).collect(Collectors.toList());
     }
 
     protected void init() {
