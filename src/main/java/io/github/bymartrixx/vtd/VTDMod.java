@@ -74,7 +74,7 @@ public class VTDMod implements ClientModInitializer {
         try {
             VTDMod.log(Level.INFO, "Requesting Resource pack categories and packs.");
             VTDMod.getRPCategories();
-            VTDMod.log(Level.INFO, "Resource pack categories and packs loaded. There are {} Resource pack categories.", VTDMod.rpCategories.size());
+            VTDMod.log(Level.INFO, "Resource pack categories and packs loaded. There are {} Resource pack categories.", VTDMod.resourcePackCategories.size());
         } catch (IOException e) {
             VTDMod.logError("Encountered an exception while getting the Resource pack categories.", e);
             VTDMod.resourcePackCategories = new ResourcePackCategories(Lists.newArrayList()); // Prevent NPE
