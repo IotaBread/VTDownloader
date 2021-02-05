@@ -1,8 +1,11 @@
 package io.github.bymartrixx.vtd;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.github.bymartrixx.vtd.object.PackCategories;
+import io.github.bymartrixx.vtd.object.ResourcePackCategories;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.http.HttpResponse;
@@ -23,7 +26,9 @@ public class VTDMod implements ClientModInitializer {
     public static final Gson GSON = new Gson();
     public static final String VERSION = FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     public static final String BASE_URL = "https://vanillatweaks.net";
-    public static JsonArray rpCategories;
+    @Deprecated
+    public static final JsonArray rpCategories = new JsonArray(); // TODO: Remove
+    public static ResourcePackCategories resourcePackCategories;
 
     public static void log(Level level, String message, Object... fields) {
         VTDMod.LOGGER.log(level, "[" + VTDMod.MOD_NAME + "] " + message, fields);
@@ -37,7 +42,7 @@ public class VTDMod implements ClientModInitializer {
         VTDMod.LOGGER.log(Level.ERROR, "[" + VTDMod.MOD_NAME + "] " + message, t);
     }
 
-    public static JsonArray getCategories(String resourceUrl) throws IOException {
+    public static <C extends PackCategories<?>> C getCategories(String resourceUrl, Class<C> clazz) throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
 
         HttpGet request = new HttpGet(VTDMod.BASE_URL + resourceUrl);
@@ -47,7 +52,7 @@ public class VTDMod implements ClientModInitializer {
 
         if (responseStatusCode / 100 != 2) { // Check if responseStatusCode is 2xx/Success
             VTDMod.log(Level.WARN, "The request to the URL {} responded with an unexpected status code: {}. The request processing has been canceled.", VTDMod.BASE_URL + resourceUrl, responseStatusCode);
-            return new JsonArray(); // Prevent NPE
+            return null;
         }
 
         StringBuilder responseContent = new StringBuilder();
@@ -57,11 +62,12 @@ public class VTDMod implements ClientModInitializer {
             responseContent.append(responseScanner.nextLine());
         }
 
-        return VTDMod.GSON.fromJson(responseContent.toString(), JsonObject.class).get("categories").getAsJsonArray();
+        return VTDMod.GSON.fromJson(responseContent.toString(), clazz);
     }
 
     public static void getRPCategories() throws IOException {
-        VTDMod.rpCategories = VTDMod.getCategories("/assets/resources/json/1.16/rpcategories.json");
+        ResourcePackCategories resourcePackCategories = VTDMod.getCategories("/assets/resources/json/1.16/rpcategories.json", ResourcePackCategories.class);
+        VTDMod.resourcePackCategories = resourcePackCategories != null ? resourcePackCategories : new ResourcePackCategories(Lists.newArrayList());
     }
 
     public static void reloadRPCategories() {
@@ -71,7 +77,7 @@ public class VTDMod implements ClientModInitializer {
             VTDMod.log(Level.INFO, "Resource pack categories and packs loaded. There are {} Resource pack categories.", VTDMod.rpCategories.size());
         } catch (IOException e) {
             VTDMod.logError("Encountered an exception while getting the Resource pack categories.", e);
-            VTDMod.rpCategories = new JsonArray(); // Prevent NPE
+            VTDMod.resourcePackCategories = new ResourcePackCategories(Lists.newArrayList()); // Prevent NPE
         }
     }
 

@@ -1,15 +1,26 @@
 package io.github.bymartrixx.vtd.gui.screen;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.bymartrixx.vtd.gui.widget.MainWidget;
+import io.github.bymartrixx.vtd.gui.widget.TabButtonWidget;
+import io.github.bymartrixx.vtd.object.PackCategories;
+import io.github.bymartrixx.vtd.object.PackCategory;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Pair;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * VanillaTweaks Resource Pack downloading screen.
@@ -18,6 +29,11 @@ public class VanillaTweaksResourcePackScreen extends Screen {
     private final Screen previousScreen;
     private final Text subtitle;
     private MainWidget mainWidget;
+    private final Map<Text, PackCategory<?>> categoryMap = new LinkedHashMap<>();
+    private final List<Pair<Text, Integer>> tabs;
+    private final List<TabButtonWidget> tabButtons = Lists.newArrayList();
+    private int tabIndex = 0;
+    private int tabScrollAmount = 0;
 
     /**
      * Create a new {@link VanillaTweaksResourcePackScreen}.
@@ -25,15 +41,30 @@ public class VanillaTweaksResourcePackScreen extends Screen {
      * @param previousScreen the screen that was opened before this one.
      * @param subtitle the screen subtitle.
      */
-    public VanillaTweaksResourcePackScreen(Screen previousScreen, Text subtitle) {
+    public VanillaTweaksResourcePackScreen(Screen previousScreen, Text subtitle,
+                                           PackCategories<?> categories) {
         super(new TranslatableText("vtd.title"));
         this.previousScreen = previousScreen;
         this.subtitle = subtitle;
+
+        for (PackCategory<?> category : categories) {
+            this.categoryMap.put(new LiteralText(category.name()), category);
+        }
+
+        this.tabs = this.categoryMap.keySet().stream().map(text -> new Pair<>(text, this.textRenderer.getWidth(text) + 8)).collect(Collectors.toList());
     }
 
     protected void init() {
+        this.tabButtons.clear();
+
         this.mainWidget = new MainWidget(this.client, this.width, this.height, 60,
                 this.height - 40, 32);
+
+        for (Pair<Text, Integer> tab : this.tabs) {
+            this.tabButtons.add(new TabButtonWidget(-100, 32, tab.getRight(), 20, tab.getLeft(), button -> {/* TODO */}, this.categoryMap.get(tab.getLeft())));
+        }
+
+        this.children.addAll(this.tabButtons);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -89,5 +120,19 @@ public class VanillaTweaksResourcePackScreen extends Screen {
                 .texture(left / 32.0F, top / 32.0F)
                 .color(32, 32, 32, 255).next();
         tessellator.draw();
+
+        // Position the buttons on the x axis
+        int buttonLeft = left;
+        for (TabButtonWidget tabButton : this.tabButtons) {
+            tabButton.x = buttonLeft;
+            buttonLeft += tabButton.getWidth() + 10;
+        }
+
+        // Render the tabButtons
+        for (TabButtonWidget tabButton : this.tabButtons) {
+            if (tabButton.x >= left && tabButton.getRight() <= right) {
+                tabButton.render(matrices, mouseX, mouseY, delta);
+            }
+        }
     }
 }
