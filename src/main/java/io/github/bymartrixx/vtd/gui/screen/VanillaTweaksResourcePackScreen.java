@@ -2,6 +2,7 @@ package io.github.bymartrixx.vtd.gui.screen;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import io.github.bymartrixx.vtd.gui.widget.ArrowButtonWidget;
 import io.github.bymartrixx.vtd.gui.widget.MainWidget;
 import io.github.bymartrixx.vtd.gui.widget.TabButtonWidget;
 import io.github.bymartrixx.vtd.object.PackCategories;
@@ -30,6 +31,8 @@ public class VanillaTweaksResourcePackScreen extends Screen {
     private final Screen previousScreen;
     private final Text subtitle;
     private MainWidget mainWidget;
+    private ArrowButtonWidget tabsRightButton;
+    private ArrowButtonWidget tabsLeftButton;
     private final Map<Text, PackCategory<?>> categoryMap = new LinkedHashMap<>();
     private final List<Pair<Text, Integer>> tabs;
     private final List<TabButtonWidget> tabButtons = Lists.newArrayList();
@@ -66,6 +69,8 @@ public class VanillaTweaksResourcePackScreen extends Screen {
         }
 
         this.children.addAll(this.tabButtons);
+        this.tabsLeftButton = this.addButton(new ArrowButtonWidget(40, 32, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {/* TODO */}));
+        this.tabsRightButton = this.addButton(new ArrowButtonWidget(this.width - 30, 32, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {/* TODO */}));
     }
 
     @SuppressWarnings("ConstantConditions")
