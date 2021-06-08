@@ -1,7 +1,6 @@
 plugins {
 	id 'fabric-loom' version '0.7-SNAPSHOT'
 	id 'maven-publish'
-	id 'com.jfrog.bintray' version '1.8.5'
 	id 'com.modrinth.minotaur' version '1.2.1'
 }
 
@@ -102,29 +101,6 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	}
 }
 
-bintray {
-	user = project.hasProperty('bintray_user') ? project.property('bintray_user') : System.getenv('BINTRAY_USER')
-	key = project.hasProperty('bintray_key') ? project.property('bintray_key') : System.getenv('BINTRAY_KEY')
-	publications = ['mavenJava']
-	publish = true
-	pkg {
-		repo = 'maven'
-		name = 'VTDownloader'
-		licenses = ['MIT']
-		vcsUrl = 'https://github.com/ByMartrixx/VTDownloader.git'
-		version {
-			released = new Date()
-			githubRepo = 'ByMartrixx/VTDownloader'
-			websiteUrl = 'https://github.com/ByMartrixx/VTDownloader'
-			issueTrackerUrl = 'https://github.com/ByMartrixx/VTDownloader/issues'
-			vcsUrl = 'https://github.com/ByMartrixx/VTDownloader.git'
-			gpg {
-				sign = true
-			}
-		}
-	}
-}
-
 // configure the maven publication
 publishing {
 	publications {
@@ -136,15 +112,6 @@ publishing {
 			artifact(sourcesJar) {
 				builtBy remapSourcesJar
 			}
-
-			pom.withXml {
-				def root = asNode()
-				root.appendNode('description', 'VTDownloader')
-				root.appendNode('name', 'VTDownloader')
-				root.appendNode('url', 'https://github.com/ByMartrixx/VTDownloader')
-			}
-			groupId("${group}")
-			artifactId 'VTDownloader'
 		}
 	}
 
