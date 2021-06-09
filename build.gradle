@@ -36,7 +36,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// ModMenu
-	testImplementation "com.terraformers:modmenu:1.16.9"
+	testImplementation "com.terraformersmc:modmenu:1.16.9"
 
 	// Sodium
 	testImplementation "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0"
