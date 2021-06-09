@@ -1,11 +1,11 @@
-package io.github.bymartrixx.vtd.gui;
+package me.bymartrixx.vtd.gui;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.bymartrixx.vtd.VTDMod;
-import io.github.bymartrixx.vtd.gui.widget.*;
+import me.bymartrixx.vtd.VTDMod;
+import me.bymartrixx.vtd.gui.widget.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.BackgroundHelper;

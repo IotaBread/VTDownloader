@@ -1,4 +1,4 @@
-package io.github.bymartrixx.vtd;
+package me.bymartrixx.vtd;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

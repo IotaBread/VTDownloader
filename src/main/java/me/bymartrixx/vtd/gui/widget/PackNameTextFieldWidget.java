@@ -1,4 +1,4 @@
-package io.github.bymartrixx.vtd.gui.widget;
+package me.bymartrixx.vtd.gui.widget;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;

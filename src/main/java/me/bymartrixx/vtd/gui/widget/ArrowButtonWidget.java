@@ -1,4 +1,4 @@
-package io.github.bymartrixx.vtd.gui.widget;
+package me.bymartrixx.vtd.gui.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;

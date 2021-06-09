@@ -1,6 +1,6 @@
-package io.github.bymartrixx.vtd.mixin;
+package me.bymartrixx.vtd.mixin;
 
-import io.github.bymartrixx.vtd.gui.VTDScreen;
+import me.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;

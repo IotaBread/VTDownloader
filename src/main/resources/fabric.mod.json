@@ -23,7 +23,7 @@
     "environment": "client",
     "entrypoints": {
         "client": [
-            "io.github.bymartrixx.vtd.VTDMod"
+            "me.bymartrixx.vtd.VTDMod"
         ]
     },
     "mixins": [

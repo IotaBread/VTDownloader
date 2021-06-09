@@ -1,12 +1,12 @@
-package io.github.bymartrixx.vtd.gui.widget;
+package me.bymartrixx.vtd.gui.widget;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.bymartrixx.vtd.VTDMod;
-import io.github.bymartrixx.vtd.gui.VTDScreen;
+import me.bymartrixx.vtd.VTDMod;
+import me.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
