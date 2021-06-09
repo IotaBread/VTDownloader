@@ -86,20 +86,16 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
+	versionName = "VTDownloader ${project.version} for Minecraft 1.16"
 	uploadFile = remapJar
+	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${version}"
 	addGameVersion('1.16')
 	addGameVersion('1.16.1')
 	addGameVersion('1.16.2')
 	addGameVersion('1.16.3')
 	addGameVersion('1.16.4')
+	addGameVersion('1.16.5')
 	addLoader('fabric')
-
-	FileTree files = fileTree(dir: './build/libs/')
-	files.each {f ->
-		if (f.name != "${archivesBaseName}-${version}.jar") { // don't upload the remapJar file again
-			addFile(f)
-		}
-	}
 }
 
 // configure the maven publication
