@@ -16,7 +16,7 @@ jobs:
         java: [
             1.8,  # Minimum supported by Minecraft
             11,   # Current Java LTS
-            15    # Latest version
+            16    # Latest version
         ]
     runs-on: ubuntu-20.04
 
