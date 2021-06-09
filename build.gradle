@@ -36,10 +36,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// ModMenu
-	testImplementation "com.terraformersmc:modmenu:1.16.9"
-
-	// Sodium
-	testImplementation "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0"
+	testImplementation "com.terraformersmc:modmenu:2.0.0-beta.7"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
@@ -86,15 +83,10 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.version} for Minecraft 1.16"
+	versionName = "VTDownloader ${project.version} for Minecraft 1.17"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${version}"
-	addGameVersion('1.16')
-	addGameVersion('1.16.1')
-	addGameVersion('1.16.2')
-	addGameVersion('1.16.3')
-	addGameVersion('1.16.4')
-	addGameVersion('1.16.5')
+	addGameVersion('1.17')
 	addLoader('fabric')
 }
 
