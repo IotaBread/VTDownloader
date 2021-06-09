@@ -227,14 +227,14 @@ public class VTDScreen extends Screen {
         if (!exceptionFound) {
             JsonObject category = VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject();
 
-            this.listWidget = this.addChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
+            this.listWidget = this.addSelectableChild(new PackListWidget(category.get("packs").getAsJsonArray(), category.get("category").getAsString()));
         } else {
-            this.listWidget = this.addChild(new PackListWidget());
+            this.listWidget = this.addSelectableChild(new PackListWidget());
         }
 
         this.selectedPacksListWidget = new SelectedPacksListWidget();
         this.selectedPacksListWidget.setLeftPos(this.width - 170);
-        this.addChild(this.selectedPacksListWidget);
+        this.addSelectableChild(this.selectedPacksListWidget);
 
         this.resetDownloadProgress();
         if (!exceptionFound) {
@@ -352,7 +352,7 @@ public class VTDScreen extends Screen {
 //                    this.listWidget.replaceEntries(VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
                     JsonObject category2 = VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject();
-                    this.listWidget = this.addChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
+                    this.listWidget = this.addSelectableChild(new PackListWidget(category2.get("packs").getAsJsonArray(), category2.get("category").getAsString()));
                 }
             });
 

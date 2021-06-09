@@ -45,7 +45,7 @@ public class ArrowButtonWidget extends ButtonWidget {
     @Override
     public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        minecraftClient.getTextureManager().bindTexture(WIDGETS_LOCATION);
+        minecraftClient.getTextureManager().bindTexture(WIDGETS_TEXTURE);
 
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
         int i = this.getYImage(this.isHovered());
@@ -54,7 +54,7 @@ public class ArrowButtonWidget extends ButtonWidget {
         RenderSystem.enableDepthTest();
         this.drawTexture(matrices, this.x, this.y, 0, 46 + i * 20, this.width / 2, this.height);
         this.drawTexture(matrices, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
-        this.renderBg(matrices, minecraftClient, mouseX, mouseY);
+        this.renderBackground(matrices, minecraftClient, mouseX, mouseY);
         int j = this.active ? 16777215 : 10526880;
 
         ArrowButtonWidget.drawArrowTexture(matrices, this.x, this.y, arrowType, minecraftClient);
