@@ -20,6 +20,10 @@ repositories {
 		name 'JitPack'
 		url 'https://jitpack.io'
 	}
+	maven {
+		name 'TerraformersMC'
+		url 'https://maven.terraformersmc.com/releases'
+	}
 }
 
 dependencies {
@@ -32,13 +36,10 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// ModMenu
-	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+	testImplementation "com.terraformers:modmenu:1.16.9"
 
 	// Sodium
-	modImplementation "com.github.jellysquid3:sodium-fabric:mc${project.sodium_version}"
-
-	// BedrockIfy for #2
-//	modImplementation "com.github.juancarloscp52:BedrockIfy:c837234"
+	testImplementation "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
