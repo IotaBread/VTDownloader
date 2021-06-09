@@ -37,7 +37,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     protected int getScrollbarPositionX() {
-        return this.method_31383(); // this.getRowLeft() + this.getRowWidth();
+        return this.getRowRight();
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {

@@ -84,7 +84,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         return VTDScreen.getInstance().isPackSelected(this.categoryName, entry.name);
     }
 
-    protected boolean isSelectedItem(int index) {
+    protected boolean isSelectedEntry(int index) {
         return this.isSelected(this.children().get(index));
     }
 
