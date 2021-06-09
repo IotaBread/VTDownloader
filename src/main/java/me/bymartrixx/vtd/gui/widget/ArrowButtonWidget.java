@@ -21,7 +21,7 @@ public class ArrowButtonWidget extends ButtonWidget {
     }
 
     private static void drawArrowTexture(MatrixStack matrices, int x, int y, ArrowType arrowType, MinecraftClient client) {
-        client.getTextureManager().bindTexture(ARROWS_TEXTURE);
+        RenderSystem.setShaderTexture(0, ARROWS_TEXTURE);
 
         float u;
         float v;
