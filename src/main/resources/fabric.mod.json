@@ -13,10 +13,6 @@
         "issues": "https://github.com/ByMartrixx/VTDownloader/issues"
     },
 
-    "custom": {
-        "modmenu:api": false
-    },
-
     "license": "MIT",
     "icon": "assets/vt_downloader/icon.png",
 
