@@ -12,7 +12,9 @@ import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -195,24 +197,24 @@ public class VTDScreen extends Screen {
     }
 
     protected void init() {
-        this.tabLeftButton = this.addButton(new ArrowButtonWidget(40, 30, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {
+        this.tabLeftButton = this.addDrawableChild(new ArrowButtonWidget(40, 30, 20, 20, ArrowButtonWidget.ArrowType.LEFT, button -> {
             --this.tabIndex;
             this.updateTabButtons();
         }));
-        this.tabRightButton = this.addButton(new ArrowButtonWidget(70, 30, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {
+        this.tabRightButton = this.addDrawableChild(new ArrowButtonWidget(70, 30, 20, 20, ArrowButtonWidget.ArrowType.RIGHT, button -> {
             ++this.tabIndex;
             this.updateTabButtons();
         }));
 
         // Reload button
-        this.addButton(new ArrowButtonWidget(10, 30, 20, 20, ArrowButtonWidget.ArrowType.CLOCKWISE, button -> {
+        this.addDrawableChild(new ArrowButtonWidget(10, 30, 20, 20, ArrowButtonWidget.ArrowType.CLOCKWISE, button -> {
             VTDMod.reloadRPCategories();
             this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
-        this.addButton(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
+        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
 
-        this.downloadButton = this.addButton(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
+        this.downloadButton = this.addDrawableChild(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
         if (this.packNameField != null) {
             this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
@@ -220,7 +222,7 @@ public class VTDScreen extends Screen {
             this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
         }
         this.packNameField.setMaxLength(64);
-        this.children.add(this.packNameField);
+        this.addSelectableChild(this.packNameField);
 
         boolean exceptionFound = VTDMod.rpCategories.size() == 0;
 
@@ -276,14 +278,15 @@ public class VTDScreen extends Screen {
     public void renderBackgroundTexture(int vOffset) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
-        this.client.getTextureManager().bindTexture(OPTIONS_BACKGROUND_TEXTURE);
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         float f = 32.0F;
-        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0D, this.height, 0.0D).texture(0.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.width, this.height, 0.0D).texture((float) this.width / 32.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.width, 0.0D, 0.0D).texture((float) this.width / 32.0F, (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(0.0D, 0.0D, 0.0D).texture(0.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0, this.height, 0.0).texture(0.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, this.height, 0.0).texture((float) this.width / 32.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, 0.0, 0.0).texture((float) this.width / 32.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, (float) vOffset).color(64, 64, 64, 255).next();
         tessellator.draw();
     }
 
@@ -334,7 +337,7 @@ public class VTDScreen extends Screen {
         // Remove old buttons from this.children
         for (JsonElement category : VTDMod.rpCategories) {
             String categoryName = category.getAsJsonObject().get("category").getAsString();
-            this.children.removeIf(element -> element instanceof ButtonWidget && ((ButtonWidget) element).getMessage().asString().equals(categoryName));
+            this.children().removeIf(element -> element instanceof ButtonWidget && ((ButtonWidget) element).getMessage().asString().equals(categoryName));
         }
 
         for (int i = 0; i < getTabNum(this.width); ++i) {
@@ -347,7 +350,7 @@ public class VTDScreen extends Screen {
                 if (this.selectedTabIndex != index) {
                     this.selectedTabIndex = index;
 
-                    this.children.remove(this.listWidget);
+                    this.remove(this.listWidget);
                     // Doesn't work as expected :/
 //                    this.listWidget.replaceEntries(VTDMod.rpCategories.get(selectedTabIndex).getAsJsonObject().get("packs").getAsJsonArray());
 
@@ -357,7 +360,7 @@ public class VTDScreen extends Screen {
             });
 
             this.tabButtons.add(i, buttonWidget);
-            this.children.add(buttonWidget);
+            this.addSelectableChild(buttonWidget);
         }
     }
 
