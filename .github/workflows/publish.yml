@@ -14,20 +14,6 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-  bintray:
-    name: Bintray Publication
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - run: chmod +x gradlew
-      - name: Publish
-        run: ./gradlew bintrayUpload
-        env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-
   modrinth:
     name: Modrinth Publication
     needs: build
