@@ -61,7 +61,8 @@ public class VTDMod implements ClientModInitializer {
     }
 
     public static void getRPCategories() throws IOException {
-        VTDMod.rpCategories = VTDMod.getCategories("/assets/resources/json/1.16/rpcategories.json");
+        // TODO: Detect minecraft version from mod version
+        VTDMod.rpCategories = VTDMod.getCategories("/assets/resources/json/1.17/rpcategories.json");
     }
 
     public static void reloadRPCategories() {

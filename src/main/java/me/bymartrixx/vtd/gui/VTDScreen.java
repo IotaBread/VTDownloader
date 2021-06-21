@@ -146,7 +146,7 @@ public class VTDScreen extends Screen {
                     HttpPost httpPost = new HttpPost(VTDMod.BASE_URL + "/assets/server/zipresourcepacks.php");
 
                     List<NameValuePair> params = new ArrayList<>();
-                    params.add(new BasicNameValuePair("version", "1.16"));
+                    params.add(new BasicNameValuePair("version", "1.17"));
                     params.add(new BasicNameValuePair("packs", VTDMod.GSON.toJson(selectedPacks)));
                     httpPost.setEntity(new UrlEncodedFormEntity(params));
 
