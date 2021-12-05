@@ -1,21 +1,32 @@
 plugins {
-	id 'fabric-loom' version '0.9-SNAPSHOT'
+	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.modrinth.minotaur' version '1.2.1'
+	id 'org.quiltmc.quilt-mappings-on-loom' version '3.1.2'
+	id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
 }
 
 import com.modrinth.minotaur.TaskModrinthUpload
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 group = project.maven_group
 
+version = project.mod_version + '+' + project.minecraft_version
 boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
-version = !isBuild ? project.mod_version : "${project.mod_version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
+version = !isBuild ? version : "${version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 
 repositories {
+	maven {
+		name = 'Quilt'
+		url = 'https://maven.quiltmc.org/repository/release'
+	}
+	maven {
+		name = 'Quilt Snapshots'
+		url = 'https://maven.quiltmc.org/repository/snapshot'
+	}
 	maven {
 		name 'JitPack'
 		url 'https://jitpack.io'
@@ -29,8 +40,13 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	mappings(loom.layered {
+		addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:${minecraft_version}+build.${project.quilt_mappings_build}:v2"))
+	})
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
@@ -51,8 +67,8 @@ tasks.withType(JavaCompile).configureEach {
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
 
-	// Minecraft 1.17 (21w19a) upwards uses Java 16.
-	it.options.release = 16
+	// Minecraft 1.18 upwards uses Java 17.
+	it.options.release = 17
 }
 
 java {
@@ -68,14 +84,18 @@ jar {
 	}
 }
 
+quiltflower {
+	addToRuntimeClasspath.set(true)
+}
+
 task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.version} for Minecraft 1.17"
+	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.18"
 	uploadFile = remapJar
-	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${version}"
-	addGameVersion('1.17')
+	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
+	addGameVersion('1.18')
 	addLoader('fabric')
 }
 
@@ -83,13 +103,7 @@ task modrinth (type: TaskModrinthUpload, dependsOn: build) {
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
+			from components.java
 		}
 	}
 

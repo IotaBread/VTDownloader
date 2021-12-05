@@ -20,6 +20,7 @@ public class VTDMod implements ClientModInitializer {
     public static final String MOD_ID = "vt_downloader";
     public static final String MOD_NAME = "VTDownloader";
     public static final Logger LOGGER = LogManager.getLogger();
+    public static final String MINECRAFT_VERSION = "1.18";
     public static final Gson GSON = new Gson();
     public static final String VERSION = FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     public static final String BASE_URL = "https://vanillatweaks.net";
@@ -62,7 +63,8 @@ public class VTDMod implements ClientModInitializer {
 
     public static void getRPCategories() throws IOException {
         // TODO: Detect minecraft version from mod version
-        VTDMod.rpCategories = VTDMod.getCategories("/assets/resources/json/1.17/rpcategories.json");
+        VTDMod.rpCategories = VTDMod.getCategories(
+                "/assets/resources/json/" + MINECRAFT_VERSION + "/rpcategories.json");
     }
 
     public static void reloadRPCategories() {
@@ -78,10 +80,6 @@ public class VTDMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        VTDMod.log(Level.INFO, "Initializing {} version {}...", VTDMod.MOD_NAME, VTDMod.VERSION);
-
         VTDMod.reloadRPCategories();
-
-        VTDMod.log(Level.INFO, "Initialized {} version {}", VTDMod.MOD_NAME, VTDMod.VERSION);
     }
 }

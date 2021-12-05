@@ -32,7 +32,7 @@ public class PackScreenMixin extends Screen {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.file == this.client.getResourcePackDir()) {
             this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, new TranslatableText("vtd.resourcePack.button"), button -> {
-                this.client.openScreen(new VTDScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
+                this.client.setScreen(new VTDScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
             }));
         }
     }

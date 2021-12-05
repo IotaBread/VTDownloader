@@ -146,7 +146,7 @@ public class VTDScreen extends Screen {
                     HttpPost httpPost = new HttpPost(VTDMod.BASE_URL + "/assets/server/zipresourcepacks.php");
 
                     List<NameValuePair> params = new ArrayList<>();
-                    params.add(new BasicNameValuePair("version", "1.17"));
+                    params.add(new BasicNameValuePair("version", VTDMod.MINECRAFT_VERSION));
                     params.add(new BasicNameValuePair("packs", VTDMod.GSON.toJson(selectedPacks)));
                     httpPost.setEntity(new UrlEncodedFormEntity(params));
 
@@ -209,7 +209,7 @@ public class VTDScreen extends Screen {
         // Reload button
         this.addDrawableChild(new ArrowButtonWidget(10, 30, 20, 20, ArrowButtonWidget.ArrowType.CLOCKWISE, button -> {
             VTDMod.reloadRPCategories();
-            this.client.openScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
+            this.client.setScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
         this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
@@ -323,7 +323,7 @@ public class VTDScreen extends Screen {
     }
 
     public void onClose() {
-        this.client.openScreen(this.previousScreen);
+        this.client.setScreen(this.previousScreen);
     }
 
     private void updateTabButtons() {
