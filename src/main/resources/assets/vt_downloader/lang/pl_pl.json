@@ -1,0 +1,20 @@
+{
+    "vtd.done": "Gotowe",
+    "vtd.download": "Pobierz",
+    "vtd.download.failure": "Nieoczekiwany błąd!",
+    "vtd.download.success": "Paczka pobrana!",
+    "vtd.fileNameValidity.fileExists": "Plik o takiej nazwie już istnieje",
+    "vtd.fileNameValidity.invalidWindows": "Ta nazwa pliku jest nieprawidłową nazwą Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "Nazwa pliku musi zgadzać się z %s",
+    "vtd.fileNameValidity.reservedWindows": "Ta nazwa pliku jest zarezerwowaną nazwą Windows",
+    "vtd.packError.body.1": "Sprawdź swoje połączenie internetowe",
+    "vtd.packError.body.2": "i to, czy strona",
+    "vtd.packError.body.3": "%s działa poprawnie.",
+    "vtd.packError.title.1": "Wystąpił błąd",
+    "vtd.packError.title.2": "Przy próbie pobrania paczek.",
+    "vtd.resourcePack.button": "Pobierz paczkę zasobów VT",
+    "vtd.resourcePack.nameField": "Nazwa paczki zasobów...",
+    "vtd.resourcePack.subtitle": "Wybierz paczki zasobów",
+    "vtd.selectedPacks": "Wybrane paczki",
+    "vtd.title": "VTDownloader"
+}
