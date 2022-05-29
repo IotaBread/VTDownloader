@@ -5,19 +5,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.gui.VTDScreen;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -43,7 +42,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-        Text text = new TranslatableText("vtd.selectedPacks").formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        Text text = Text.createFormatted("vtd.selectedPacks").formatted(Formatting.BOLD, Formatting.UNDERLINE);
         VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2) + (VTDScreen.getInstance().width - 170)), Math.min(this.top + 3, y), 16777215);
     }
 
@@ -83,7 +82,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         int i = this.getScrollbarPositionX();
         int j = i + 6;
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         //this.field_33780 = (E)(this.isMouseOver((double)mouseX, (double)mouseY) ? this.getEntryAtPosition((double)mouseX, (double)mouseY) : null);
         //if (this.renderBackground) { // Private field, true
@@ -91,10 +90,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         float f = 32.0F;
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.left, this.bottom, 0.0).texture((float)this.left / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(this.right, this.bottom, 0.0).texture((float)this.right / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(this.right, this.top, 0.0).texture((float)this.right / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
-        bufferBuilder.vertex(this.left, this.top, 0.0).texture((float)this.left / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+        bufferBuilder.vertex(this.left, this.bottom, 0.0).uv((float)this.left / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+        bufferBuilder.vertex(this.right, this.bottom, 0.0).uv((float)this.right / 32.0F, (float)(this.bottom + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+        bufferBuilder.vertex(this.right, this.top, 0.0).uv((float)this.right / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
+        bufferBuilder.vertex(this.left, this.top, 0.0).uv((float)this.left / 32.0F, (float)(this.top + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).next();
         tessellator.draw();
         //}
 
@@ -113,14 +112,14 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         float g = 32.0F;
         int m = -100;
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.left, this.top, -100.0).texture(0.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left + this.width, this.top, -100.0).texture((float)this.width / 32.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left + this.width, 0.0, -100.0).texture((float)this.width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left, 0.0, -100.0).texture(0.0F, 0.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left, this.height, -100.0).texture(0.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left + this.width, this.height, -100.0).texture((float)this.width / 32.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left + this.width, this.bottom, -100.0).texture((float)this.width / 32.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.left, this.bottom, -100.0).texture(0.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left, this.top, -100.0).uv(0.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left + this.width, this.top, -100.0).uv((float)this.width / 32.0F, (float)this.top / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left + this.width, 0.0, -100.0).uv((float)this.width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left, 0.0, -100.0).uv(0.0F, 0.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left, this.height, -100.0).uv(0.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left + this.width, this.height, -100.0).uv((float)this.width / 32.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left + this.width, this.bottom, -100.0).uv((float)this.width / 32.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.left, this.bottom, -100.0).uv(0.0F, (float)this.bottom / 32.0F).color(64, 64, 64, 255).next();
         tessellator.draw();
         RenderSystem.depthFunc(515);
         RenderSystem.disableDepthTest();

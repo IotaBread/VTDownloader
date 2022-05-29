@@ -4,22 +4,20 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.gui.widget.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.ColorUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -46,21 +44,10 @@ public class VTDScreen extends Screen {
     private final PackNameTextFieldWidget.TooltipSupplier TOOLTIP_SUPPLIER = (textField, nameValidity, matrices, mouseX, mouseY) -> {
         Text text = null;
         switch (nameValidity) {
-            case RESERVED_WINDOWS:
-                text = new TranslatableText("vtd.fileNameValidity.reservedWindows");
-                break;
-            case INVALID_WINDOWS:
-                text = new TranslatableText("vtd.fileNameValidity.invalidWindows");
-                break;
-            case REGEX_DOESNT_MATCH:
-                text = new TranslatableText("vtd.fileNameValidity.regexDoesntMatch", PackNameTextFieldWidget.fileNameRegex);
-                break;
-            case FILE_EXISTS:
-                text = new TranslatableText("vtd.fileNameValidity.fileExists");
-                break;
-            case VALID:
-            default:
-                break;
+            case RESERVED_WINDOWS -> text = Text.createFormatted("vtd.fileNameValidity.reservedWindows");
+            case INVALID_WINDOWS -> text = Text.createFormatted("vtd.fileNameValidity.invalidWindows");
+            case REGEX_DOESNT_MATCH -> text = Text.createFormatted("vtd.fileNameValidity.regexDoesntMatch", PackNameTextFieldWidget.fileNameRegex);
+            case FILE_EXISTS -> text = Text.createFormatted("vtd.fileNameValidity.fileExists");
         }
 
         if (text != null) {
@@ -85,7 +72,7 @@ public class VTDScreen extends Screen {
     private float downloadProgress = -1.0F;
 
     public VTDScreen(Screen previousScreen, Text subtitle) {
-        super(new TranslatableText("vtd.title"));
+        super(Text.createFormatted("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = new LinkedHashMap<>();
         this.subtitle = subtitle;
@@ -94,7 +81,7 @@ public class VTDScreen extends Screen {
     }
 
     public VTDScreen(Screen previousScreen, Text subtitle, Map<String, List<String>> selectedPacks) {
-        super(new TranslatableText("vtd.title"));
+        super(Text.createFormatted("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = selectedPacks;
         this.subtitle = subtitle;
@@ -212,14 +199,14 @@ public class VTDScreen extends Screen {
             this.client.setScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
-        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, new TranslatableText("vtd.done"), button -> this.onClose()));
+        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, Text.createFormatted("vtd.done"), button -> this.onClose()));
 
-        this.downloadButton = this.addDrawableChild(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, new TranslatableText("vtd.download"), new TranslatableText("vtd.download.success"), new TranslatableText("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
+        this.downloadButton = this.addDrawableChild(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, Text.createFormatted("vtd.download"), Text.createFormatted("vtd.download.success"), Text.createFormatted("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
         if (this.packNameField != null) {
-            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.createFormatted("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
         } else {
-            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, new TranslatableText("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.createFormatted("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
         }
         this.packNameField.setMaxLength(64);
         this.addSelectableChild(this.packNameField);
@@ -277,16 +264,16 @@ public class VTDScreen extends Screen {
     @Override
     public void renderBackgroundTexture(int vOffset) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         float f = 32.0F;
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0, this.height, 0.0).texture(0.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.width, this.height, 0.0).texture((float) this.width / 32.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(this.width, 0.0, 0.0).texture((float) this.width / 32.0F, (float) vOffset).color(64, 64, 64, 255).next();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(0.0, this.height, 0.0).uv(0.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, this.height, 0.0).uv((float) this.width / 32.0F, (float) this.height / 32.0F + (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(this.width, 0.0, 0.0).uv((float) this.width / 32.0F, (float) vOffset).color(64, 64, 64, 255).next();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, (float) vOffset).color(64, 64, 64, 255).next();
         tessellator.draw();
     }
 
@@ -306,7 +293,7 @@ public class VTDScreen extends Screen {
     private void renderDownloadProgressBar(MatrixStack matrices, int x1, int y1, int x2, int y2, float opacity) {
         int progressWidth = MathHelper.ceil((float) (x2 - x1 - 4) * this.downloadProgress);
         int alpha = Math.round(opacity * 255.0F);
-        int color = BackgroundHelper.ColorMixer.getArgb(alpha, 255, 255, 255);
+        int color = ColorUtil.ARGB32.getArgb(alpha, 255, 255, 255);
 
         // Draw progress bar outline
         fill(matrices, x1 + 1, y1, x2 - 1, y1 + 1, color); // Top line
@@ -337,7 +324,7 @@ public class VTDScreen extends Screen {
         // Remove old buttons from this.children
         for (JsonElement category : VTDMod.rpCategories) {
             String categoryName = category.getAsJsonObject().get("category").getAsString();
-            this.children().removeIf(element -> element instanceof ButtonWidget && ((ButtonWidget) element).getMessage().asString().equals(categoryName));
+            this.children().removeIf(element -> element instanceof ButtonWidget button && button.getMessage().getString().equals(categoryName));
         }
 
         for (int i = 0; i < getTabNum(this.width); ++i) {
@@ -346,7 +333,7 @@ public class VTDScreen extends Screen {
 
             JsonObject category = VTDMod.rpCategories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
-            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, new LiteralText(categoryName), button -> {
+            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, Text.create(categoryName), button -> {
                 if (this.selectedTabIndex != index) {
                     this.selectedTabIndex = index;
 

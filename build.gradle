@@ -1,9 +1,9 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
-	id 'com.modrinth.minotaur' version '1.2.1'
-	id 'org.quiltmc.quilt-mappings-on-loom' version '3.1.2'
-	id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
+	id 'com.modrinth.minotaur' version '2.2.0'
+	id 'org.quiltmc.quilt-mappings-on-loom' version '4.2.0'
+	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 }
 
 import com.modrinth.minotaur.TaskModrinthUpload
@@ -27,14 +27,6 @@ repositories {
 		name = 'Quilt Snapshots'
 		url = 'https://maven.quiltmc.org/repository/snapshot'
 	}
-	maven {
-		name 'JitPack'
-		url 'https://jitpack.io'
-	}
-	maven {
-		name 'TerraformersMC'
-		url 'https://maven.terraformersmc.com/releases'
-	}
 }
 
 dependencies {
@@ -47,9 +39,6 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-	// You may need to force-disable transitiveness on them.
 }
 
 processResources {
@@ -88,15 +77,15 @@ quiltflower {
 	addToRuntimeClasspath.set(true)
 }
 
-task modrinth (type: TaskModrinthUpload, dependsOn: build) {
+modrinth {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.18"
+	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.19"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
-	addGameVersion('1.18')
-	addLoader('fabric')
+	gameVersions = ['1.19-pre3']
+	loaders = ['fabric', 'quilt']
 }
 
 // configure the maven publication

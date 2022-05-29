@@ -2,21 +2,19 @@ package me.bymartrixx.vtd.gui.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 
 public class ArrowButtonWidget extends ButtonWidget {
     private static final Identifier ARROWS_TEXTURE = new Identifier("textures/font/unicode_page_21.png");
     private final ArrowType arrowType;
 
     public ArrowButtonWidget(int x, int y, int width, int height, ArrowType arrowType, PressAction onPress) {
-        super(x, y, width, height, new LiteralText(""), onPress);
+        super(x, y, width, height, Text.create(""), onPress);
         this.arrowType = arrowType;
     }
 
@@ -27,19 +25,18 @@ public class ArrowButtonWidget extends ButtonWidget {
         float v;
         int textureXOffset = 4; // Center the texture in a 16 x 16 area
         switch (arrowType) {
-            case CLOCKWISE:
+            case CLOCKWISE -> {
                 u = 176.0F;
                 v = 176.0F;
-                break;
-            case LEFT:
+            }
+            case LEFT -> {
                 u = 96.0F;
                 v = 224.0F;
-                break;
-            case RIGHT:
-            default:
+            }
+            default -> {
                 u = 128.0F;
                 v = 224.0F;
-                break;
+            }
         }
 
         DrawableHelper.drawTexture(matrices, x + textureXOffset + 2, y + 2, u, v, 16, 16, 256, 256);
@@ -59,6 +56,7 @@ public class ArrowButtonWidget extends ButtonWidget {
         this.drawTexture(matrices, this.x, this.y, 0, 46 + i * 20, this.width / 2, this.height);
         this.drawTexture(matrices, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
         this.renderBackground(matrices, minecraftClient, mouseX, mouseY);
+        // Why is this here
         int j = this.active ? 16777215 : 10526880;
 
         ArrowButtonWidget.drawArrowTexture(matrices, this.x, this.y, arrowType, minecraftClient);
