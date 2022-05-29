@@ -97,7 +97,7 @@ curseforge {
 		id = '432425'
 		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
-		addGameVersion '1.19-pre3'
+		addGameVersion '1.19-Snapshot'
 		addGameVersion 'Fabric'
 		addGameVersion 'Quilt'
 		mainArtifact(remapJar) {
