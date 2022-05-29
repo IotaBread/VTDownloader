@@ -3,7 +3,7 @@ name: Mod publication
 on: [ workflow_dispatch ]
 
 jobs:
-  build:
+  publish:
     name: Build
     runs-on: ubuntu-latest
 
@@ -15,40 +15,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: gradle/wrapper-validation-action@v1
       - run: chmod +x gradlew
-      - name: Build
-        run: ./gradlew build
-
-  modrinth:
-    name: Modrinth Publication
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: 17
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - run: chmod +x gradlew
-      - name: Publish
-        run: ./gradlew modrinth
-        env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-
-  maven:
-    name: Maven Publication
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: 17
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - run: chmod +x gradlew
       - name: Publish
         run: ./gradlew publish
         env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          CURSE_API_KEY: ${{ secrets.CURSE_API_KEY }}
