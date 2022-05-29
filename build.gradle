@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.modrinth.minotaur' version '2.2.0'
+	id 'com.matthewprenger.cursegradle' version '1.4.0'
 	id 'org.quiltmc.quilt-mappings-on-loom' version '4.2.0'
 	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 }
@@ -87,6 +88,31 @@ modrinth {
 	gameVersions = ['1.19-pre3']
 	loaders = ['fabric', 'quilt']
 }
+
+curseforge {
+	if (project.hasProperty('curse_api_key') || System.getenv('CURSE_API_KEY') != null) {
+		apiKey = project.hasProperty('curse_api_key') ? project.property('curse_api_key') : System.getenv('CURSE_API_KEY')
+	}
+	project {
+		id = '432425'
+		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
+		releaseType = 'release'
+		addGameVersion '1.19-pre3'
+		addGameVersion 'Fabric'
+		addGameVersion 'Quilt'
+		mainArtifact(remapJar) {
+			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.19"
+		}
+		afterEvaluate {
+			uploadTask.dependsOn('remapJar')
+		}
+	}
+	options {
+		forgeGradleIntegration = false
+	}
+}
+
+publish.finalizedBy tasks.modrinth, tasks.curseforge
 
 // configure the maven publication
 publishing {
