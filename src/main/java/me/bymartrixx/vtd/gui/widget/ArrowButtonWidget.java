@@ -52,7 +52,7 @@ public class ArrowButtonWidget extends ButtonWidget {
         RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int i = this.getYImage(this.method_25367());
+        int i = this.getYImage(this.isHoveredOrFocused());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
