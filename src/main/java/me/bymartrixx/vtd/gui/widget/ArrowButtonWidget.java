@@ -14,7 +14,7 @@ public class ArrowButtonWidget extends ButtonWidget {
     private final ArrowType arrowType;
 
     public ArrowButtonWidget(int x, int y, int width, int height, ArrowType arrowType, PressAction onPress) {
-        super(x, y, width, height, Text.create(""), onPress);
+        super(x, y, width, height, Text.literal(""), onPress);
         this.arrowType = arrowType;
     }
 
