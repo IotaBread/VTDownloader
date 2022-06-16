@@ -44,10 +44,10 @@ public class VTDScreen extends Screen {
     private final PackNameTextFieldWidget.TooltipSupplier TOOLTIP_SUPPLIER = (textField, nameValidity, matrices, mouseX, mouseY) -> {
         Text text = null;
         switch (nameValidity) {
-            case RESERVED_WINDOWS -> text = Text.createFormatted("vtd.fileNameValidity.reservedWindows");
-            case INVALID_WINDOWS -> text = Text.createFormatted("vtd.fileNameValidity.invalidWindows");
-            case REGEX_DOESNT_MATCH -> text = Text.createFormatted("vtd.fileNameValidity.regexDoesntMatch", PackNameTextFieldWidget.fileNameRegex);
-            case FILE_EXISTS -> text = Text.createFormatted("vtd.fileNameValidity.fileExists");
+            case RESERVED_WINDOWS -> text = Text.translatable("vtd.fileNameValidity.reservedWindows");
+            case INVALID_WINDOWS -> text = Text.translatable("vtd.fileNameValidity.invalidWindows");
+            case REGEX_DOESNT_MATCH -> text = Text.translatable("vtd.fileNameValidity.regexDoesntMatch", PackNameTextFieldWidget.fileNameRegex);
+            case FILE_EXISTS -> text = Text.translatable("vtd.fileNameValidity.fileExists");
         }
 
         if (text != null) {
@@ -55,7 +55,8 @@ public class VTDScreen extends Screen {
         }
     };
     private final Screen previousScreen;
-    private final ArrayList<ButtonWidget> tabButtons = Lists.newArrayList();
+    private final ArrayList<ButtonWidget> tabButtons = new ArrayList<>();
+    private final List<TooltipData> tooltips = new ArrayList<>();
     private ButtonWidget tabLeftButton;
     private ButtonWidget tabRightButton;
     private DownloadButtonWidget downloadButton;
@@ -72,7 +73,7 @@ public class VTDScreen extends Screen {
     private float downloadProgress = -1.0F;
 
     public VTDScreen(Screen previousScreen, Text subtitle) {
-        super(Text.createFormatted("vtd.title"));
+        super(Text.translatable("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = new LinkedHashMap<>();
         this.subtitle = subtitle;
@@ -81,7 +82,7 @@ public class VTDScreen extends Screen {
     }
 
     public VTDScreen(Screen previousScreen, Text subtitle, Map<String, List<String>> selectedPacks) {
-        super(Text.createFormatted("vtd.title"));
+        super(Text.translatable("vtd.title"));
         this.previousScreen = previousScreen;
         this.selectedPacks = selectedPacks;
         this.subtitle = subtitle;
@@ -199,14 +200,14 @@ public class VTDScreen extends Screen {
             this.client.setScreen(new VTDScreen(this.previousScreen, this.subtitle, this.selectedPacks));
         }));
         // Done button
-        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, Text.createFormatted("vtd.done"), button -> this.onClose()));
+        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, Text.translatable("vtd.done"), button -> this.onClose()));
 
-        this.downloadButton = this.addDrawableChild(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, Text.createFormatted("vtd.download"), Text.createFormatted("vtd.download.success"), Text.createFormatted("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
+        this.downloadButton = this.addDrawableChild(new DownloadButtonWidget(this.width - 200, this.height - 30, 100, 20, Text.translatable("vtd.download"), Text.translatable("vtd.download.success"), Text.translatable("vtd.download.failure"), button -> this.download((DownloadButtonWidget) button)));
 
         if (this.packNameField != null) {
-            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.createFormatted("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.translatable("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER, this.packNameField.getText());
         } else {
-            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.createFormatted("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
+            this.packNameField = new PackNameTextFieldWidget(this.textRenderer, 10, this.height - 30, 160, 20, Text.translatable("vtd.resourcePack.nameField"), this.client.getResourcePackDir(), this::updateDownloadButton, TOOLTIP_SUPPLIER);
         }
         this.packNameField.setMaxLength(64);
         this.addSelectableChild(this.packNameField);
@@ -253,6 +254,13 @@ public class VTDScreen extends Screen {
 
         if (this.downloadProgress != -1.0F)
             this.renderDownloadProgressBar(matrices, this.width - 170, this.height - 50, this.width - 10, this.height - 40, 0.9F);
+
+        // Render tooltips; make sure tooltips are always rendered on top of everything else
+        for (TooltipData tooltip: this.tooltips) {
+            this.renderTooltip(matrices, tooltip.text, tooltip.x, tooltip.y);
+        }
+
+        this.tooltips.clear();
     }
 
     /**
@@ -333,7 +341,7 @@ public class VTDScreen extends Screen {
 
             JsonObject category = VTDMod.rpCategories.get(index).getAsJsonObject();
             String categoryName = category.get("category").getAsString();
-            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, Text.create(categoryName), button -> {
+            ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, Text.literal(categoryName), button -> {
                 if (this.selectedTabIndex != index) {
                     this.selectedTabIndex = index;
 
@@ -429,4 +437,10 @@ public class VTDScreen extends Screen {
     public String getSelectedCategory() {
         return this.listWidget.categoryName;
     }
+
+    public void addTooltip(TooltipData tooltip) {
+        this.tooltips.add(tooltip);
+    }
+
+    public record TooltipData(List<Text> text, int x, int y) {}
 }

@@ -19,10 +19,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     public final String categoryName;
@@ -90,7 +92,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
     }
 
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-        Text text = Text.create(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        Text text = Text.literal(this.categoryName).formatted(Formatting.BOLD, Formatting.UNDERLINE);
         VTDScreen.getInstance().getTextRenderer().draw(matrices, text, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(text) / 2)), Math.min(this.top + 3, y), 16777215);
     }
 
@@ -193,11 +195,11 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             RenderSystem.disableBlend();
             // End of cursed fix for #2
         } else {
-            Text msgHeader = Text.createFormatted("vtd.packError.title.1").formatted(Formatting.BOLD, Formatting.ITALIC);
-            Text msgHeader2 = Text.createFormatted("vtd.packError.title.2").formatted(Formatting.BOLD, Formatting.ITALIC);
-            Text msgBody = Text.createFormatted("vtd.packError.body.1");
-            Text msgBody2 = Text.createFormatted("vtd.packError.body.2");
-            Text msgBody3 = Text.createFormatted("vtd.packError.body.3", VTDMod.BASE_URL);
+            Text msgHeader = Text.translatable("vtd.packError.title.1").formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgHeader2 = Text.translatable("vtd.packError.title.2").formatted(Formatting.BOLD, Formatting.ITALIC);
+            Text msgBody = Text.translatable("vtd.packError.body.1");
+            Text msgBody2 = Text.translatable("vtd.packError.body.2");
+            Text msgBody3 = Text.translatable("vtd.packError.body.3", VTDMod.BASE_URL);
 
             // What the heck is this
             VTDScreen.getInstance().getTextRenderer().draw(matrices, msgHeader, ((float) (this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(msgHeader) / 2)), ((float) (this.height / 2) - 32), 16777215);
@@ -222,7 +224,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             this.name = pack.get("name").getAsString();
 
             this.displayName = pack.get("display").getAsString();
-            this.description = pack.get("description").getAsString();
+            this.description = StringUtils.normalizeSpace(pack.get("description").getAsString().replaceAll("<[^>]*>", " ")); // strip html tags from descriptions
 
             Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
             ArrayList<String> incompatiblePacks = new ArrayList<>();
@@ -249,6 +251,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)), y + 1, 16777215);
             this.renderDescription(matrices, y);
+            this.renderTooltip(mouseX, mouseY);
         }
 
         private void renderDescription(MatrixStack matrices, int y) {
@@ -260,6 +263,31 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
                 VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
             } else {
                 VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
+            }
+        }
+
+        private void renderTooltip(int mouseX, int mouseY) {
+            if (this.isMouseOver(mouseX, mouseY)) {
+                List<Text> lines = new ArrayList<>();
+
+                String[] descSplit = this.description.split("\s");
+                StringBuilder currentLine = new StringBuilder();
+
+                for (String word: descSplit) {
+                    currentLine.append(word);
+                    if (currentLine.length() >= 35) {
+                        lines.add(Text.literal(currentLine.toString()));
+                        currentLine = new StringBuilder();
+                    } else {
+                        currentLine.append(" ");
+                    }
+                }
+
+                if (!currentLine.isEmpty()) {
+                    lines.add(Text.literal(currentLine.toString()));
+                }
+
+                VTDScreen.getInstance().addTooltip(new VTDScreen.TooltipData(lines, mouseX, mouseY));
             }
         }
 

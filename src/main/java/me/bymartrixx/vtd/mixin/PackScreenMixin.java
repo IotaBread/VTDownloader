@@ -17,7 +17,7 @@ import java.io.File;
 
 @Mixin(PackScreen.class)
 public class PackScreenMixin extends Screen {
-    private static final Text VTD_RESOURCE_PACK_SUBTITLE = Text.createFormatted("vtd.resourcePack.subtitle").formatted(Formatting.GRAY);
+    private static final Text VTD_RESOURCE_PACK_SUBTITLE = Text.translatable("vtd.resourcePack.subtitle").formatted(Formatting.GRAY);
     @Shadow
     @Final
     private File file;
@@ -30,7 +30,7 @@ public class PackScreenMixin extends Screen {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.file == this.client.getResourcePackDir()) {
-            this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Text.createFormatted("vtd.resourcePack.button"), button -> {
+            this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Text.translatable("vtd.resourcePack.button"), button -> {
                 this.client.setScreen(new VTDScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
             }));
         }
