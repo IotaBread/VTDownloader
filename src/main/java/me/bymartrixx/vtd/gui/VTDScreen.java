@@ -1,6 +1,5 @@
 package me.bymartrixx.vtd.gui;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -229,6 +228,7 @@ public class VTDScreen extends Screen {
         this.resetDownloadProgress();
         if (!exceptionFound) {
             this.updateTabButtons();
+            this.tabButtons.get(0).active = false;
         } else {
             this.tabLeftButton.active = false;
             this.tabRightButton.active = false;
@@ -343,6 +343,10 @@ public class VTDScreen extends Screen {
             String categoryName = category.get("category").getAsString();
             ButtonWidget buttonWidget = new ButtonWidget(i * 130 + 100, 30, 120, 20, Text.literal(categoryName), button -> {
                 if (this.selectedTabIndex != index) {
+                    for (ButtonWidget widget: this.tabButtons) {
+                        widget.active = true;
+                    }
+                    button.active = false;
                     this.selectedTabIndex = index;
 
                     this.remove(this.listWidget);
