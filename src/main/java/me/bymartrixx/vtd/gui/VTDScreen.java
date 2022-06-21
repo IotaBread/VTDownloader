@@ -228,7 +228,9 @@ public class VTDScreen extends Screen {
         this.resetDownloadProgress();
         if (!exceptionFound) {
             this.updateTabButtons();
-            this.tabButtons.get(0).active = false;
+            if (this.selectedTabIndex - this.tabIndex < this.tabButtons.size()) {
+                this.tabButtons.get(this.selectedTabIndex - this.tabIndex).active = false;
+            }
         } else {
             this.tabLeftButton.active = false;
             this.tabRightButton.active = false;
@@ -359,6 +361,9 @@ public class VTDScreen extends Screen {
             });
 
             this.tabButtons.add(i, buttonWidget);
+            if (i == this.selectedTabIndex - this.tabIndex) {
+                buttonWidget.active = false;
+            }
             this.addSelectableChild(buttonWidget);
         }
     }
