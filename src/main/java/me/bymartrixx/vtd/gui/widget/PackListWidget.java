@@ -310,7 +310,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         }
 
         private void renderTooltip(int mouseX, int mouseY) {
-            if (this.isMouseOver(mouseX, mouseY)) {
+            if (this.isMouseOver(mouseX, mouseY) && PackListWidget.this.isMouseOver(mouseX, mouseY)) {
                 List<Text> lines = new ArrayList<>();
 
                 String[] descSplit = this.description.split("\s");
