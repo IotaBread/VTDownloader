@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.texture.NativeImage;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tessellator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -17,20 +16,14 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -230,6 +223,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         public final String[] incompatiblePacks;
 
         private final Identifier icon;
+        private boolean iconDownloaded = false;
 
         PackEntry(JsonObject pack) {
             this.name = pack.get("name").getAsString();
@@ -238,23 +232,6 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             this.description = StringUtils.normalizeSpace(pack.get("description").getAsString().replaceAll("<[^>]*>", " ")); // strip html tags from descriptions
 
             this.icon = new Identifier(VTDMod.MOD_ID, this.name.toLowerCase());
-
-            if (MinecraftClient.getInstance().getTextureManager().getOrDefault(icon, null) == null) {
-                Thread iconDownloadThread = new Thread(() -> {
-                    try (CloseableHttpClient client = HttpClients.createDefault()) {
-                        HttpPost request = new HttpPost(VTDMod.BASE_URL + "/assets/resources/icons/resourcepacks/" + VTDMod.MINECRAFT_VERSION + "/" + this.name + ".png");
-                        HttpResponse response = client.execute(request);
-                        NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(response.getEntity().getContent()));
-                        MinecraftClient.getInstance().getTextureManager().registerTexture(this.icon, icon);
-                        MinecraftClient.getInstance().getTextureManager().bindTexture(this.icon);
-                    } catch (IOException e) {
-                        VTDMod.logError("Icon for " + this.displayName + " failed to download", e);
-                    }
-                });
-
-                iconDownloadThread.setName("VTDownloader Icon Download Thread for " + this.name);
-                iconDownloadThread.start();
-            }
 
             Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
             ArrayList<String> incompatiblePacks = new ArrayList<>();
@@ -306,6 +283,9 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
                 //noinspection SuspiciousNameCombination
                 DrawableHelper.drawTexture(matrices, x, y, 0F, 0F, entryHeight, entryHeight, entryHeight, entryHeight);
                 RenderSystem.disableBlend();
+            } else if (!iconDownloaded) {
+                VTDMod.downloadIcon(this.name);
+                this.iconDownloaded = true;
             }
         }
 
