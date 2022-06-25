@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.gui.VTDScreen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
@@ -18,6 +19,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -220,11 +222,16 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         public final String description;
         public final String[] incompatiblePacks;
 
+        private final Identifier icon;
+        private boolean iconDownloaded = false;
+
         PackEntry(JsonObject pack) {
             this.name = pack.get("name").getAsString();
 
             this.displayName = pack.get("display").getAsString();
             this.description = StringUtils.normalizeSpace(pack.get("description").getAsString().replaceAll("<[^>]*>", " ")); // strip html tags from descriptions
+
+            this.icon = new Identifier(VTDMod.MOD_ID, this.name.toLowerCase());
 
             Iterator<JsonElement> incompatiblePacksIterator = pack.get("incompatible").getAsJsonArray().iterator();
             ArrayList<String> incompatiblePacks = new ArrayList<>();
@@ -249,25 +256,41 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
         }
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)), y + 1, 16777215);
-            this.renderDescription(matrices, y);
+            VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)) + entryHeight / 2F, y + 1, 16777215);
+            this.renderDescription(matrices, y, entryHeight);
+            this.renderIcon(matrices, x, y, entryHeight);
             this.renderTooltip(mouseX, mouseY);
         }
 
-        private void renderDescription(MatrixStack matrices, int y) {
+        private void renderDescription(MatrixStack matrices, int y, int entryHeight) {
             int textWidth = VTDScreen.getInstance().getTextRenderer().getWidth(this.description);
-            int maxWidth = Math.min(280, PackListWidget.this.getRowWidth() - 4);
+            int maxWidth = Math.min(280, PackListWidget.this.getRowWidth() - entryHeight * 2 - 4);
 
             if (textWidth > maxWidth) {
                 String description = VTDScreen.getInstance().getTextRenderer().trimToWidth(this.description, maxWidth - VTDScreen.getInstance().getTextRenderer().getWidth("...")) + "...";
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)), y + 13, 16777215);
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(description) / 2)) + entryHeight / 2F, y + 13, 16777215);
             } else {
-                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)), y + 13, 16777215);
+                VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.description, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.description) / 2)) + entryHeight / 2F, y + 13, 16777215);
+            }
+        }
+
+        private void renderIcon(MatrixStack matrices, int x, int y, int entryHeight) {
+            if (MinecraftClient.getInstance().getTextureManager().getOrDefault(icon, null) != null) {
+                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+                RenderSystem.setShaderTexture(0, this.icon);
+                RenderSystem.enableBlend();
+                //noinspection SuspiciousNameCombination
+                DrawableHelper.drawTexture(matrices, x, y, 0F, 0F, entryHeight, entryHeight, entryHeight, entryHeight);
+                RenderSystem.disableBlend();
+            } else if (!iconDownloaded) {
+                VTDMod.downloadIcon(this.name);
+                this.iconDownloaded = true;
             }
         }
 
         private void renderTooltip(int mouseX, int mouseY) {
-            if (this.isMouseOver(mouseX, mouseY)) {
+            if (this.isMouseOver(mouseX, mouseY) && PackListWidget.this.isMouseOver(mouseX, mouseY)) {
                 List<Text> lines = new ArrayList<>();
 
                 String[] descSplit = this.description.split("\s");

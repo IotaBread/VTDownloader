@@ -3,10 +3,15 @@ package me.bymartrixx.vtd;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.texture.NativeImage;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.util.Identifier;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Level;
@@ -15,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class VTDMod implements ClientModInitializer {
     public static final String MOD_ID = "vt_downloader";
@@ -24,6 +31,7 @@ public class VTDMod implements ClientModInitializer {
     public static final Gson GSON = new Gson();
     public static final String VERSION = FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
     public static final String BASE_URL = "https://vanillatweaks.net";
+    private static final Executor ICON_DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
     public static JsonArray rpCategories;
 
     public static void log(Level level, String message, Object... fields) {
@@ -77,6 +85,21 @@ public class VTDMod implements ClientModInitializer {
             VTDMod.logError("Encountered an exception while getting the Resource pack categories.", e);
             VTDMod.rpCategories = new JsonArray(); // Prevent NPE
         }
+    }
+
+    public static void downloadIcon(String packName) {
+        VTDMod.ICON_DOWNLOAD_EXECUTOR.execute(() -> {
+            Identifier iconIdentifier = new Identifier(VTDMod.MOD_ID, packName.toLowerCase());
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
+                HttpPost request = new HttpPost(VTDMod.BASE_URL + "/assets/resources/icons/resourcepacks/" + VTDMod.MINECRAFT_VERSION + "/" + packName + ".png");
+                HttpResponse response = client.execute(request);
+                NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(response.getEntity().getContent()));
+                MinecraftClient.getInstance().getTextureManager().registerTexture(iconIdentifier, icon);
+                MinecraftClient.getInstance().getTextureManager().bindTexture(iconIdentifier);
+            } catch (IOException e) {
+                VTDMod.logError("Icon for " + packName + " failed to download", e);
+            }
+        });
     }
 
     @Override
