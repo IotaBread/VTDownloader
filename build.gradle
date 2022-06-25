@@ -7,8 +7,6 @@ plugins {
 	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 }
 
-import com.modrinth.minotaur.TaskModrinthUpload
-
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -38,7 +36,6 @@ dependencies {
 	})
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
@@ -85,7 +82,7 @@ modrinth {
 	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.19"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
-	gameVersions = ['1.19-pre3']
+	gameVersions = ['1.19', '1.19.1-rc1']
 	loaders = ['fabric', 'quilt']
 }
 
@@ -97,6 +94,7 @@ curseforge {
 		id = '432425'
 		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
+		addGameVersion '1.19'
 		addGameVersion '1.19-Snapshot'
 		addGameVersion 'Fabric'
 		addGameVersion 'Quilt'
