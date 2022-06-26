@@ -1,6 +1,6 @@
 package me.bymartrixx.vtd.mixin;
 
-import me.bymartrixx.vtd.gui.VTDScreen;
+import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -18,6 +18,7 @@ import java.io.File;
 @Mixin(PackScreen.class)
 public class PackScreenMixin extends Screen {
     private static final Text VTD_RESOURCE_PACK_SUBTITLE = Text.translatable("vtd.resourcePack.subtitle").formatted(Formatting.GRAY);
+
     @Shadow
     @Final
     private File file;
@@ -31,7 +32,7 @@ public class PackScreenMixin extends Screen {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.file == this.client.getResourcePackDir()) {
             this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Text.translatable("vtd.resourcePack.button"), button -> {
-                this.client.setScreen(new VTDScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
+                this.client.setScreen(new VTDownloadScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
             }));
         }
     }

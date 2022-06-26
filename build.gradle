@@ -13,7 +13,7 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.archives_base_name
 group = project.maven_group
 
-version = project.mod_version + '+' + project.minecraft_version
+version = project.mod_version + '+' + project.vt_version
 boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
 version = !isBuild ? version : "${version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 

@@ -1,109 +1,126 @@
 package me.bymartrixx.vtd;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.mojang.blaze3d.texture.NativeImage;
+import me.bymartrixx.vtd.data.Pack;
+import me.bymartrixx.vtd.data.RpCategories;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.texture.TextureManager;
 import net.minecraft.util.Identifier;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Scanner;
-import java.util.concurrent.Executor;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 
 public class VTDMod implements ClientModInitializer {
-    public static final String MOD_ID = "vt_downloader";
+    private static final ExecutorService ICON_DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
+    private static final Gson GSON = new Gson();
     public static final String MOD_NAME = "VTDownloader";
-    public static final Logger LOGGER = LogManager.getLogger();
-    public static final String MINECRAFT_VERSION = "1.19";
-    public static final Gson GSON = new Gson();
-    public static final String VERSION = FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).isPresent() ? FabricLoader.getInstance().getModContainer(VTDMod.MOD_ID).get().getMetadata().getVersion().toString() : "1.0.0";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
     public static final String BASE_URL = "https://vanillatweaks.net";
-    private static final Executor ICON_DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
-    public static JsonArray rpCategories;
+    public static final String MOD_ID = "vt_downloader";
 
-    public static void log(Level level, String message, Object... fields) {
-        VTDMod.LOGGER.log(level, "[" + VTDMod.MOD_NAME + "] " + message, fields);
+    public static final String VT_VERSION;
+    public static final String VERSION;
+
+    public static RpCategories rpCategories;
+
+    static {
+        String version = "2.0.0";
+        String vtVersion = "1.19";
+
+        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
+        if (container.isPresent()) {
+            version = container.get().getMetadata().getVersion().toString();
+            vtVersion = version.substring(version.indexOf('+') + 1);
+            vtVersion = vtVersion.contains("+") ? vtVersion.substring(0, vtVersion.indexOf('+')) : vtVersion; // Remove build number if present
+        }
+
+        VERSION = version;
+        VT_VERSION = vtVersion;
     }
 
-    public static void log(Level level, String message) {
-        log(level, message, (Object) null);
-    }
-
-    public static void logError(String message, Throwable t) {
-        VTDMod.LOGGER.log(Level.ERROR, "[" + VTDMod.MOD_NAME + "] " + message, t);
-    }
-
-    public static JsonArray getCategories(String resourceUrl) throws IOException {
+    @Nullable
+    public static <T> T executeRequest(String resourceUrl, Function<InputStream, T> reader) throws IOException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-
             HttpGet request = new HttpGet(VTDMod.BASE_URL + resourceUrl);
             HttpResponse response = client.execute(request);
 
-            int responseStatusCode = response.getStatusLine().getStatusCode();
-
-            if (responseStatusCode / 100 != 2) { // Check if responseStatusCode is 2xx/Success
-                VTDMod.log(Level.WARN, "The request to the URL {} responded with an unexpected status code: {}. The request processing has been canceled.", VTDMod.BASE_URL + resourceUrl, responseStatusCode);
-                return new JsonArray(); // Prevent NPE
+            // Check if the response code is 2xx/Success
+            int code = response.getStatusLine().getStatusCode();
+            if (code / 100 != 2) {
+                LOGGER.error("Failed to execute request to {}, status code {}", VTDMod.BASE_URL + resourceUrl, code);
+                return null;
             }
 
-            StringBuilder responseContent = new StringBuilder();
-            Scanner responseScanner = new Scanner(response.getEntity().getContent());
-
-            while (responseScanner.hasNext()) {
-                responseContent.append(responseScanner.nextLine());
-            }
-
-            return VTDMod.GSON.fromJson(responseContent.toString(), JsonObject.class).get("categories").getAsJsonArray();
+            return reader.apply(response.getEntity().getContent());
         }
     }
 
-    public static void getRPCategories() throws IOException {
-        // TODO: Detect minecraft version from mod version
-        VTDMod.rpCategories = VTDMod.getCategories(
-                "/assets/resources/json/" + MINECRAFT_VERSION + "/rpcategories.json");
-    }
-
-    public static void reloadRPCategories() {
+    public static void loadRpCategories() {
         try {
-            VTDMod.log(Level.INFO, "Requesting Resource pack categories and packs.");
-            VTDMod.getRPCategories();
-            VTDMod.log(Level.INFO, "Resource pack categories and packs loaded. There are {} Resource pack categories.", VTDMod.rpCategories.size());
+            RpCategories categories = VTDMod.executeRequest("/assets/resources/json/" + VT_VERSION + "/rpcategories.json",
+                    stream -> GSON.fromJson(new InputStreamReader(stream), RpCategories.class));
+
+            if (categories == null) {
+                LOGGER.error("Failed to load resource pack categories");
+                return;
+            }
+
+            rpCategories = categories;
+            LOGGER.info("Loaded {} resource pack categories", rpCategories.getCategories().size());
         } catch (IOException e) {
-            VTDMod.logError("Encountered an exception while getting the Resource pack categories.", e);
-            VTDMod.rpCategories = new JsonArray(); // Prevent NPE
+            LOGGER.error("Failed to load resource pack categories", e);
         }
     }
 
-    public static void downloadIcon(String packName) {
-        VTDMod.ICON_DOWNLOAD_EXECUTOR.execute(() -> {
-            Identifier iconIdentifier = new Identifier(VTDMod.MOD_ID, packName.toLowerCase());
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                HttpPost request = new HttpPost(VTDMod.BASE_URL + "/assets/resources/icons/resourcepacks/" + VTDMod.MINECRAFT_VERSION + "/" + packName + ".png");
-                HttpResponse response = client.execute(request);
-                NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(response.getEntity().getContent()));
-                MinecraftClient.getInstance().getTextureManager().registerTexture(iconIdentifier, icon);
-                MinecraftClient.getInstance().getTextureManager().bindTexture(iconIdentifier);
+    public static CompletableFuture<Boolean> downloadIcon(Pack pack) {
+        String resourceUrl = "/assets/resources/icons/resourcepacks/" + VT_VERSION + "/" + pack.getId() + ".png";
+
+        return CompletableFuture.supplyAsync(() -> {
+            Identifier id = getIconId(pack);
+            try (InputStream stream = executeRequest(resourceUrl, Function.identity())) {
+                if (stream == null) {
+                    LOGGER.error("Failed to download icon for pack {}", pack.getName());
+                    return false;
+                }
+
+                NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(stream));
+                TextureManager textureManager = MinecraftClient.getInstance().getTextureManager();
+                textureManager.registerTexture(id, icon);
+                textureManager.bindTexture(id);
+                return true;
             } catch (IOException e) {
-                VTDMod.logError("Icon for " + packName + " failed to download", e);
+                LOGGER.error("Failed to download icon for pack {}", pack.getName(), e);
+                return false;
             }
-        });
+        }, ICON_DOWNLOAD_EXECUTOR);
+    }
+
+    public static Identifier getIconId(Pack pack) {
+        return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
     }
 
     @Override
     public void onInitializeClient() {
-        VTDMod.reloadRPCategories();
+        LOGGER.info("VTDownloader {}, using Vanilla Tweaks {}", VERSION, VT_VERSION);
+        loadRpCategories();
     }
 }
