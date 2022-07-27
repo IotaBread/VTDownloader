@@ -27,6 +27,6 @@
     ],
 
     "depends": {
-        "minecraft": "1.19.x"
+        "minecraft": ">=1.19.1 <1.20"
     }
 }
