@@ -128,7 +128,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
             this.renderHeader(matrices, k, l, tessellator);
             //}
 
-            this.renderList(matrices, k, l, mouseX, mouseY, delta);
+            this.renderList(matrices, mouseX, mouseY, delta);
             //if (this.renderHorizontalShadows) { // Private field, true
             RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
@@ -257,6 +257,7 @@ public class PackListWidget extends EntryListWidget<PackListWidget.PackEntry> {
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             VTDScreen.getInstance().getTextRenderer().drawWithShadow(matrices, this.displayName, ((float) (PackListWidget.this.width / 2 - VTDScreen.getInstance().getTextRenderer().getWidth(this.displayName) / 2)) + entryHeight / 2F, y + 1, 16777215);
+            System.out.printf("%d %d%n", mouseX, mouseY);
             this.renderDescription(matrices, y, entryHeight);
             this.renderIcon(matrices, x, y, entryHeight);
             this.renderTooltip(mouseX, mouseY);
