@@ -47,6 +47,22 @@ public class Category {
         return packsById.get(id);
     }
 
-    public record Warning(String text, String color) {
+    @SuppressWarnings("ClassCanBeRecord") // Gson doesn't support records
+    public static class Warning {
+        private final String text;
+        private final String color;
+
+        public Warning(String text, String color) {
+            this.text = text;
+            this.color = color;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getColor() {
+            return color;
+        }
     }
 }
