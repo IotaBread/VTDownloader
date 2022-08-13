@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,34 +31,33 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_MARGIN = 10;
 
+    private static final int SCROLLBAR_HEIGHT = 6;
+    private static final int SCROLLBAR_MARGIN = 2;
+    private static final int SCROLLBAR_MIN_WIDTH = 32;
+
     private final List<CategoryButtonWidget> children = new ArrayList<>();
     private List<Category> categories;
     private final VTDownloadScreen screen;
     private final int y;
 
-    private final int height;
-    private final int width;
-    private final int left;
-    private final int top;
-    private final int right;
-    private final int bottom;
+    private int height;
+    private int width;
+    private int left;
+    private int top;
+    private int right;
+    private int bottom;
 
-    private final int startX;
-    private final int endX;
+    private int startX;
+    private int endX;
+
+    private double scrollAmount;
+    private boolean scrolling;
 
     public CategorySelectionWidget(VTDownloadScreen screen, int y) {
         this.screen = screen;
         this.y = y;
 
-        this.height = TOP_BOTTOM_PADDING * 2 + BUTTON_HEIGHT;
-        this.width = this.screen.width - LEFT_RIGHT_MARGIN * 2;
-        this.left = LEFT_RIGHT_MARGIN;
-        this.top = this.y;
-        this.right = this.left + this.width;
-        this.bottom = this.top + this.height;
-
-        this.startX = 0;
-        this.endX = this.right + LEFT_RIGHT_MARGIN;
+        this.calculateDimensions();
     }
 
     public void setCategories(List<Category> categories) {
@@ -69,6 +69,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
             CategoryButtonWidget button = createCategoryButton(category);
             this.children.add(button);
         }
+
+        this.calculateDimensions();
     }
 
     private CategoryButtonWidget createCategoryButton(Category category) {
@@ -76,6 +78,36 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         return new CategoryButtonWidget(BUTTON_WIDTH, BUTTON_HEIGHT, text, /*button -> {
             VTDMod.LOGGER.info("Clicked button for {}", category.getName());
         },*/ category);
+    }
+
+    private int getButtonsWidth() {
+        if (this.categories == null) {
+            return 0;
+        }
+
+        int x = this.categories.size();
+        if (x > 0) {
+            return x * BUTTON_WIDTH + (x - 1) * BUTTON_MARGIN;
+        }
+
+        return 0;
+    }
+
+    private boolean shouldHaveScrollbar() {
+        return getButtonsWidth() > width;
+    }
+
+    private void calculateDimensions() {
+        this.width = this.screen.width - LEFT_RIGHT_MARGIN * 2;
+        boolean scrollbar = shouldHaveScrollbar();
+        this.height = TOP_BOTTOM_PADDING * 2 + BUTTON_HEIGHT + (scrollbar ? SCROLLBAR_HEIGHT + SCROLLBAR_MARGIN : 0);
+        this.left = LEFT_RIGHT_MARGIN;
+        this.top = this.y;
+        this.right = this.left + this.width;
+        this.bottom = this.top + this.height;
+
+        this.startX = 0;
+        this.endX = this.right + LEFT_RIGHT_MARGIN;
     }
 
     private int getCategoryLeftOffset(int index) {
@@ -87,10 +119,16 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         return getCategoryLeftOffset(index) + BUTTON_WIDTH + LEFT_RIGHT_PADDING;
     }
 
+    private double getScrollAmount() {
+        return this.scrollAmount;
+    }
+
+    // region render
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground();
         this.renderCategories(matrices, mouseX, mouseY, delta);
+        this.renderScrollbar();
         this.renderMargin();
     }
 
@@ -135,6 +173,42 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 button.render(matrices, left, this.top + TOP_BOTTOM_PADDING, mouseX, mouseY, delta);
             }
         }
+    }
+
+    private void renderScrollbar() {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
+
+        if (shouldHaveScrollbar()) {
+            RenderSystem.disableTexture();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+            int startX = this.left + LEFT_RIGHT_PADDING;
+            int endX = this.right - LEFT_RIGHT_PADDING;
+            int startY = this.bottom - SCROLLBAR_HEIGHT - SCROLLBAR_MARGIN;
+            int endY = startY + SCROLLBAR_HEIGHT;
+
+            int width = endX - startX;
+            int size = (width * width) / getButtonsWidth();
+            size = MathHelper.clamp(size, SCROLLBAR_MIN_WIDTH, width - 4);
+
+            bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+            bufferBuilder.vertex(startX, endY, 0.0)
+                    .color(0, 0, 0, 255)
+                    .next();
+            bufferBuilder.vertex(endX, endY, 0.0)
+                    .color(0, 0, 0, 255)
+                    .next();
+            bufferBuilder.vertex(endX, startY, 0.0)
+                    .color(0, 0, 0, 255)
+                    .next();
+            bufferBuilder.vertex(startX, startY, 0.0)
+                    .color(0, 0, 0, 255)
+                    .next();
+            tessellator.draw();
+        }
+
+        RenderSystem.enableTexture();
     }
 
     // Render a margin over the category buttons to make them look as if they were partially under the background
@@ -184,6 +258,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 .next();
         tessellator.draw();
     }
+    // endregion
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder) {
