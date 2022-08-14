@@ -103,7 +103,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         this.renderHeader(matrices, k, l, tessellator);
         //}
 
-        this.renderList(matrices, k, l, mouseX, mouseY, delta);
+        this.renderList(matrices, mouseX, mouseY, delta);
         //if (this.renderHorizontalShadows) { // Private field, true
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
