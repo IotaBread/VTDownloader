@@ -7,6 +7,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.AbstractParentElement;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -16,11 +18,13 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
+    private static final boolean SHOW_DEBUG_INFO = true;
     private static final float TEXTURE_SIZE = 32.0F;
 
     private static final int LEFT_RIGHT_PADDING = 2;
@@ -110,18 +114,83 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.endX = this.right + LEFT_RIGHT_MARGIN;
     }
 
-    private int getCategoryLeftOffset(int index) {
-        // TODO: scrolling
-        return LEFT_RIGHT_MARGIN + LEFT_RIGHT_PADDING + index * (BUTTON_WIDTH + BUTTON_MARGIN);
-    }
-
-    private int getCategoryRightOffset(int index) {
-        return getCategoryLeftOffset(index) + BUTTON_WIDTH + LEFT_RIGHT_PADDING;
+    private int getMaxScroll() {
+        return Math.max(0, getButtonsWidth() - this.width + LEFT_RIGHT_PADDING * 2);
     }
 
     private double getScrollAmount() {
         return this.scrollAmount;
     }
+
+    private void setScrollAmount(double scrollAmount) {
+        this.scrollAmount = MathHelper.clamp(scrollAmount, 0.0, getMaxScroll());
+    }
+
+    private void updateScrollingState(double mouseX, double mouseY, int button) {
+        this.scrolling = button == GLFW.GLFW_MOUSE_BUTTON_1 &&
+                mouseX >= this.getScrollbarStartX() && mouseX < this.getScrollbarEndX() &&
+                mouseY >= this.getScrollbarStartY() && mouseY < this.getScrollbarEndY();
+    }
+
+    // region input callbacks
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.updateScrollingState(mouseX, mouseY, button);
+
+        if (!this.isMouseOver(mouseX, mouseY)) {
+            return false;
+        } else {
+            return super.mouseClicked(mouseX, mouseY, button) || this.scrolling;
+        }
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
+            // Dragging scrollbar
+            if (mouseX < this.left) {
+                this.setScrollAmount(0);
+            } else if (mouseX > this.right) {
+                this.setScrollAmount(this.getMaxScroll());
+            } else {
+                double maxScroll = Math.max(1, this.getMaxScroll());
+                int width = this.getScrollbarEndX() - this.getScrollbarStartX();
+                int barSize = (this.width * this.width) / this.getButtonsWidth();
+                barSize = MathHelper.clamp(barSize, SCROLLBAR_MIN_WIDTH, width);
+                double factor = Math.max(1, maxScroll / (this.width - barSize));
+                this.setScrollAmount(this.getScrollAmount() + deltaX * factor);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // Only called if isMouseOver is true; from Screen#mouseScrolled
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        this.setScrollAmount(this.getScrollAmount() - amount * BUTTON_WIDTH / 2);
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    // Needed to allow scrolling
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return mouseX >= this.left && mouseX < this.right &&
+                mouseY >= this.top && mouseY < this.bottom;
+    }
+    // endregion
 
     // region render
     @Override
@@ -130,6 +199,10 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.renderCategories(matrices, mouseX, mouseY, delta);
         this.renderScrollbar();
         this.renderMargin();
+
+        if (SHOW_DEBUG_INFO) {
+            this.renderDebugInfo(matrices);
+        }
     }
 
     private void renderBackground() {
@@ -165,8 +238,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     private void renderCategories(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         for (int i = 0; i < this.children.size(); i++) {
             CategoryButtonWidget button = this.children.get(i);
-            int left = getCategoryLeftOffset(i);
-            int right = getCategoryRightOffset(i);
+            int left = getButtonLeft(i);
+            int right = getButtonRight(i);
 
             // Render only if the button is at least partially visible (else it'd be out of the screen)
             if (right > this.left && left < this.right) {
@@ -183,15 +256,21 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            int startX = this.left + LEFT_RIGHT_PADDING;
-            int endX = this.right - LEFT_RIGHT_PADDING;
-            int startY = this.bottom - SCROLLBAR_HEIGHT - SCROLLBAR_MARGIN;
-            int endY = startY + SCROLLBAR_HEIGHT;
+            int startX = this.getScrollbarStartX();
+            int endX = this.getScrollbarEndX();
+            int startY = this.getScrollbarStartY();
+            int endY = this.getScrollbarEndY();
 
             int width = endX - startX;
-            int size = (width * width) / getButtonsWidth();
-            size = MathHelper.clamp(size, SCROLLBAR_MIN_WIDTH, width - 4);
+            int size = (this.width * this.width) / this.getButtonsWidth();
+            size = MathHelper.clamp(size, SCROLLBAR_MIN_WIDTH, width);
 
+            int x = (int) this.getScrollAmount() * (width - size) / this.getMaxScroll() + startX;
+            if (x < startX) {
+                x = startX;
+            }
+
+            // Draw slider area
             bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             bufferBuilder.vertex(startX, endY, 0.0)
                     .color(0, 0, 0, 255)
@@ -204,6 +283,34 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                     .next();
             bufferBuilder.vertex(startX, startY, 0.0)
                     .color(0, 0, 0, 255)
+                    .next();
+
+            // Draw scroll bar
+            bufferBuilder.vertex(x, endY, 0.0)
+                    .color(128, 128, 128, 255)
+                    .next();
+            bufferBuilder.vertex(x + size, endY, 0.0)
+                    .color(128, 128, 128, 255)
+                    .next();
+            bufferBuilder.vertex(x + size, startY, 0.0)
+                    .color(128, 128, 128, 255)
+                    .next();
+            bufferBuilder.vertex(x, startY, 0.0)
+                    .color(128, 128, 128, 255)
+                    .next();
+
+            // Draw scroll bar highlight
+            bufferBuilder.vertex(x, endY - 1, 0.0)
+                    .color(192, 192, 192, 255)
+                    .next();
+            bufferBuilder.vertex(x + size - 1, endY - 1, 0.0)
+                    .color(192, 192, 192, 255)
+                    .next();
+            bufferBuilder.vertex(x + size - 1, startY, 0.0)
+                    .color(192, 192, 192, 255)
+                    .next();
+            bufferBuilder.vertex(x, startY, 0.0)
+                    .color(192, 192, 192, 255)
                     .next();
             tessellator.draw();
         }
@@ -257,6 +364,63 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 .color(64, 64, 64, 255)
                 .next();
         tessellator.draw();
+    }
+
+    private void renderDebugInfo(MatrixStack matrices) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        TextRenderer textRenderer = client.textRenderer;
+
+        int last = categories.size() - 1;
+        List<String> debugInfo = List.of(
+                "W = " + this.width,
+                "L/R = " + this.left + "/" + this.right,
+                "PL/PR = " + (this.left + LEFT_RIGHT_PADDING) + "/" + (this.right - LEFT_RIGHT_PADDING),
+                "S = " + this.scrolling,
+                "SA = " + this.getScrollAmount(),
+                "MS = " + this.getMaxScroll(),
+                "BW = " + this.getButtonsWidth(),
+                "BL0/BR0 = " + this.getButtonLeft(0) + "/" + this.getButtonRight(0),
+                "BL-1/BR-1 = " + this.getButtonLeft(last) + "/" + this.getButtonRight(last)
+        );
+
+        // Make text half its size
+        matrices.push();
+        matrices.scale(0.5f, 0.5f, 0.5f);
+
+        float lineHeight = textRenderer.fontHeight + 2;
+        float startY = this.screen.height * 2 - lineHeight * debugInfo.size();
+        for (int i = 0; i < debugInfo.size(); i++) {
+            String text = debugInfo.get(i);
+            textRenderer.draw(matrices, text, 0, startY + i * lineHeight, 0xFFCCCCCC);
+        }
+
+        matrices.pop();
+    }
+    // endregion
+
+    // region positions
+    private int getButtonLeft(int index) {
+        return this.left + LEFT_RIGHT_PADDING - (int) this.getScrollAmount() + index * (BUTTON_WIDTH + BUTTON_MARGIN);
+    }
+
+    private int getButtonRight(int index) {
+        return getButtonLeft(index) + BUTTON_WIDTH + LEFT_RIGHT_PADDING;
+    }
+
+    private int getScrollbarStartX() {
+        return this.left + LEFT_RIGHT_PADDING;
+    }
+
+    private int getScrollbarEndX() {
+        return this.right - LEFT_RIGHT_PADDING;
+    }
+
+    private int getScrollbarStartY() {
+        return this.bottom - SCROLLBAR_HEIGHT - SCROLLBAR_MARGIN;
+    }
+
+    private int getScrollbarEndY() {
+        return this.bottom - SCROLLBAR_MARGIN;
     }
     // endregion
 
