@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
-    private static final boolean SHOW_DEBUG_INFO = true;
+    private static final boolean SHOW_DEBUG_INFO = false;
     private static final float TEXTURE_SIZE = 32.0F;
 
     private static final int LEFT_RIGHT_PADDING = 2;
@@ -79,9 +79,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     private CategoryButtonWidget createCategoryButton(Category category) {
         Text text = Text.literal(category.getName());
-        return new CategoryButtonWidget(BUTTON_WIDTH, BUTTON_HEIGHT, text, /*button -> {
-            VTDMod.LOGGER.info("Clicked button for {}", category.getName());
-        },*/ category);
+        return new CategoryButtonWidget(BUTTON_WIDTH, BUTTON_HEIGHT, text, category, this.screen);
     }
 
     private int getButtonsWidth() {
@@ -181,6 +179,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // TODO: Allow selecting categories from the keyboard
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -372,12 +371,12 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
         int last = categories.size() - 1;
         List<String> debugInfo = List.of(
-                "W = " + this.width,
+                "WxH = " + this.width + "x" + this.height,
+                "T/B = " + this.top + "/" + this.bottom,
                 "L/R = " + this.left + "/" + this.right,
                 "PL/PR = " + (this.left + LEFT_RIGHT_PADDING) + "/" + (this.right - LEFT_RIGHT_PADDING),
                 "S = " + this.scrolling,
-                "SA = " + this.getScrollAmount(),
-                "MS = " + this.getMaxScroll(),
+                "SA/MS = " + this.getScrollAmount() + "/" + this.getMaxScroll(),
                 "BW = " + this.getButtonsWidth(),
                 "BL0/BR0 = " + this.getButtonLeft(0) + "/" + this.getButtonRight(0),
                 "BL-1/BR-1 = " + this.getButtonLeft(last) + "/" + this.getButtonRight(last)

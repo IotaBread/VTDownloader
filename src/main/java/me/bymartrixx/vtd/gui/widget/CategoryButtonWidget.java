@@ -2,6 +2,7 @@ package me.bymartrixx.vtd.gui.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.data.Category;
+import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -21,15 +22,17 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
     private final int width;
     private final int height;
     private final Text text;
+    private final VTDownloadScreen screen;
     private boolean selected = false;
     private boolean hovered;
     private boolean focused;
 
-    public CategoryButtonWidget(int width, int height, Text text, Category category) {
+    public CategoryButtonWidget(int width, int height, Text text, Category category, VTDownloadScreen screen) {
         this.width = width;
         this.height = height;
         this.text = text;
         this.category = category;
+        this.screen = screen;
     }
 
     public void render(MatrixStack matrices, int x, int y, int mouseX, int mouseY, float delta) {
@@ -57,6 +60,15 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
 
         int textColor = this.selected ? 0xA0A0A0 : 0xFFFFFF;
         drawCenteredText(matrices, textRenderer, this.text, x + buttonCenter, y + (this.height - 8) / 2, textColor);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.hovered) {
+            return this.screen.selectCategory(this.category);
+        }
+
+        return false;
     }
 
     @Override
