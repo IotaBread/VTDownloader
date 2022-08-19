@@ -1,7 +1,9 @@
 package me.bymartrixx.vtd;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.texture.NativeImage;
+import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.data.RpCategories;
 import net.fabricmc.api.ClientModInitializer;
@@ -31,7 +33,9 @@ import java.util.function.Function;
 
 public class VTDMod implements ClientModInitializer {
     private static final ExecutorService ICON_DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(DownloadPackRequestData.class, new DownloadPackRequestData.Serializer())
+            .create();
     public static final String MOD_NAME = "VTDownloader";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
     public static final String BASE_URL = "https://vanillatweaks.net";
