@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 public class VTDownloadScreen extends Screen {
+    private static final int BUTTON_HEIGHT = 20;
+    private static final int DONE_BUTTON_WIDTH = 80;
+    private static final int DONE_BUTTON_MARGIN = 10;
+
     private static final int PACK_SELECTOR_TOP_HEIGHT = 66;
     private static final int PACK_SELECTOR_BOTTOM_HEIGHT = 32;
     private static final int PACK_SELECTOR_ITEM_HEIGHT = 32;
@@ -62,7 +66,11 @@ public class VTDownloadScreen extends Screen {
                 PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT, PACK_SELECTOR_ITEM_HEIGHT,
                 selectedPacks, currentCategory));
 
-        this.addDrawableChild(new ButtonWidget(this.width - 90, this.height - 30, 80, 20, ScreenTexts.DONE, button -> this.closeScreen()));
+        this.addDrawableChild(new ButtonWidget(
+                this.width - DONE_BUTTON_WIDTH - DONE_BUTTON_MARGIN, this.height - BUTTON_HEIGHT - DONE_BUTTON_MARGIN,
+                DONE_BUTTON_WIDTH, BUTTON_HEIGHT,
+                ScreenTexts.DONE, button -> this.closeScreen()
+        ));
 
         this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, 32));
         this.categorySelector.setCategories(this.categories);
