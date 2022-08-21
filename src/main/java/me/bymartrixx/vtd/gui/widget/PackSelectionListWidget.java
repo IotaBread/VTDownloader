@@ -168,7 +168,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.icon = VTDMod.getIconId(pack);
 
             this.iconExists = this.client.getTextureManager().getOrDefault(this.icon, null) != null;
-            this.downloadIcon();
         }
 
         public Pack getPack() {
@@ -208,6 +207,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderIcon(MatrixStack matrices, int x, int y, int size) {
+            downloadIcon();
             if (!this.iconExists) return;
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -215,7 +215,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             RenderSystem.setShaderTexture(0, this.icon);
             RenderSystem.enableBlend();
 
-            drawTexture(matrices, x, y, 0.0F, 0.0F, size, size, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
+            drawTexture(matrices, x, y, 0.0F, 0.0F, size, size, size, size);
 
             RenderSystem.disableBlend();
         }
