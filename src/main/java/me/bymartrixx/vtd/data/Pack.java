@@ -15,6 +15,8 @@ public class Pack {
     @SerializedName("experiment")
     private boolean experimental = false;
 
+    private String icon = null; // Only used in testing
+
     public Pack(String id, String name, String description, List<String> incompatiblePacks) {
         this.id = id;
         this.name = name;
@@ -28,6 +30,23 @@ public class Pack {
         this.description = description;
         this.incompatiblePacks = incompatiblePacks;
         this.experimental = experimental;
+    }
+
+    public Pack(String id, String name, String description, List<String> incompatiblePacks, boolean experimental, String icon) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.incompatiblePacks = incompatiblePacks;
+        this.experimental = experimental;
+        this.icon = icon;
+    }
+
+    public Pack(String id, String name, String description, List<String> incompatiblePacks, String icon) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.incompatiblePacks = incompatiblePacks;
+        this.icon = icon;
     }
 
     public String getId() {
@@ -52,5 +71,9 @@ public class Pack {
 
     public boolean isCompatible(Pack pack) {
         return !this.incompatiblePacks.contains(pack.getId());
+    }
+
+    public String getIcon() {
+        return this.icon == null ? this.getId() : this.icon;
     }
 }

@@ -17,6 +17,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class VTDMod implements ClientModInitializer {
     public static <T> T executeRequest(String resourceUrl, Function<InputStream, T> reader) throws IOException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpGet request = new HttpGet(VTDMod.BASE_URL + resourceUrl);
+            request.addHeader("User-Agent", VTDMod.VERSION);
             HttpResponse response = client.execute(request);
 
             // Check if the response code is 2xx/Success
@@ -96,7 +98,7 @@ public class VTDMod implements ClientModInitializer {
     }
 
     public static CompletableFuture<Boolean> downloadIcon(Pack pack) {
-        String resourceUrl = "/assets/resources/icons/resourcepacks/" + VT_VERSION + "/" + pack.getId() + ".png";
+        String resourceUrl = "/assets/resources/icons/resourcepacks/" + VT_VERSION + "/" + pack.getIcon() + ".png";
 
         return CompletableFuture.supplyAsync(() -> {
             Identifier id = getIconId(pack);
@@ -118,6 +120,7 @@ public class VTDMod implements ClientModInitializer {
         }, ICON_DOWNLOAD_EXECUTOR);
     }
 
+    @Contract("_ -> new")
     public static Identifier getIconId(Pack pack) {
         return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
     }
