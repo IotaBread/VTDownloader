@@ -4,16 +4,20 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
+import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -35,21 +39,29 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private static final Text ERROR_TEXT = Text.translatable("vtd.packError.body.1");
     private static final Text ERROR_TEXT_2 = Text.translatable("vtd.packError.body.2");
     private static final Text ERROR_TEXT_3 = Text.translatable("vtd.packError.body.3", ERROR_URL);
+    private static final List<Text> ERROR_LINES = List.of(ERROR_HEADER_TEXT, ERROR_HEADER_TEXT_2,
+            ERROR_TEXT, ERROR_TEXT_2, ERROR_TEXT_3);
 
-    private static final int ICON_TEXTURE_SIZE = 90;
+    private static final int ROW_LEFT_RIGHT_MARGIN = 10;
+    private static final int SCROLLBAR_LEFT_MARGIN = 4;
     private static final int TEXT_MARGIN = 2;
     private static final int ICON_MARGIN = 1;
 
     private final Map<Category, List<PackEntry>> entryCache = new HashMap<>();
+    private final VTDownloadScreen screen;
+    private final Map<Category, List<Pack>> selectedPacks;
     private Category category;
 
-    private final Map<Category, List<Pack>> selectedPacks;
+    private final MultilineText errorText;
 
-    public PackSelectionListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+    public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int top, int bottom, int itemHeight,
                                    Map<Category, List<Pack>> selectedPacks, Category category) {
         super(client, width, height, top, bottom, itemHeight);
+        this.screen = screen;
         this.selectedPacks = selectedPacks;
         this.category = category;
+
+        this.errorText = MultilineText.create(client.textRenderer, ERROR_LINES);
 
         this.children().addAll(getPackEntries(category));
     }
@@ -79,15 +91,66 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return entries;
     }
 
+    private int getCenterX() {
+        return this.left + this.width / 2;
+    }
+
+    private int getCenterY() {
+        return this.height / 2;
+    }
+
+    private int getLineHeight(TextRenderer textRenderer) {
+        return textRenderer.fontHeight + TEXT_MARGIN;
+    }
+
+    @Override
+    public int getRowWidth() {
+        return this.width - ROW_LEFT_RIGHT_MARGIN * 2;
+    }
+
+    @Override
+    protected int getScrollbarPositionX() {
+        return this.left + getRowWidth() + SCROLLBAR_LEFT_MARGIN;
+    }
+
+    @Nullable
+    private Style getErrorStyleAt(double mouseX, int line) {
+        TextRenderer textRenderer = this.client.textRenderer;
+        Text text = ERROR_LINES.get(line);
+        int width = textRenderer.getWidth(text);
+        int startX = this.getCenterX() - width / 2;
+        int endX = startX + width;
+
+        return mouseX >= startX && mouseX < endX ?
+                textRenderer.getTextHandler().getStyleAt(text, (int) mouseX - startX) : null;
+    }
+
     // region input callbacks
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty() &&
-                mouseX >= this.left && mouseX <= this.right &&
-                mouseY >= this.top && mouseY < this.bottom) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
             // Handle clicks when the error is shown
-            // TODO
+            int x = this.getCenterX();
+            int textWidth = this.errorText.m_crhihbev();
+            int startX = x - textWidth / 2;
+            int endX = x + textWidth / 2;
+
+            int y = this.getCenterY();
+            int lineHeight = this.getLineHeight(this.client.textRenderer);
+            int startY = y - lineHeight * 2;
+            int endY = y + lineHeight * 3;
+
+            if (mouseX >= startX && mouseX < endX && mouseY >= startY && mouseY < endY) {
+                int line = (int) ((mouseY - startY) / lineHeight);
+                Style style = this.getErrorStyleAt(mouseX, line);
+
+                if (style != null && style.getClickEvent() != null && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                    this.screen.handleTextClick(style);
+                    return true;
+                }
+            }
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
     // endregion
@@ -102,33 +165,31 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         if (SHOW_DEBUG_INFO) {
-            this.renderDebugInfo(matrices);
+            this.renderDebugInfo(matrices, mouseX, mouseY);
         }
     }
 
     private void renderError(MatrixStack matrices) {
         TextRenderer textRenderer = this.client.textRenderer;
 
-        int x = this.left + this.width / 2;
-        int y = this.height / 2;
-        int fontHeight = textRenderer.fontHeight;
+        int x = this.getCenterX();
+        int y = this.getCenterY();
+        int lineHeight = getLineHeight(textRenderer);
 
-        drawCenteredText(matrices, textRenderer, ERROR_HEADER_TEXT, x, (int) (y - fontHeight * 2.2 - TEXT_MARGIN), 0xFFFFFF);
-        drawCenteredText(matrices, textRenderer, ERROR_HEADER_TEXT_2, x, (int) (y - fontHeight * 1.2 - TEXT_MARGIN), 0xFFFFFF);
-        drawCenteredText(matrices, textRenderer, ERROR_TEXT, x, y, 0xFFFFFF);
-        drawCenteredText(matrices, textRenderer, ERROR_TEXT_2, x, y + fontHeight + TEXT_MARGIN, 0xFFFFFF);
-        drawCenteredText(matrices, textRenderer, ERROR_TEXT_3, x, y + fontHeight * 2 + TEXT_MARGIN, 0xFFFFFF);
+        this.errorText.drawCenterWithShadow(matrices, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
     }
 
-    private void renderDebugInfo(MatrixStack matrices) {
+    private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
         TextRenderer textRenderer = this.client.textRenderer;
 
         boolean hasCategory = this.category != null;
         boolean hasSelection = hasCategory && this.selectedPacks.containsKey(this.category);
         List<String> debugInfo = List.of(
+                "WxH = " + this.width + "x" + this.height,
                 "C = " + (hasCategory ? this.category.getName() : "null"),
                 "S = " + (hasSelection ? this.selectedPacks.get(this.category).stream()
-                        .map(Pack::getId).reduce("", (a, b) -> a + ", " + b) : "")
+                        .map(Pack::getId).reduce("", (a, b) -> a + ", " + b) : ""),
+                "MX/MY = " + mouseX + "/" + mouseY
         );
 
         // Make text half its size
@@ -187,6 +248,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
                 if (success) {
                     this.iconExists = this.client.getTextureManager().getOrDefault(this.icon, null) != null;
+                } else {
+                    VTDMod.LOGGER.error("Failed to download icon for pack {}", this.pack.getName());
                 }
             });
         }

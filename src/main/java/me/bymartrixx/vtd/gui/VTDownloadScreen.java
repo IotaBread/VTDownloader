@@ -63,7 +63,7 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     protected void init() {
-        this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this.width, this.height,
+        this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width, this.height,
                 PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT, PACK_SELECTOR_ITEM_HEIGHT,
                 selectedPacks, currentCategory));
 

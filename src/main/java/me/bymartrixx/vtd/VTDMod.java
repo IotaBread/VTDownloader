@@ -122,8 +122,9 @@ public class VTDMod implements ClientModInitializer {
                 throw new RuntimeException("Failed to execute icon download request", e);
             }
         }, ICON_DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
-            if (response.getStatusLine().getStatusCode() / 100 != 2) {
-                return false;
+            int code = response.getStatusLine().getStatusCode();
+            if (code / 100 != 2) {
+                throw new IllegalStateException("Icon download request returned status code " + code);
             }
 
             try (InputStream stream = response.getEntity().getContent()) {
