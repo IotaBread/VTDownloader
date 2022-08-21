@@ -47,6 +47,7 @@ public class VTDownloadScreen extends Screen {
     public boolean selectCategory(Category category) {
         if (this.currentCategory != category) {
             this.currentCategory = category;
+            this.categorySelector.setSelectedCategory(category);
             this.packSelector.setCategory(category);
             return true;
         }
@@ -75,6 +76,7 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, 32));
         this.categorySelector.setCategories(this.categories);
         this.categorySelector.initCategoryButtons();
+        this.categorySelector.setSelectedCategory(this.currentCategory);
     }
 
     @Override

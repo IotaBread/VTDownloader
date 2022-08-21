@@ -21,7 +21,9 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
     private static final boolean SHOW_DEBUG_INFO = false;
@@ -40,6 +42,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     private static final int SCROLLBAR_MIN_WIDTH = 32;
 
     private final List<CategoryButtonWidget> children = new ArrayList<>();
+    private final Map<Category, CategoryButtonWidget> categoryButtons = new HashMap<>();
     private List<Category> categories;
     private final VTDownloadScreen screen;
     private final int y;
@@ -70,16 +73,26 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     public void initCategoryButtons() {
         for (Category category : this.categories) {
-            CategoryButtonWidget button = createCategoryButton(category);
+            CategoryButtonWidget button = getOrCreateCategoryButton(category);
             this.children.add(button);
         }
 
         this.calculateDimensions();
     }
 
-    private CategoryButtonWidget createCategoryButton(Category category) {
+    private CategoryButtonWidget getOrCreateCategoryButton(Category category) {
+        if (categoryButtons.containsKey(category)) {
+            return categoryButtons.get(category);
+        }
+
         Text text = Text.literal(category.getName());
-        return new CategoryButtonWidget(BUTTON_WIDTH, BUTTON_HEIGHT, text, category, this.screen);
+        CategoryButtonWidget button = new CategoryButtonWidget(this.screen, BUTTON_WIDTH, BUTTON_HEIGHT, text, category);
+        categoryButtons.put(category, button);
+        return button;
+    }
+
+    public void setSelectedCategory(Category category) {
+        categoryButtons.forEach((c, button) -> button.setSelected(c == category));
     }
 
     private int getButtonsWidth() {

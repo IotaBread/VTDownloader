@@ -27,12 +27,12 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
     private boolean hovered;
     private boolean focused;
 
-    public CategoryButtonWidget(int width, int height, Text text, Category category, VTDownloadScreen screen) {
+    public CategoryButtonWidget(VTDownloadScreen screen, int width, int height, Text text, Category category) {
+        this.screen = screen;
         this.width = width;
         this.height = height;
         this.text = text;
         this.category = category;
-        this.screen = screen;
     }
 
     public void render(MatrixStack matrices, int x, int y, int mouseX, int mouseY, float delta) {
@@ -64,7 +64,7 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.hovered) {
+        if (this.hovered && !this.selected) {
             return this.screen.selectCategory(this.category);
         }
 
