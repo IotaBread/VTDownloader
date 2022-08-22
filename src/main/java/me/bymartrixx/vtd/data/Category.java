@@ -47,6 +47,10 @@ public class Category {
         return packsById.get(id);
     }
 
+    public boolean hasWarning() {
+        return this.warning != null;
+    }
+
     @SuppressWarnings("ClassCanBeRecord") // Gson doesn't support records
     public static class Warning {
         private final String text;

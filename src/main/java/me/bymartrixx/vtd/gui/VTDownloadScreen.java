@@ -22,7 +22,6 @@ public class VTDownloadScreen extends Screen {
 
     private static final int PACK_SELECTOR_TOP_HEIGHT = 66;
     private static final int PACK_SELECTOR_BOTTOM_HEIGHT = 32;
-    private static final int PACK_SELECTOR_ITEM_HEIGHT = 32;
 
     private final Screen parent;
     private final Text subtitle;
@@ -63,8 +62,8 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     protected void init() {
-        this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width, this.height,
-                PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT, PACK_SELECTOR_ITEM_HEIGHT,
+        this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
+                this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 selectedPacks, currentCategory));
 
         this.addDrawableChild(new ButtonWidget(
