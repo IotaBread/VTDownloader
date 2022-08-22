@@ -297,7 +297,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             TextRenderer textRenderer = this.client.textRenderer;
-            int iconSize = entryHeight - ICON_MARGIN;
+            int iconSize = entryHeight - ICON_MARGIN * 2;
             int centerX = x + (iconSize + entryWidth) / 2; // center over area left to the icon
             drawCenteredText(matrices, textRenderer, this.name, centerX, y, 0xFFFFFF);
 
