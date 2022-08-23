@@ -20,6 +20,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -30,10 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO: Dynamic rendering
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DISABLE_ICONS = true;
+    // TODO: Incompatibilities
     private static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of("Menu Panoramas", "Options Backgrounds", "Colorful Slime");
 
     private static final Text ERROR_URL = Text.of(VTDMod.BASE_URL).copy()
@@ -97,12 +98,36 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         for (Pack pack : category.getPacks()) {
-            entries.add(new PackEntry(this.client, this.screen, pack));
+            entries.add(new PackEntry(this, pack));
         }
 
         this.entryCache.put(category, entries);
 
         return entries;
+    }
+
+    private List<Pack> getSelectedPacks() {
+        if (this.category == null) {
+            return Collections.emptyList();
+        }
+
+        return this.selectedPacks.computeIfAbsent(this.category, c -> new ArrayList<>());
+    }
+
+    private void toggleSelection(PackEntry entry) {
+        if (this.category == null) {
+            return;
+        }
+
+        Pack pack = entry.getPack();
+        if (!this.category.getPacks().contains(pack)) {
+            throw new IllegalArgumentException("The selected pack does not exist in the current category");
+        }
+
+        List<Pack> selected = this.getSelectedPacks();
+        if (!selected.remove(pack)) {
+            selected.add(pack);
+        }
     }
 
     private int getCenterX() {
@@ -125,6 +150,20 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     @Override
     protected int getScrollbarPositionX() {
         return this.left + getRowWidth() + SCROLLBAR_LEFT_MARGIN;
+    }
+
+    @Override
+    protected boolean isSelectedEntry(int index) {
+        AbstractEntry entry = this.children().get(index);
+        if (entry instanceof PackEntry packEntry) {
+            return this.getSelectedPacks().contains(packEntry.getPack());
+        }
+
+        return false;
+    }
+
+    private int getTooltipWidth() {
+        return this.width / 2;
     }
 
     @Nullable
@@ -181,6 +220,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (SHOW_DEBUG_INFO) {
             this.renderDebugInfo(matrices, mouseX, mouseY);
         }
+
+        this.renderTooltips(matrices, mouseX, mouseY);
     }
 
     private void renderError(MatrixStack matrices) {
@@ -197,12 +238,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         TextRenderer textRenderer = this.client.textRenderer;
 
         boolean hasCategory = this.category != null;
-        boolean hasSelection = hasCategory && this.selectedPacks.containsKey(this.category);
         List<String> debugInfo = List.of(
                 "WxH = " + this.width + "x" + this.height,
                 "C = " + (hasCategory ? this.category.getName() : "null"),
-                "S = " + (hasSelection ? this.selectedPacks.get(this.category).stream()
-                        .map(Pack::getId).reduce("", (a, b) -> a + ", " + b) : ""),
+                "S = " + (this.getSelectedPacks().stream()
+                        .map(Pack::getId).reduce((a, b) -> a + ", " + b).orElse("")),
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
@@ -219,6 +259,15 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         matrices.pop();
     }
+
+    private void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
+        int width = this.getTooltipWidth();
+        for (AbstractEntry entry : this.children()) {
+            if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {
+                break;
+            }
+        }
+    }
     // endregion
 
     @Override
@@ -230,6 +279,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private final Pack pack;
         private final Text name;
 
+        private final PackSelectionListWidget widget;
         private final Identifier icon;
         private boolean downloadedIcon = false;
         private boolean iconExists;
@@ -237,10 +287,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private List<Text> description;
         private MultilineText shortDescription;
 
-        public PackEntry(MinecraftClient client, VTDownloadScreen screen, Pack pack) {
-            super(client, screen);
+        public PackEntry(PackSelectionListWidget widget, Pack pack) {
+            super(widget.client, widget.screen);
             this.pack = pack;
             this.name = Text.of(pack.getName()).copy().formatted(Formatting.BOLD);
+            this.widget = widget;
 
             this.icon = VTDMod.getIconId(pack);
 
@@ -248,7 +299,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private List<Text> getDescriptionLines(int maxWidth) {
-            return this.wrapText(this.pack.getDescription(), maxWidth);
+            return this.wrapEscapedText(this.pack.getDescription(), maxWidth);
         }
 
         private List<Text> getDescription(int maxWidth) {
@@ -299,6 +350,16 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             return this.getDescription(width);
         }
 
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                this.widget.toggleSelection(this);
+                return true;
+            }
+
+            return false;
+        }
+
         // region entryRender
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
@@ -309,8 +370,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
             this.renderDescription(matrices, centerX, y + getLineHeight(textRenderer), entryWidth - iconSize);
             if (!DISABLE_ICONS) this.renderIcon(matrices, x + ICON_MARGIN, y + ICON_MARGIN, iconSize);
-
-            super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
         private void renderDescription(MatrixStack matrices, int x, int y, int width) {
@@ -371,8 +430,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.color = parseColor(warning.getColor());
         }
 
-        private List<Text> getWarpedText(int maxWidth) {
-            return this.wrapText(this.warning.getText(), maxWidth);
+        private List<Text> getWrappedText(int maxWidth) {
+            return this.wrapEscapedText(this.warning.getText(), maxWidth);
         }
 
         private List<Text> getTextLines(int maxWidth) {
@@ -380,7 +439,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 return this.textLines;
             }
 
-            this.textLines = this.getWarpedText(maxWidth);
+            this.textLines = this.getWrappedText(maxWidth);
             return this.textLines;
         }
 
@@ -389,7 +448,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 return this.text;
             }
 
-            this.text = this.createMultilineText(this.getWarpedText(maxWidth));
+            this.text = this.createMultilineText(this.getWrappedText(maxWidth));
             return this.text;
         }
 
@@ -405,8 +464,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
             int width = entryWidth - WARNING_MARGIN * 2;
             this.renderText(matrices, x + WARNING_MARGIN + width / 2, y + WARNING_MARGIN, width);
-
-            super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
         private void renderBackground(MatrixStack matrices, int x, int y, int width, int height) {
@@ -429,7 +486,17 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.screen = screen;
         }
 
-        protected final List<Text> wrapText(String text, int maxWidth) {
+        protected final List<Text> wrapEscapedText(String text, int maxWidth) {
+            return wrapText(escapeText(text), maxWidth);
+        }
+
+        private String escapeText(String text) {
+            // Remove html tags
+            return StringUtils.normalizeSpace(text.replaceAll("(?!<br>)<[^>]*>", " "))
+                    .replaceAll("<br>", "\n"); // Replace <br> after normalizing to keep new lines
+        }
+
+        private List<Text> wrapText(String text, int maxWidth) {
             TextHandler textHandler = this.client.textRenderer.getTextHandler();
             List<StringVisitable> visitableLines = textHandler.wrapLines(text, maxWidth, Style.EMPTY);
             return visitableLines.stream().map(StringVisitable::getString).map(Text::of).toList();
@@ -446,15 +513,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         protected abstract List<Text> getTooltipText(int width);
 
         // region baseEntryRender
-        protected void renderTooltip(MatrixStack matrices, int mouseX, int mouseY, int width) {
+        protected boolean renderTooltip(MatrixStack matrices, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
                 this.screen.renderTooltip(matrices, this.getTooltipText(width), mouseX, mouseY);
+                return true;
             }
-        }
 
-        @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.renderTooltip(matrices, mouseX, mouseY, entryWidth / 2);
+            return false;
         }
         // endregion
     }
