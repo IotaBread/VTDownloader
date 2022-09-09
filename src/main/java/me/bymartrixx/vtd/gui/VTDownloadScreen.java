@@ -84,5 +84,7 @@ public class VTDownloadScreen extends Screen {
         super.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
         drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 0xFFFFFF);
+
+        this.packSelector.renderTooltips(matrices, mouseX, mouseY);
     }
 }

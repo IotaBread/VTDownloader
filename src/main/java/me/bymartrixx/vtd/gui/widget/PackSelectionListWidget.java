@@ -220,8 +220,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (SHOW_DEBUG_INFO) {
             this.renderDebugInfo(matrices, mouseX, mouseY);
         }
-
-        this.renderTooltips(matrices, mouseX, mouseY);
     }
 
     private void renderError(MatrixStack matrices) {
@@ -260,7 +258,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         matrices.pop();
     }
 
-    private void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
+    public void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
         int width = this.getTooltipWidth();
         for (AbstractEntry entry : this.children()) {
             if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {
