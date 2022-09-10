@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     private static final boolean SHOW_DEBUG_INFO = true;
@@ -55,6 +56,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
     private static final int TEXT_MARGIN = 2;
     private static final int ICON_MARGIN = 1;
+
+    private static final int SELECTION_OUTLINE_COLOR = -0x7F7F80;
+    private static final int DEFAULT_SELECTION_COLOR = -0x10000000;
+    private static final List<Integer> INCOMPATIBLE_SELECTION_COLORS = List.of(0xFF007EA7, 0xFFFE7F2D,
+            0xFF00FFC5, 0xFFA50021, 0xFFEF7B45, 0xFF98CE00, 0xFF16E0BD, 0xFFF6AE2D, 0xFFDE0D92, 0xFFD14545);
 
     private final Map<Category, List<AbstractEntry>> entryCache = new HashMap<>();
     private final VTDownloadScreen screen;
@@ -128,6 +134,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (!selected.remove(pack)) {
             selected.add(pack);
         }
+    }
+
+    private int getEntrySelectionColor(AbstractEntry entry) {
+        if (entry instanceof PackEntry packEntry) {
+        }
+
+        return DEFAULT_SELECTION_COLOR;
     }
 
     private int getCenterX() {
@@ -220,6 +233,20 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (SHOW_DEBUG_INFO) {
             this.renderDebugInfo(matrices, mouseX, mouseY);
         }
+    }
+
+    @Override // renderEntry
+    protected void m_enzpxkzi(MatrixStack matrices, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
+        AbstractEntry entry = this.getEntry(index);
+
+        if (this.isSelectedEntry(index)) {
+            int outlineColor = this.isFocused() ? -1 : SELECTION_OUTLINE_COLOR;
+            int color = this.getEntrySelectionColor(entry);
+            this.m_ugejzjin(matrices, entryY, width, height, outlineColor, color);
+        }
+
+        entry.render(matrices, index, entryY, entryX, width, height, mouseX, mouseY,
+                Objects.equals(this.getHoveredEntry(), entry), delta);
     }
 
     private void renderError(MatrixStack matrices) {
