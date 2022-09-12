@@ -423,7 +423,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 }
             }
 
-            throw new IllegalArgumentException("Unknown color format: " + color);
+            VTDMod.LOGGER.warn("Unknown color format: " + color);
+            return 0x00000000;
         }
 
         private final Category.Warning warning;
