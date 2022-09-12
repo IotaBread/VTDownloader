@@ -35,8 +35,6 @@ import java.util.Objects;
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DISABLE_ICONS = true;
-    // TODO: Incompatibilities
-    private static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of("Menu Panoramas", "Options Backgrounds", "Colorful Slime");
 
     private static final Text ERROR_URL = Text.of(VTDMod.BASE_URL).copy()
             .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE)
@@ -58,22 +56,19 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private static final int ICON_MARGIN = 1;
 
     private static final int SELECTION_OUTLINE_COLOR = -0x7F7F80;
-    private static final int DEFAULT_SELECTION_COLOR = -0x10000000;
-    private static final List<Integer> INCOMPATIBLE_SELECTION_COLORS = List.of(0xFF007EA7, 0xFFFE7F2D,
-            0xFF00FFC5, 0xFFA50021, 0xFFEF7B45, 0xFF98CE00, 0xFF16E0BD, 0xFFF6AE2D, 0xFFDE0D92, 0xFFD14545);
 
     private final Map<Category, List<AbstractEntry>> entryCache = new HashMap<>();
     private final VTDownloadScreen screen;
-    private final Map<Category, List<Pack>> selectedPacks;
     private Category category;
 
     private final MultilineText errorText;
+
+    private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
     public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int top, int bottom,
                                    Map<Category, List<Pack>> selectedPacks, Category category) {
         super(client, width, height, top, bottom, ITEM_HEIGHT);
         this.screen = screen;
-        this.selectedPacks = selectedPacks;
         this.category = category;
 
         this.errorText = MultilineText.create(client.textRenderer, ERROR_LINES);
@@ -85,6 +80,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.category = category;
 
         this.replaceEntries(getPackEntries(category));
+    }
+
+    public void updateCategories(List<Category> categories) {
+        this.selectionHelper.buildIncompatibilityGroups(categories);
     }
 
     private List<AbstractEntry> getPackEntries(Category category) {
@@ -112,35 +111,16 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return entries;
     }
 
-    private List<Pack> getSelectedPacks() {
-        if (this.category == null) {
-            return Collections.emptyList();
-        }
-
-        return this.selectedPacks.computeIfAbsent(this.category, c -> new ArrayList<>());
-    }
-
     private void toggleSelection(PackEntry entry) {
-        if (this.category == null) {
-            return;
-        }
-
-        Pack pack = entry.getPack();
-        if (!this.category.getPacks().contains(pack)) {
-            throw new IllegalArgumentException("The selected pack does not exist in the current category");
-        }
-
-        List<Pack> selected = this.getSelectedPacks();
-        if (!selected.remove(pack)) {
-            selected.add(pack);
-        }
+        this.selectionHelper.toggleSelection(entry);
     }
 
     private int getEntrySelectionColor(AbstractEntry entry) {
         if (entry instanceof PackEntry packEntry) {
+            return this.selectionHelper.getSelectionColor(packEntry.getPack());
         }
 
-        return DEFAULT_SELECTION_COLOR;
+        return PackSelectionHelper.DEFAULT_SELECTION_COLOR;
     }
 
     private int getCenterX() {
@@ -169,7 +149,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     protected boolean isSelectedEntry(int index) {
         AbstractEntry entry = this.children().get(index);
         if (entry instanceof PackEntry packEntry) {
-            return this.getSelectedPacks().contains(packEntry.getPack());
+            return packEntry.selectionData.isSelected();
         }
 
         return false;
@@ -266,8 +246,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         List<String> debugInfo = List.of(
                 "WxH = " + this.width + "x" + this.height,
                 "C = " + (hasCategory ? this.category.getName() : "null"),
-                "S = " + (this.getSelectedPacks().stream()
-                        .map(Pack::getId).reduce((a, b) -> a + ", " + b).orElse("")),
+                "S = " + this.selectionHelper.getSelection(),
+                "IC = " + this.selectionHelper.usedColors,
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
@@ -312,6 +292,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private List<Text> description;
         private MultilineText shortDescription;
 
+        protected PackSelectionData selectionData;
+
         public PackEntry(PackSelectionListWidget widget, Pack pack) {
             super(widget.client, widget.screen);
             this.pack = pack;
@@ -321,6 +303,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.icon = VTDMod.getIconId(pack);
 
             this.iconExists = this.client.getTextureManager().getOrDefault(this.icon, null) != null;
+
+            this.selectionData = new PackSelectionData(this.pack, widget.category);
         }
 
         private List<Text> getDescriptionLines(int maxWidth) {

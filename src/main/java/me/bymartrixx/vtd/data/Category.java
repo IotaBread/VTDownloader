@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Category {
+    public static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of("Menu Panoramas", "Options Backgrounds", "Colorful Slime");
+
     @SerializedName("category")
     private final String name;
     private final List<Pack> packs;
@@ -49,6 +51,14 @@ public class Category {
 
     public boolean hasWarning() {
         return this.warning != null;
+    }
+
+    public List<String> getPackIds() {
+        return this.getPacks().stream().map(Pack::getId).toList();
+    }
+
+    public boolean isHardIncompatible() {
+        return HARD_INCOMPATIBLE_CATEGORIES.contains(this.getName());
     }
 
     @SuppressWarnings("ClassCanBeRecord") // Gson doesn't support records

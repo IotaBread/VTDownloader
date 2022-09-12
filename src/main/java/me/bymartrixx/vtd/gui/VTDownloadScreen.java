@@ -65,6 +65,7 @@ public class VTDownloadScreen extends Screen {
         this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 selectedPacks, currentCategory));
+        this.packSelector.updateCategories(this.categories);
 
         this.addDrawableChild(new ButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - DONE_BUTTON_MARGIN, this.height - BUTTON_HEIGHT - DONE_BUTTON_MARGIN,
