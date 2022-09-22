@@ -16,6 +16,8 @@ public class Category {
     @Nullable
     private Warning warning = null;
 
+    private boolean hardIncompatible = false; // Only used in testing
+
     private final Map<String, Pack> packsById = new HashMap<>();
 
     public Category(String name, List<Pack> packs) {
@@ -30,6 +32,11 @@ public class Category {
     public Category(String name, List<Pack> packs, @Nullable Warning warning) {
         this(name, packs);
         this.warning = warning;
+    }
+
+    public Category(String name, List<Pack> packs, @Nullable Warning warning, boolean hardIncompatible) {
+        this(name, packs, warning);
+        this.hardIncompatible = hardIncompatible;
     }
 
     public String getName() {
@@ -58,7 +65,7 @@ public class Category {
     }
 
     public boolean isHardIncompatible() {
-        return HARD_INCOMPATIBLE_CATEGORIES.contains(this.getName());
+        return this.hardIncompatible || HARD_INCOMPATIBLE_CATEGORIES.contains(this.getName());
     }
 
     @SuppressWarnings("ClassCanBeRecord") // Gson doesn't support records

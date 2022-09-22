@@ -246,6 +246,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         List<String> debugInfo = List.of(
                 "WxH = " + this.width + "x" + this.height,
                 "C = " + (hasCategory ? this.category.getName() : "null"),
+                "HI = " + (hasCategory ? this.category.isHardIncompatible() : "N/A"),
                 "S = " + this.selectionHelper.getSelection(),
                 "IC = " + this.selectionHelper.usedColors,
                 "MX/MY = " + mouseX + "/" + mouseY
