@@ -135,6 +135,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return textRenderer.fontHeight + TEXT_MARGIN;
     }
 
+    public void updateScreenWidth() {
+        this.updateSize(this.screen.getLeftWidth(), this.height, this.top, this.bottom);
+    }
+
     @Override
     public int getRowWidth() {
         return this.width - ROW_LEFT_RIGHT_MARGIN * 2;
@@ -245,6 +249,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         boolean hasCategory = this.category != null;
         List<String> debugInfo = List.of(
                 "WxH = " + this.width + "x" + this.height,
+                "EW = " + this.getRowWidth(),
                 "C = " + (hasCategory ? this.category.getName() : "null"),
                 "HI = " + (hasCategory ? this.category.isHardIncompatible() : "N/A"),
                 "S = " + this.selectionHelper.getSelection(),
@@ -292,6 +297,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         private List<Text> description;
         private MultilineText shortDescription;
+        private int lastDescriptionWidth;
 
         protected PackSelectionData selectionData;
 
@@ -323,11 +329,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private MultilineText getShortDescription(int maxWidth) {
-            if (this.shortDescription != null) {
+            if (maxWidth == this.lastDescriptionWidth && this.shortDescription != null) {
                 return this.shortDescription;
             }
 
             this.shortDescription = this.createMultilineText(this.getDescriptionLines(maxWidth));
+            this.lastDescriptionWidth = maxWidth;
 
             return this.shortDescription;
         }

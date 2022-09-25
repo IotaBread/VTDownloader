@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
     private static final boolean SHOW_DEBUG_INFO = false;
-    private static final float TEXTURE_SIZE = 32.0F;
+    private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
 
     private static final int LEFT_RIGHT_PADDING = 2;
     private static final int TOP_BOTTOM_PADDING = 2;
@@ -112,8 +112,14 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         return getButtonsWidth() > width;
     }
 
+    public void updateScreenWidth() {
+        double scroll = this.getScrollAmount() / this.getMaxScroll();
+        this.calculateDimensions();
+        this.setScrollAmount(Math.round(scroll * this.getMaxScroll()));
+    }
+
     private void calculateDimensions() {
-        this.width = this.screen.width - LEFT_RIGHT_MARGIN * 2;
+        this.width = this.screen.getLeftWidth() - LEFT_RIGHT_MARGIN * 2;
         boolean scrollbar = shouldHaveScrollbar();
         this.height = TOP_BOTTOM_PADDING * 2 + BUTTON_HEIGHT + (scrollbar ? SCROLLBAR_HEIGHT + SCROLLBAR_MARGIN : 0);
         this.left = LEFT_RIGHT_MARGIN;
@@ -122,7 +128,9 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.bottom = this.top + this.height;
 
         this.startX = 0;
-        this.endX = this.right + LEFT_RIGHT_MARGIN;
+        this.endX = this.right + LEFT_RIGHT_MARGIN
+                // Extend right margin to hide buttons if the right margin doesn't reach the screen border
+                + (this.screen.width != this.screen.getLeftWidth() ? BUTTON_WIDTH : 0);
     }
 
     private int getMaxScroll() {
@@ -225,23 +233,21 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        // TODO: Scrolling, V should be offset by scrolling
-
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(this.left, this.bottom, 0.0)
-                .uv(0.0F, this.height / TEXTURE_SIZE)
+                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(32, 32, 32, 255)
                 .next();
         bufferBuilder.vertex(this.right, this.bottom, 0.0)
-                .uv(this.width / TEXTURE_SIZE, this.height / TEXTURE_SIZE)
+                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(32, 32, 32, 255)
                 .next();
         bufferBuilder.vertex(this.right, this.top, 0.0)
-                .uv(this.width / TEXTURE_SIZE, 0.0F)
+                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(32, 32, 32, 255)
                 .next();
         bufferBuilder.vertex(this.left, this.top, 0.0)
-                .uv(0.0F, 0.0F)
+                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(32, 32, 32, 255)
                 .next();
         tessellator.draw();
@@ -342,37 +348,37 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         // Left side
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(this.startX, this.bottom, 0.0)
-                .uv(0.0F, height / TEXTURE_SIZE)
+                .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.left, this.bottom, 0.0)
-                .uv(LEFT_RIGHT_MARGIN / TEXTURE_SIZE, height / TEXTURE_SIZE)
+                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.left, this.top, 0.0)
-                .uv(LEFT_RIGHT_MARGIN / TEXTURE_SIZE, 0.0F)
+                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.startX, this.top, 0.0)
-                .uv(0.0F, 0.0F)
+                .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
 
         // Right side
         bufferBuilder.vertex(this.right, this.bottom, 0.0)
-                .uv(0.0F, height / TEXTURE_SIZE)
+                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.endX, this.bottom, 0.0)
-                .uv(LEFT_RIGHT_MARGIN /  TEXTURE_SIZE, height / TEXTURE_SIZE)
+                .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.endX, this.top, 0.0)
-                .uv(LEFT_RIGHT_MARGIN / TEXTURE_SIZE, 0.0F)
+                .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.right, this.top, 0.0)
-                .uv(0.0F, 0.0F)
+                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
         tessellator.draw();

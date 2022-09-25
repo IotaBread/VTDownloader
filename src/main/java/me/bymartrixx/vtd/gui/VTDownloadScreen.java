@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
+import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -22,6 +23,9 @@ public class VTDownloadScreen extends Screen {
 
     private static final int PACK_SELECTOR_TOP_HEIGHT = 66;
     private static final int PACK_SELECTOR_BOTTOM_HEIGHT = 32;
+    private static final int SELECTED_PACKS_WIDTH = 160;
+    private static final int SELECTED_PACKS_TOP_HEIGHT = PACK_SELECTOR_TOP_HEIGHT + 20;
+    private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 20;
 
     private final Screen parent;
     private final Text subtitle;
@@ -31,6 +35,9 @@ public class VTDownloadScreen extends Screen {
 
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
+    private SelectedPacksListWidget selectedPacksList;
+
+    private int leftWidth;
 
     private final Map<Category, List<Pack>> selectedPacks = new LinkedHashMap<>();
 
@@ -62,10 +69,22 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     protected void init() {
+        this.leftWidth = this.width;
         this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 selectedPacks, currentCategory));
         this.packSelector.updateCategories(this.categories);
+
+        this.selectedPacksList = this.addDrawableChild(new SelectedPacksListWidget(this, this.client,
+                SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
+                this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
+                this.width - SELECTED_PACKS_WIDTH));
+
+        // TODO: Implement better extend button
+        this.addDrawableChild(new ButtonWidget(
+                this.width - DONE_BUTTON_WIDTH - DONE_BUTTON_MARGIN * 2 - 40, this.height - BUTTON_HEIGHT - DONE_BUTTON_MARGIN, 40, 20, Text.literal("Ext"),
+                button -> this.toggleSelectedPacksListExtended()
+        ));
 
         this.addDrawableChild(new ButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - DONE_BUTTON_MARGIN, this.height - BUTTON_HEIGHT - DONE_BUTTON_MARGIN,
@@ -77,6 +96,18 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.setCategories(this.categories);
         this.categorySelector.initCategoryButtons();
         this.categorySelector.setSelectedCategory(this.currentCategory);
+    }
+
+    private void toggleSelectedPacksListExtended() {
+        boolean extended = this.selectedPacksList.toggleExtended();
+        this.leftWidth = extended ? this.width - SELECTED_PACKS_WIDTH : this.width;
+
+        this.categorySelector.updateScreenWidth();
+        this.packSelector.updateScreenWidth();
+    }
+
+    public int getLeftWidth() {
+        return this.leftWidth;
     }
 
     @Override
