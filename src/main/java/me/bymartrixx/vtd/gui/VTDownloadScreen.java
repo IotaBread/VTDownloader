@@ -2,8 +2,8 @@ package me.bymartrixx.vtd.gui;
 
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
-import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
+import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import net.minecraft.client.gui.screen.Screen;
@@ -12,9 +12,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class VTDownloadScreen extends Screen {
     private static final int BUTTON_HEIGHT = 20;
@@ -39,7 +37,7 @@ public class VTDownloadScreen extends Screen {
 
     private int leftWidth;
 
-    private final Map<Category, List<Pack>> selectedPacks = new LinkedHashMap<>();
+    private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
     public VTDownloadScreen(Screen parent, Text subtitle) {
         super(Text.literal("VTDownloader"));
@@ -72,13 +70,13 @@ public class VTDownloadScreen extends Screen {
         this.leftWidth = this.width;
         this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
-                selectedPacks, currentCategory));
+                this.currentCategory, this.selectionHelper));
         this.packSelector.updateCategories(this.categories);
 
         this.selectedPacksList = this.addDrawableChild(new SelectedPacksListWidget(this, this.client,
                 SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
                 this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
-                this.width - SELECTED_PACKS_WIDTH));
+                this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
 
         // TODO: Implement better extend button
         this.addDrawableChild(new ButtonWidget(

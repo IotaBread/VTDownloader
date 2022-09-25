@@ -63,13 +63,14 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     private final MultilineText errorText;
 
-    private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
+    private final PackSelectionHelper selectionHelper;
 
     public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int top, int bottom,
-                                   Map<Category, List<Pack>> selectedPacks, Category category) {
+                                   Category category, PackSelectionHelper selectionHelper) {
         super(client, width, height, top, bottom, ITEM_HEIGHT);
         this.screen = screen;
         this.category = category;
+        this.selectionHelper = selectionHelper;
 
         this.errorText = MultilineText.create(client.textRenderer, ERROR_LINES);
 
@@ -79,7 +80,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public void setCategory(Category category) {
         this.category = category;
 
-        this.replaceEntries(getPackEntries(category));
+        this.replaceEntries(this.getPackEntries(category));
     }
 
     public void updateCategories(List<Category> categories) {
@@ -103,7 +104,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         for (Pack pack : category.getPacks()) {
-            entries.add(new PackEntry(this, pack));
+            PackEntry entry = new PackEntry(this, pack);
+            entries.add(entry);
+            if (this.selectionHelper.isSelected(pack)) {
+                entry.selectionData.toggleSelection();
+            }
         }
 
         this.entryCache.put(category, entries);

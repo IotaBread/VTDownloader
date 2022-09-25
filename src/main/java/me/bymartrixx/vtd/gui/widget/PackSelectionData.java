@@ -22,4 +22,12 @@ public class PackSelectionData {
     public boolean isSelected() {
         return this.selected;
     }
+
+    public Pack getPack() {
+        return this.pack;
+    }
+
+    public Category getCategory() {
+        return this.category;
+    }
 }

@@ -18,15 +18,13 @@ public class Category {
 
     private boolean hardIncompatible = false; // Only used in testing
 
-    private final Map<String, Pack> packsById = new HashMap<>();
+    private Map<String, Pack> packsById;
 
     public Category(String name, List<Pack> packs) {
         this.name = name;
         this.packs = packs;
 
-        for (Pack pack : packs) {
-            this.packsById.put(pack.getId(), pack);
-        }
+        this.buildPacksById();
     }
 
     public Category(String name, List<Pack> packs, @Nullable Warning warning) {
@@ -37,6 +35,17 @@ public class Category {
     public Category(String name, List<Pack> packs, @Nullable Warning warning, boolean hardIncompatible) {
         this(name, packs, warning);
         this.hardIncompatible = hardIncompatible;
+    }
+
+    private void buildPacksById() {
+        if (this.packsById != null) {
+            return;
+        }
+
+        this.packsById = new HashMap<>();
+        for (Pack pack : this.packs) {
+            this.packsById.put(pack.getId(), pack);
+        }
     }
 
     public String getName() {
@@ -53,7 +62,8 @@ public class Category {
     }
 
     public Pack getPack(String id) {
-        return packsById.get(id);
+        this.buildPacksById();
+        return this.packsById.get(id);
     }
 
     public boolean hasWarning() {

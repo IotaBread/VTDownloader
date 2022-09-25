@@ -26,4 +26,15 @@ public class RpCategories {
 
         return null;
     }
+
+    @Nullable
+    public Category getCategory(Pack pack) {
+        for (Category category : categories) {
+            if (category.getPacks().contains(pack)) {
+                return category;
+            }
+        }
+
+        return null;
+    }
 }

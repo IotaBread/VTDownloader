@@ -2,10 +2,12 @@ package me.bymartrixx.vtd.gui.widget;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PackSelectionHelper {
     public static final int DEFAULT_SELECTION_COLOR = -0x10000000;
@@ -25,6 +28,7 @@ public class PackSelectionHelper {
     private final Multimap<String, IncompatibilityGroup> incompatibilityGroups = LinkedHashMultimap.create();
     @VisibleForTesting
     protected final Map<IncompatibilityGroup, Integer> usedColors = new HashMap<>();
+    private SelectionChangeCallback selectionChangeCallback = (pack, category, selected) -> {};
 
     public void buildIncompatibilityGroups(List<Category> categories) {
         this.allIncompatibilityGroups.clear();
@@ -59,12 +63,19 @@ public class PackSelectionHelper {
     public void toggleSelection(PackSelectionListWidget.PackEntry entry) {
         Pack pack = entry.getPack();
         PackSelectionData data = entry.selectionData;
-        boolean selected = data.toggleSelection();
 
-        if (selected) {
-            this.selection.add(pack.getId());
+        boolean selected;
+        if (this.selection.remove(pack.getId())) {
+            selected = false;
         } else {
-            this.selection.remove(pack.getId());
+            this.selection.add(pack.getId());
+            selected = true;
+        }
+
+        this.selectionChangeCallback.onSelectionChanged(pack, data.getCategory(), selected);
+
+        if (selected != data.isSelected()) {
+            data.toggleSelection();
         }
 
         // Remove color for empty incompatibility groups
@@ -94,8 +105,35 @@ public class PackSelectionHelper {
         return INCOMPATIBLE_SELECTION_COLORS.get(0);
     }
 
+    public void addCallback(SelectionChangeCallback callback) {
+        SelectionChangeCallback prev = this.selectionChangeCallback;
+        this.selectionChangeCallback = (pack, category, selected) -> {
+            prev.onSelectionChanged(pack, category, selected);
+            callback.onSelectionChanged(pack, category, selected);
+        };
+    }
+
+    protected void setSelectionChangeCallback(SelectionChangeCallback callback) {
+        this.selectionChangeCallback = callback;
+    }
+
+    public boolean isSelected(Pack pack) {
+        return this.selection.contains(pack.getId());
+    }
+
     protected List<String> getSelection() {
         return this.selection;
+    }
+
+    public Map<Category, List<Pack>> getSelectedPacks() {
+        return this.selection.stream().map(VTDMod.rpCategories::findPack)
+                .map(p -> new AbstractMap.SimpleEntry<>(VTDMod.rpCategories.getCategory(p), p))
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+    }
+
+    public interface SelectionChangeCallback {
+        void onSelectionChanged(Pack pack, Category category, boolean selected);
     }
 
     protected interface IncompatibilityGroup {
