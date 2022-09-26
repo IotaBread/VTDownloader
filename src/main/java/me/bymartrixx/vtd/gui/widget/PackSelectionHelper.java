@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class PackSelectionHelper {
     public void buildIncompatibilityGroups(List<Category> categories) {
         this.allIncompatibilityGroups.clear();
         this.incompatibilityGroups.clear();
+        this.usedColors.clear();
 
         // Create all incompatibility groups
         for (Category c : categories) {
@@ -125,10 +127,14 @@ public class PackSelectionHelper {
         return this.selection;
     }
 
+    public boolean hasSelection() {
+        return !this.selection.isEmpty();
+    }
+
     public Map<Category, List<Pack>> getSelectedPacks() {
         return this.selection.stream().map(VTDMod.rpCategories::findPack)
                 .map(p -> new AbstractMap.SimpleEntry<>(VTDMod.rpCategories.getCategory(p), p))
-                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                .collect(Collectors.groupingBy(Map.Entry::getKey, LinkedHashMap::new,
                         Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 

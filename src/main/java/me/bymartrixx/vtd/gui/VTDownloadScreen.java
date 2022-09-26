@@ -37,6 +37,7 @@ public class VTDownloadScreen extends Screen {
     private SelectedPacksListWidget selectedPacksList;
 
     private int leftWidth;
+    private boolean changed = false;
 
     private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
@@ -47,6 +48,8 @@ public class VTDownloadScreen extends Screen {
 
         this.categories = VTDMod.rpCategories.getCategories();
         this.currentCategory = this.categories.size() > 0 ? this.categories.get(0) : null;
+
+        this.selectionHelper.addCallback((pack, category, selected) -> this.changed = true);
     }
 
     public boolean selectCategory(Category category) {
@@ -69,7 +72,11 @@ public class VTDownloadScreen extends Screen {
     @SuppressWarnings("ConstantConditions") // client is marked as nullable
     @Override
     public void closeScreen() {
-        this.client.setScreen(this.parent);
+        if (this.changed && this.selectionHelper.hasSelection()) {
+            this.client.setScreen(new UnsavedPackWarningScreen(this, this.parent));
+        } else {
+            this.client.setScreen(this.parent);
+        }
     }
 
     @Override

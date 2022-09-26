@@ -16,5 +16,7 @@
     "vtd.resourcePack.nameField": "Resource pack name...",
     "vtd.resourcePack.subtitle": "Select Resource Packs",
     "vtd.selectedPacks": "Selected packs",
+    "vtd.unsavedPackWarning.header": "Warning: Unsaved Pack",
+    "vtd.unsavedPackWarning.text": "All changes made to this pack will be lost!",
     "vtd.title": "VTDownloader"
 }
