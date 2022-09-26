@@ -17,6 +17,7 @@ import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private static final int ROW_LEFT_RIGHT_MARGIN = 6;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
     private static final int PACK_ENTRY_LEFT_MARGIN = 16;
+    private static final int DOUBLE_CLICK_THRESHOLD = 200;
 
     private static final int HORIZONTAL_SHADOWS_BACKGROUND_Z = -100;
     private static final int HORIZONTAL_SHADOWS_SIZE = 4;
@@ -109,7 +111,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         int i = this.getCategoryEntryIndex(category);
         if (i == -1) {
             // TODO: Cache the entry
-            CategoryEntry entry = new CategoryEntry(this.client, category);
+            CategoryEntry entry = new CategoryEntry(this, category);
             this.addEntry(entry);
             return entry;
         }
@@ -283,10 +285,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     public static abstract class AbstractEntry extends Entry<AbstractEntry> {
         protected final MinecraftClient client;
+        protected final SelectedPacksListWidget widget;
         private Text text;
 
-        protected AbstractEntry(MinecraftClient client) {
-            this.client = client;
+        protected AbstractEntry(SelectedPacksListWidget widget) {
+            this.client = widget.client;
+            this.widget = widget;
         }
 
         protected abstract String getTextString();
@@ -308,10 +312,24 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     public static class CategoryEntry extends AbstractEntry {
         private final Category category;
+        private long lastClickTime = -1;
 
-        public CategoryEntry(MinecraftClient client, Category category) {
-            super(client);
+        public CategoryEntry(SelectedPacksListWidget widget, Category category) {
+            super(widget);
             this.category = category;
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                long time = System.currentTimeMillis();
+                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                    this.widget.screen.selectCategory(this.category);
+                }
+                this.lastClickTime = time;
+            }
+
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
         @Override
@@ -334,16 +352,15 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     public static class PackEntry extends AbstractEntry {
-        private final SelectedPacksListWidget widget;
         private final Category category;
         private final Pack pack;
 
         private int color = -1;
         private int lastChildrenCount = -1;
+        private long lastClickTime = -1;
 
         public PackEntry(SelectedPacksListWidget widget, Category category, Pack pack) {
-            super(widget.client);
-            this.widget = widget;
+            super(widget);
             this.category = category;
             this.pack = pack;
         }
@@ -367,6 +384,19 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         @Override
         protected String getTextString() {
             return this.pack.getName();
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                long time = System.currentTimeMillis();
+                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                    this.widget.screen.goToPack(this.pack, this.category);
+                }
+                this.lastClickTime = time;
+            }
+
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
         @Override

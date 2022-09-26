@@ -144,6 +144,20 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.updateSize(this.screen.getLeftWidth(), this.height, this.top, this.bottom);
     }
 
+    public void focusPack(Pack pack) {
+        PackEntry entry = null;
+        for (int i = 0; i < this.children().size(); i++) {
+            AbstractEntry e = this.children().get(i);
+            if (e instanceof PackEntry packEntry && packEntry.pack == pack) {
+                entry = packEntry;
+            }
+        }
+
+        if (entry != null) {
+            this.centerScrollOn(entry);
+        }
+    }
+
     @Override
     public int getRowWidth() {
         return this.width - ROW_LEFT_RIGHT_MARGIN * 2;

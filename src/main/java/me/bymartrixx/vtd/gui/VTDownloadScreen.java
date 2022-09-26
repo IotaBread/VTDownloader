@@ -2,6 +2,7 @@ package me.bymartrixx.vtd.gui;
 
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
+import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
@@ -57,6 +58,12 @@ public class VTDownloadScreen extends Screen {
         }
 
         return false;
+    }
+
+    public void goToPack(Pack pack, Category category) {
+        this.selectCategory(category);
+
+        this.packSelector.focusPack(pack);
     }
 
     @SuppressWarnings("ConstantConditions") // client is marked as nullable
