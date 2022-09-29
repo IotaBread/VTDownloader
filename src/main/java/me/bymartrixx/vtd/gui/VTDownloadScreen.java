@@ -224,6 +224,7 @@ public class VTDownloadScreen extends Screen {
         drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 0xFFFFFF);
         this.renderDownloadProgressBar(matrices, delta);
 
+        this.renderDebugInfo(matrices, mouseX, mouseY);
         this.packSelector.renderTooltips(matrices, mouseX, mouseY);
 
         this.updateTime(delta);
@@ -258,6 +259,11 @@ public class VTDownloadScreen extends Screen {
         // Progress line
         fill(matrices, x1 + outline * 2, y1 + outline * 2,
                 x1 + outline * 2 + progressWidth, y2 - outline * 2, PROGRESS_BAR_COLOR);
+    }
+
+    private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
+        this.packSelector.renderDebugInfo(matrices, mouseX, mouseY);
+        this.categorySelector.renderDebugInfo(matrices);
     }
 
     private void updateTime(float delta) {

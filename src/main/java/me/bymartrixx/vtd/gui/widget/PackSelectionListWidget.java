@@ -234,10 +234,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (this.children().isEmpty()) {
             this.renderError(matrices);
         }
-
-        if (SHOW_DEBUG_INFO) {
-            this.renderDebugInfo(matrices, mouseX, mouseY);
-        }
     }
 
     @Override // renderEntry
@@ -264,7 +260,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.errorText.drawCenterWithShadow(matrices, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
     }
 
-    private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
+    public void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
+        if (!SHOW_DEBUG_INFO) return;
         TextRenderer textRenderer = this.client.textRenderer;
 
         boolean hasCategory = this.category != null;

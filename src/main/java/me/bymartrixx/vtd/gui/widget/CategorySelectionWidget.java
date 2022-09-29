@@ -221,10 +221,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.renderCategories(matrices, mouseX, mouseY, delta);
         this.renderScrollbar();
         this.renderMargin();
-
-        if (SHOW_DEBUG_INFO) {
-            this.renderDebugInfo(matrices);
-        }
     }
 
     private void renderBackground() {
@@ -386,7 +382,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         tessellator.draw();
     }
 
-    private void renderDebugInfo(MatrixStack matrices) {
+    public void renderDebugInfo(MatrixStack matrices) {
+        if (!SHOW_DEBUG_INFO) return;
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
 
