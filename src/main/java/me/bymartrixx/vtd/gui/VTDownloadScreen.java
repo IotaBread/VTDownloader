@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class VTDownloadScreen extends Screen {
+    // DEBUG
+    private static final boolean DOWNLOAD_DISABLED = false;
+
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
     private static final Text DOWNLOAD_FAILED_TEXT = Text.translatable("vtd.download.failed");
     private static final Text DOWNLOAD_SUCCESS_TEXT = Text.translatable("vtd.download.success");
 
-    private static final boolean DOWNLOAD_DISABLED = false;
     private static final int BUTTON_HEIGHT = 20;
     private static final int DONE_BUTTON_WIDTH = 80;
     private static final int DOWNLOAD_BUTTON_WIDTH = 100;

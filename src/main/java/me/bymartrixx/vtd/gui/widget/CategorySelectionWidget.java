@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
+    // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
+
     private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
 
     private static final int LEFT_RIGHT_PADDING = 2;

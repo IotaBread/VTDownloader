@@ -48,6 +48,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 public class VTDMod implements ClientModInitializer {
+    // DEBUG
+    private static final boolean USE_LOCAL_CATEGORIES = false;
+
     private static final ThreadFactory DOWNLOAD_THREAD_FACTORY = new ThreadFactoryBuilder()
             .setNameFormat("VT Download %d").build();
     private static final ExecutorService DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool(DOWNLOAD_THREAD_FACTORY);
@@ -111,10 +114,15 @@ public class VTDMod implements ClientModInitializer {
 
     public static void loadRpCategories() {
         try {
-            HttpResponse response = executeRequest(createHttpGet("/assets/resources/json/" + VT_VERSION + "/rpcategories.json"));
             RpCategories categories;
-            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
-                categories = GSON.fromJson(new InputStreamReader(stream), RpCategories.class);
+            String file = System.getProperty("vtd.debug.rpCategoriesFile");
+            if (USE_LOCAL_CATEGORIES && file != null) {
+                categories = GSON.fromJson(Files.newBufferedReader(Path.of(file)), RpCategories.class);
+            } else {
+                HttpResponse response = executeRequest(createHttpGet("/assets/resources/json/" + VT_VERSION + "/rpcategories.json"));
+                try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
+                    categories = GSON.fromJson(new InputStreamReader(stream), RpCategories.class);
+                }
             }
 
             if (categories == null) {

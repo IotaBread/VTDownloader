@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
+    // DEBUG
     private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DISABLE_ICONS = true;
 
