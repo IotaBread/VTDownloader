@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -188,7 +189,7 @@ public class VTDMod implements ClientModInitializer {
 
             String fileName = data.getLeft().trim();
             try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
-                return Files.copy(stream, downloadPath.resolve(fileName)) > 0;
+                return Files.copy(stream, downloadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING) > 0;
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read pack download response", e);
             }

@@ -6,6 +6,7 @@ import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
+import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
@@ -26,6 +27,9 @@ public class VTDownloadScreen extends Screen {
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
     private static final Text DOWNLOAD_FAILED_TEXT = Text.translatable("vtd.download.failed");
     private static final Text DOWNLOAD_SUCCESS_TEXT = Text.translatable("vtd.download.success");
+    private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
+
+    private static final int MAX_NAME_LENGTH = 64;
 
     private static final int BUTTON_HEIGHT = 20;
     private static final int DONE_BUTTON_WIDTH = 80;
@@ -42,6 +46,9 @@ public class VTDownloadScreen extends Screen {
     private static final int PROGRESS_BAR_OUTLINE_SIZE = 1;
     private static final int PROGRESS_BAR_COLOR = 0xE6FFFFFF;
     private static final int PROGRESS_BAR_MARGIN = 10;
+    private static final int PACK_NAME_FIELD_WIDTH = 160;
+    private static final int PACK_NAME_FIELD_HEIGHT = 20;
+    private static final int PACK_NAME_FIELD_MARGIN = 10;
     private static final float PROGRESS_BAR_MAX_TIME = 40.0F;
     private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
 
@@ -54,6 +61,7 @@ public class VTDownloadScreen extends Screen {
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
     private SelectedPacksListWidget selectedPacksList;
+    private PackNameTextFieldWidget packNameField;
     private MutableMessageButtonWidget downloadButton;
     private ButtonWidget doneButton;
 
@@ -93,7 +101,8 @@ public class VTDownloadScreen extends Screen {
 
         // noinspection ConstantConditions
         CompletableFuture<Boolean> download = VTDMod.executePackDownload(data, f -> this.downloadProgress = f,
-                this.client.getResourcePackDir().toPath(), null /* TODO userFileName */);
+                this.client.getResourcePackDir().toPath(),
+                this.packNameField.isBlank() ? null : this.packNameField.getText());
 
         download.whenCompleteAsync((success, throwable) -> {
             this.updateDownloadButtonActive();
@@ -162,6 +171,15 @@ public class VTDownloadScreen extends Screen {
                 button -> this.toggleSelectedPacksListExtended()
         ));
 
+        // noinspection ConstantConditions
+        this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
+                this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 3 - DOWNLOAD_BUTTON_WIDTH - 40 - PACK_NAME_FIELD_MARGIN - PACK_NAME_FIELD_WIDTH,
+                this.height - PACK_NAME_FIELD_HEIGHT - PACK_NAME_FIELD_MARGIN, PACK_NAME_FIELD_WIDTH,
+                PACK_NAME_FIELD_HEIGHT, this.packNameField, PACK_NAME_FIELD_TEXT,
+                this.client.getResourcePackDir().toPath()));
+        this.packNameField.setMaxLength(MAX_NAME_LENGTH);
+        this.packNameField.setChangedListener(s -> this.updateDownloadButtonActive());
+
         this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
                 this.height - BUTTON_HEIGHT - BUTTON_MARGIN, DOWNLOAD_BUTTON_WIDTH, BUTTON_HEIGHT, DOWNLOAD_TEXT,
@@ -182,7 +200,7 @@ public class VTDownloadScreen extends Screen {
 
     private void updateDownloadButtonActive() {
         if (this.downloadButton != null) {
-            this.downloadButton.active = this.selectionHelper.hasSelection();
+            this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
         }
     }
 
