@@ -1,7 +1,7 @@
 {
     "vtd.done": "Done",
     "vtd.download": "Download",
-    "vtd.download.failure": "Unexpected error!",
+    "vtd.download.failed": "Unexpected error!",
     "vtd.download.success": "Pack downloaded!",
     "vtd.fileNameValidity.fileExists": "A file with that name already exists",
     "vtd.fileNameValidity.invalidWindows": "That file name is an invalid Windows name",

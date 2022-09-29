@@ -1,7 +1,7 @@
 {
     "vtd.done": "Gotowe",
     "vtd.download": "Pobierz",
-    "vtd.download.failure": "Nieoczekiwany błąd!",
+    "vtd.download.failed": "Nieoczekiwany błąd!",
     "vtd.download.success": "Paczka pobrana!",
     "vtd.fileNameValidity.fileExists": "Plik o takiej nazwie już istnieje",
     "vtd.fileNameValidity.invalidWindows": "Ta nazwa pliku jest nieprawidłową nazwą Windows",

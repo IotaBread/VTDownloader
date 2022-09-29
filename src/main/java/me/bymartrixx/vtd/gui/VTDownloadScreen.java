@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
+import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
@@ -20,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 public class VTDownloadScreen extends Screen {
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
+    private static final Text DOWNLOAD_FAILED_TEXT = Text.translatable("vtd.download.failed");
+    private static final Text DOWNLOAD_SUCCESS_TEXT = Text.translatable("vtd.download.success");
 
     private static final boolean DOWNLOAD_DISABLED = false;
     private static final int BUTTON_HEIGHT = 20;
@@ -38,6 +41,7 @@ public class VTDownloadScreen extends Screen {
     private static final int PROGRESS_BAR_COLOR = 0xE6FFFFFF;
     private static final int PROGRESS_BAR_MARGIN = 10;
     private static final float PROGRESS_BAR_MAX_TIME = 40.0F;
+    private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
 
     private final Screen parent;
     private final Text subtitle;
@@ -48,13 +52,14 @@ public class VTDownloadScreen extends Screen {
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
     private SelectedPacksListWidget selectedPacksList;
-    private ButtonWidget downloadButton;
+    private MutableMessageButtonWidget downloadButton;
     private ButtonWidget doneButton;
 
     private int leftWidth;
     private boolean changed = false;
     private float downloadProgress = -1.0F;
     private float progressBarTime = 0.0F;
+    private float downloadMessageTime;
 
     private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
@@ -100,8 +105,10 @@ public class VTDownloadScreen extends Screen {
             if (success) {
                 this.downloadProgress = 1.0F;
                 VTDMod.LOGGER.info("Pack downloaded successfully");
+                this.downloadButton.setMessage(DOWNLOAD_SUCCESS_TEXT);
             } else {
                 VTDMod.LOGGER.error("Pack download failed");
+                this.downloadButton.setMessage(DOWNLOAD_FAILED_TEXT);
             }
         });
     }
@@ -153,7 +160,7 @@ public class VTDownloadScreen extends Screen {
                 button -> this.toggleSelectedPacksListExtended()
         ));
 
-        this.downloadButton = this.addDrawableChild(new ButtonWidget(
+        this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
                 this.height - BUTTON_HEIGHT - BUTTON_MARGIN, DOWNLOAD_BUTTON_WIDTH, BUTTON_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
@@ -198,6 +205,8 @@ public class VTDownloadScreen extends Screen {
         this.renderDownloadProgressBar(matrices, delta);
 
         this.packSelector.renderTooltips(matrices, mouseX, mouseY);
+
+        this.updateTime(delta);
     }
 
     private void renderDownloadProgressBar(MatrixStack matrices, float delta) {
@@ -229,5 +238,14 @@ public class VTDownloadScreen extends Screen {
         // Progress line
         fill(matrices, x1 + outline * 2, y1 + outline * 2,
                 x1 + outline * 2 + progressWidth, y2 - outline * 2, PROGRESS_BAR_COLOR);
+    }
+
+    private void updateTime(float delta) {
+        if (this.downloadMessageTime >= DOWNLOAD_MESSAGE_MAX_TIME) {
+            this.downloadMessageTime = 0.0F;
+            this.downloadButton.resetMessage();
+        } else {
+            this.downloadMessageTime += delta;
+        }
     }
 }
