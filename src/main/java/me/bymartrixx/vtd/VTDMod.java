@@ -1,9 +1,11 @@
 package me.bymartrixx.vtd;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.texture.NativeImage;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
+import me.bymartrixx.vtd.data.DownloadPackResponseData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.data.RpCategories;
 import net.fabricmc.api.ClientModInitializer;
@@ -13,13 +15,19 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +35,22 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 public class VTDMod implements ClientModInitializer {
-    private static final ExecutorService ICON_DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
+    private static final ThreadFactory DOWNLOAD_THREAD_FACTORY = new ThreadFactoryBuilder()
+            .setNameFormat("VT Download %d").build();
+    private static final ExecutorService DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool(DOWNLOAD_THREAD_FACTORY);
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(DownloadPackRequestData.class, new DownloadPackRequestData.Serializer())
             .create();
@@ -113,6 +129,64 @@ public class VTDMod implements ClientModInitializer {
         }
     }
 
+    public static CompletableFuture<Boolean> executePackDownload(
+            DownloadPackRequestData requestData, Consumer<Float> progressCallback,
+            Path downloadPath, @Nullable String userFileName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpPost request = createHttpPost("/assets/server/zipresourcepacks.php");
+
+                List<NameValuePair> params = new ArrayList<>();
+                params.add(new BasicNameValuePair("version", VT_VERSION));
+                params.add(new BasicNameValuePair("packs", GSON.toJson(requestData)));
+                request.setEntity(new UrlEncodedFormEntity(params));
+
+                return executeRequest(request);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to execute pack zipping request", e);
+            }
+        }, DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
+            progressCallback.accept(0.1F);
+            int code = response.getStatusLine().getStatusCode();
+            if (code / 100 != 2) {
+                throw new IllegalStateException("Pack zipping request returned status code " + code);
+            }
+
+            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
+                return GSON.fromJson(new InputStreamReader(stream), DownloadPackResponseData.class);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read pack zipping response", e);
+            }
+        }, DOWNLOAD_EXECUTOR).thenApplyAsync(data -> {
+            progressCallback.accept(0.3F);
+            String fileName = userFileName != null ? userFileName + ".zip" : data.getFileName();
+
+            try {
+                HttpGet request = createHttpGet(data.getLink());
+                request.setConfig(RequestConfig.custom().setConnectTimeout(4000).build());
+
+                return new Pair<>(fileName, executeRequest(request));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to execute pack download request", e);
+            }
+        }, DOWNLOAD_EXECUTOR).thenApplyAsync(data -> {
+            progressCallback.accept(0.4F);
+
+            HttpResponse response = data.getRight();
+            int code = response.getStatusLine().getStatusCode();
+            if (code / 100 != 2) {
+                throw new IllegalStateException("Pack download request returned status code " + code);
+            }
+
+            String fileName = data.getLeft().trim();
+            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
+                return Files.copy(stream, downloadPath.resolve(fileName)) > 0;
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read pack download response", e);
+            }
+        }, DOWNLOAD_EXECUTOR);
+    }
+
     public static CompletableFuture<Boolean> downloadIcon(Pack pack) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -121,7 +195,7 @@ public class VTDMod implements ClientModInitializer {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to execute icon download request", e);
             }
-        }, ICON_DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
+        }, DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
             int code = response.getStatusLine().getStatusCode();
             if (code / 100 != 2) {
                 throw new IllegalStateException("Icon download request returned status code " + code);
