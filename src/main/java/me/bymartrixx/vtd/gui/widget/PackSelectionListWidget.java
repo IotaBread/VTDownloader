@@ -180,7 +180,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private int getTooltipWidth() {
-        return this.width / 2;
+        return (int) (this.width / 2.5);
     }
 
     @Nullable
@@ -292,10 +292,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
-        int width = this.getTooltipWidth();
-        for (AbstractEntry entry : this.children()) {
-            if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {
-                break;
+        if (mouseY >= this.top && mouseY < this.bottom
+                && mouseX >= this.left && mouseX < this.right) {
+            int width = this.getTooltipWidth();
+            for (AbstractEntry entry : this.children()) {
+                if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {
+                    break;
+                }
             }
         }
     }
