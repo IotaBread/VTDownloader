@@ -81,6 +81,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.category = category;
 
         this.replaceEntries(this.getPackEntries(category));
+        this.setScrollAmount(this.getScrollAmount()); // Clamp scroll amount to the new max value
     }
 
     public void updateCategories(List<Category> categories) {
@@ -165,7 +166,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     @Override
     protected int getScrollbarPositionX() {
-        return this.left + getRowWidth() + SCROLLBAR_LEFT_MARGIN;
+        return this.left + getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
     }
 
     @Override
