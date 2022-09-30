@@ -2,6 +2,7 @@ package me.bymartrixx.vtd.gui.widget;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,11 +16,13 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     private static final Pattern RESERVED_WINDOWS_NAME = Pattern.compile("^(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?$", Pattern.CASE_INSENSITIVE);
     private static final Pattern INVALID_WINDOWS_NAME = Pattern.compile("^.*\\.$");
 
+    private final TextRenderer textRenderer; // TextFieldWidget#textRenderer is private
     private final Path directory;
     private NameStatus nameStatus = NameStatus.VALID;
 
     public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable String copyText, Text text, Path directory) {
         super(textRenderer, x, y, width, height, text);
+        this.textRenderer = textRenderer;
         this.directory = directory;
 
         super.setChangedListener(this::onChange);
@@ -58,6 +61,16 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
 
     public boolean canUseName() {
         return !this.nameStatus.isError();
+    }
+
+    @Override
+    public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.renderButton(matrices, mouseX, mouseY, delta);
+        if (this.isVisible() && this.getText().isEmpty()) {
+            int x = this.x + 4;
+            int y = this.y + (this.height - 8) / 2;
+            this.textRenderer.drawWithShadow(matrices, this.getMessage(), x, y, 0x707070);
+        }
     }
 
     public enum NameStatus {
