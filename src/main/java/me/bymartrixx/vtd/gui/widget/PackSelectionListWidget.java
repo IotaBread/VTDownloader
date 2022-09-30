@@ -61,6 +61,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private final Map<Category, List<AbstractEntry>> entryCache = new HashMap<>();
     private final VTDownloadScreen screen;
     private Category category;
+    private boolean editable = true;
 
     private final MultilineText errorText;
 
@@ -119,7 +120,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private void toggleSelection(PackEntry entry) {
-        this.selectionHelper.toggleSelection(entry);
+        if (this.editable) {
+            this.selectionHelper.toggleSelection(entry);
+        }
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     private int getEntrySelectionColor(AbstractEntry entry) {
@@ -271,6 +278,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "C = " + (hasCategory ? this.category.getName() : "null"),
                 "HI = " + (hasCategory ? this.category.isHardIncompatible() : "N/A"),
                 "S = " + this.selectionHelper.getSelection(),
+                "E = " + this.editable,
                 "IC = " + this.selectionHelper.usedColors,
                 "MX/MY = " + mouseX + "/" + mouseY
         );

@@ -137,7 +137,8 @@ public class VTDownloadScreen extends Screen {
         // Disable download and done button to keep the download running within the screen
         this.downloadButton.active = false;
         this.doneButton.active = false;
-        // TODO: Disable pack name field
+        this.packNameField.setEditable(false);
+        this.packSelector.setEditable(false);
 
         DownloadPackRequestData data = DownloadPackRequestData.create(this.selectionHelper.getSelectedPacks());
 
@@ -149,6 +150,8 @@ public class VTDownloadScreen extends Screen {
         download.whenCompleteAsync((success, throwable) -> {
             this.updateDownloadButtonActive();
             this.doneButton.active = true;
+            this.packNameField.setEditable(true);
+            this.packSelector.setEditable(true);
 
             if (throwable != null) {
                 VTDMod.LOGGER.error("Pack download failed", throwable);
