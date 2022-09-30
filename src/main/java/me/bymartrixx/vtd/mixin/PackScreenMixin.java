@@ -1,11 +1,12 @@
 package me.bymartrixx.vtd.mixin;
 
+import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
+import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,9 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.io.File;
 
 @Mixin(PackScreen.class)
-public class PackScreenMixin extends Screen {
-    private static final Text VTD_RESOURCE_PACK_SUBTITLE = Text.translatable("vtd.resourcePack.subtitle").formatted(Formatting.GRAY);
-
+public class PackScreenMixin extends Screen implements PackScreenAccess {
     @Shadow
     @Final
     private File file;
@@ -30,10 +29,17 @@ public class PackScreenMixin extends Screen {
     @Inject(at = @At(value = "HEAD"), method = "init")
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
-        if (this.file == this.client.getResourcePackDir()) {
-            this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Text.translatable("vtd.resourcePack.button"), button -> {
-                this.client.setScreen(new VTDownloadScreen(this, VTD_RESOURCE_PACK_SUBTITLE));
+        if (this.vtdownloader$isResourcePackScreen()) {
+            this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Constants.RESOURCE_PACK_BUTTON_TEXT, button -> {
+                // noinspection ConstantConditions
+                this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
             }));
         }
+    }
+
+    @Override
+    public boolean vtdownloader$isResourcePackScreen() {
+        // noinspection ConstantConditions
+        return this.file == this.client.getResourcePackDir();
     }
 }

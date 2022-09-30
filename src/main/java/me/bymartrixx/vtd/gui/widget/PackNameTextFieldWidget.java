@@ -18,11 +18,15 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     private final Path directory;
     private NameStatus nameStatus = NameStatus.VALID;
 
-    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable TextFieldWidget copyFrom, Text text, Path directory) {
-        super(textRenderer, x, y, width, height, copyFrom, text);
+    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable String copyText, Text text, Path directory) {
+        super(textRenderer, x, y, width, height, text);
         this.directory = directory;
 
         super.setChangedListener(this::onChange);
+
+        if (copyText != null) {
+            this.setText(copyText);
+        }
     }
 
     @Override

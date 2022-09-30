@@ -1,6 +1,7 @@
 package me.bymartrixx.vtd.gui;
 
 import me.bymartrixx.vtd.VTDMod;
+import me.bymartrixx.vtd.access.AbstractPackAccess;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
@@ -10,12 +11,21 @@ import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
+import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.resource.pack.ResourcePack;
+import net.minecraft.resource.pack.ResourcePackProfile;
 import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -65,6 +75,8 @@ public class VTDownloadScreen extends Screen {
     private MutableMessageButtonWidget downloadButton;
     private ButtonWidget doneButton;
 
+    @Nullable
+    private String packName;
     private int leftWidth;
     private boolean changed = false;
     private float downloadProgress = -1.0F;
@@ -87,6 +99,35 @@ public class VTDownloadScreen extends Screen {
         });
     }
 
+    public VTDownloadScreen(Screen parent, Text subtitle, ResourcePackOrganizer.Pack pack) {
+        this(parent, subtitle);
+
+        this.packName = pack.getDisplayName().getString().replaceAll("\\.zip$", "");
+        if (pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) { // #AbstractPack and its inheritors are private
+            ResourcePackProfile profile = ((AbstractPackAccess) pack).vtdownloader$getProfile();
+            List<String> selection;
+            try (ResourcePack resourcePack = profile.createResourcePack();
+                 InputStream stream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE)) {
+                if (stream != null) {
+                    selection = VTDMod.readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
+                } else {
+                    selection = Collections.emptyList();
+                }
+            } catch (Exception e) {
+                // TODO: Show error message
+                VTDMod.LOGGER.error("Failed to read VanillaTweaks pack data", e);
+                return;
+            }
+
+            this.selectionHelper.setSelection(selection);
+        }
+    }
+
+    @Nullable
+    private String getPackName() {
+        return this.packNameField != null ? this.packNameField.getText() : this.packName;
+    }
+
     private void download() {
         this.changed = false;
         if (DOWNLOAD_DISABLED) return;
@@ -96,6 +137,7 @@ public class VTDownloadScreen extends Screen {
         // Disable download and done button to keep the download running within the screen
         this.downloadButton.active = false;
         this.doneButton.active = false;
+        // TODO: Disable pack name field
 
         DownloadPackRequestData data = DownloadPackRequestData.create(this.selectionHelper.getSelectedPacks());
 
@@ -175,10 +217,11 @@ public class VTDownloadScreen extends Screen {
         this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
                 this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 3 - DOWNLOAD_BUTTON_WIDTH - 40 - PACK_NAME_FIELD_MARGIN - PACK_NAME_FIELD_WIDTH,
                 this.height - PACK_NAME_FIELD_HEIGHT - PACK_NAME_FIELD_MARGIN, PACK_NAME_FIELD_WIDTH,
-                PACK_NAME_FIELD_HEIGHT, this.packNameField, PACK_NAME_FIELD_TEXT,
+                PACK_NAME_FIELD_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
                 this.client.getResourcePackDir().toPath()));
         this.packNameField.setMaxLength(MAX_NAME_LENGTH);
         this.packNameField.setChangedListener(s -> this.updateDownloadButtonActive());
+        this.packName = null; // Pack name should only be used once
 
         this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
@@ -231,6 +274,7 @@ public class VTDownloadScreen extends Screen {
     }
 
     private void renderDownloadProgressBar(MatrixStack matrices, float delta) {
+        // TODO: Fix collision with pack name field
         if (this.downloadProgress == -1.0F) {
             return;
         } else if (this.downloadProgress >= 1.0F) {

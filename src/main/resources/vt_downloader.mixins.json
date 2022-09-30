@@ -1,12 +1,16 @@
 {
-    "required": true,
-    "package": "me.bymartrixx.vtd.mixin",
-    "compatibilityLevel": "JAVA_16",
-    "mixins": [],
-    "client": [
-        "PackScreenMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+  "required": true,
+  "package": "me.bymartrixx.vtd.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [],
+  "client": [
+    "PackListWidgetMixin",
+    "PackListWidgetMixin$ResourcePackEntryMixin",
+    "PackScreenMixin",
+    "ResourcePackOrganizerMixin",
+    "ResourcePackOrganizerMixin$AbstractPackMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

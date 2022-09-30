@@ -8,6 +8,7 @@ import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.DownloadPackResponseData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.data.RpCategories;
+import me.bymartrixx.vtd.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -227,6 +229,39 @@ public class VTDMod implements ClientModInitializer {
     @Contract("_ -> new")
     public static Identifier getIconId(Pack pack) {
         return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
+    }
+
+    public static List<String> readSelectedPacks(BufferedReader reader) throws IOException {
+        List<String> selectedPacks = new ArrayList<>();
+
+        int count = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (count == 0 && line.trim().equals(Constants.SELECTED_PACKS_FILE_HEADER)) {
+                count++;
+                continue;
+            } else if (count == 1 && line.trim().startsWith("Version:")) {
+                if (!line.substring(8).trim().equals(VT_VERSION)) {
+                    throw new IllegalArgumentException("Unsupported pack version");
+                }
+                count++;
+                continue;
+            } else if (count == 2 && line.trim().startsWith("Packs:")) {
+                count++;
+                continue;
+            } else if (count > 2) {
+                if (!line.isBlank()) {
+                    selectedPacks.add(line.trim());
+                }
+
+                count++;
+                continue;
+            }
+
+            throw new IllegalStateException("Invalid selected packs file");
+        }
+
+        return selectedPacks;
     }
 
     @Override

@@ -131,6 +131,11 @@ public class PackSelectionHelper {
         return !this.selection.isEmpty();
     }
 
+    public void setSelection(List<String> selection) {
+        this.selection.clear();
+        this.selection.addAll(selection);
+    }
+
     public Map<Category, List<Pack>> getSelectedPacks() {
         return this.selection.stream().map(VTDMod.rpCategories::findPack)
                 .map(p -> new AbstractMap.SimpleEntry<>(VTDMod.rpCategories.getCategory(p), p))
