@@ -17,6 +17,7 @@ import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWidget.AbstractEntry> {
     private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
     private static final int ITEM_HEIGHT = 16;
+    private static final int HEADER_HEIGHT = 16;
     private static final int ROW_LEFT_RIGHT_MARGIN = 6;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
     private static final int PACK_ENTRY_LEFT_MARGIN = 16;
@@ -45,6 +47,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         this.setLeftPos(left);
         this.setRenderHorizontalShadows(false); // Rendered at #renderHorizontalShadows
+        this.setRenderHeader(true, HEADER_HEIGHT);
 
         selectionHelper.addCallback(this::updateSelection);
         this.addPacks(selectionHelper.getSelectedPacks());
@@ -184,6 +187,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         super.render(matrices, mouseX, mouseY, delta);
+    }
+
+    @Override
+    protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
+        Text text = Text.translatable("vtd.selectedPacks").formatted(Formatting.BOLD, Formatting.UNDERLINE);
+        drawCenteredText(matrices, this.client.textRenderer, text, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
     }
 
     @Override
