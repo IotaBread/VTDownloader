@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.access.AbstractPackAccess;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
+import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
 import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
@@ -28,6 +29,7 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
@@ -51,15 +53,13 @@ public class VTDownloadScreen extends Screen {
     private static final int SELECTED_PACKS_WIDTH = 160;
     private static final int SELECTED_PACKS_TOP_HEIGHT = PACK_SELECTOR_TOP_HEIGHT + 20;
     private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 20;
-    private static final int PROGRESS_BAR_HEIGHT = 10;
-    private static final int PROGRESS_BAR_WIDTH = 160;
-    private static final int PROGRESS_BAR_OUTLINE_SIZE = 1;
+    private static final int PROGRESS_BAR_HEIGHT = 40;
+    private static final int PROGRESS_BAR_WIDTH = 200;
     private static final int PROGRESS_BAR_COLOR = 0xE6FFFFFF;
-    private static final int PROGRESS_BAR_MARGIN = 10;
     private static final int PACK_NAME_FIELD_WIDTH = 160;
     private static final int PACK_NAME_FIELD_HEIGHT = 20;
     private static final int PACK_NAME_FIELD_MARGIN = 10;
-    private static final float PROGRESS_BAR_MAX_TIME = 40.0F;
+    private static final float PROGRESS_BAR_MAX_TIME = 20.0F;
     private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
 
     private final Screen parent;
@@ -67,6 +67,8 @@ public class VTDownloadScreen extends Screen {
     private final List<Category> categories;
 
     private Category currentCategory;
+
+    private ProgressBarScreenPopup progressBar;
 
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
@@ -80,7 +82,6 @@ public class VTDownloadScreen extends Screen {
     private int leftWidth;
     private boolean changed = false;
     private float downloadProgress = -1.0F;
-    private float progressBarTime = 0.0F;
     private float downloadMessageTime;
 
     private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
@@ -133,6 +134,7 @@ public class VTDownloadScreen extends Screen {
         if (DOWNLOAD_DISABLED) return;
 
         this.downloadProgress = 0.0F;
+        this.progressBar.show(PROGRESS_BAR_MAX_TIME, () -> this.downloadProgress, () -> this.downloadProgress = -1.0F);
 
         // Disable download and done button to keep the download running within the screen
         this.downloadButton.active = false;
@@ -163,10 +165,11 @@ public class VTDownloadScreen extends Screen {
                 VTDMod.LOGGER.info("Pack downloaded successfully");
                 this.downloadButton.setMessage(DOWNLOAD_SUCCESS_TEXT);
             } else {
+                this.progressBar.abortWait();
                 VTDMod.LOGGER.error("Pack download failed");
                 this.downloadButton.setMessage(DOWNLOAD_FAILED_TEXT);
             }
-        });
+        }).completeOnTimeout(false, Constants.PACK_DOWNLOAD_TIMEOUT, TimeUnit.SECONDS);
     }
 
     public boolean selectCategory(Category category) {
@@ -242,6 +245,9 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.setCategories(this.categories);
         this.categorySelector.initCategoryButtons();
         this.categorySelector.setSelectedCategory(this.currentCategory);
+
+        this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.width / 2, this.height / 2,
+                PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
     }
 
     private void updateDownloadButtonActive() {
@@ -258,6 +264,10 @@ public class VTDownloadScreen extends Screen {
         this.packSelector.updateScreenWidth();
     }
 
+    public boolean isCoveredByPopup(int mouseX, int mouseY) {
+        return this.progressBar.isMouseOver(mouseX, mouseY);
+    }
+
     public int getLeftWidth() {
         return this.leftWidth;
     }
@@ -268,44 +278,11 @@ public class VTDownloadScreen extends Screen {
         super.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
         drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 0xFFFFFF);
-        this.renderDownloadProgressBar(matrices, delta);
 
         this.renderDebugInfo(matrices, mouseX, mouseY);
         this.packSelector.renderTooltips(matrices, mouseX, mouseY);
 
         this.updateTime(delta);
-    }
-
-    private void renderDownloadProgressBar(MatrixStack matrices, float delta) {
-        // TODO: Fix collision with pack name field
-        if (this.downloadProgress == -1.0F) {
-            return;
-        } else if (this.downloadProgress >= 1.0F) {
-            if (this.progressBarTime >= PROGRESS_BAR_MAX_TIME) {
-                this.progressBarTime = 0.0F;
-                this.downloadProgress = -1.0F;
-                return;
-            } else {
-                this.progressBarTime += delta;
-            }
-        }
-
-        int outline = PROGRESS_BAR_OUTLINE_SIZE;
-        int progressWidth = Math.round((PROGRESS_BAR_WIDTH - outline * 4) * this.downloadProgress);
-        int x1 = PROGRESS_BAR_MARGIN;
-        int y1 = this.height - PROGRESS_BAR_HEIGHT - PROGRESS_BAR_MARGIN;
-        int x2 = x1 + PROGRESS_BAR_WIDTH;
-        int y2 = y1 + PROGRESS_BAR_HEIGHT;
-
-        // Outline
-        fill(matrices, x1 + outline, y1, x2 - outline, y1 + outline, PROGRESS_BAR_COLOR); // Top line
-        fill(matrices, x1 + outline, y2 - outline, x2 - outline, y2, PROGRESS_BAR_COLOR); // Bottom line
-        fill(matrices, x1, y1, x1 + outline, y2, PROGRESS_BAR_COLOR); // Left line
-        fill(matrices, x2 - outline, y1, x2, y2, PROGRESS_BAR_COLOR); // Right line
-
-        // Progress line
-        fill(matrices, x1 + outline * 2, y1 + outline * 2,
-                x1 + outline * 2 + progressWidth, y2 - outline * 2, PROGRESS_BAR_COLOR);
     }
 
     private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {

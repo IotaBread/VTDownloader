@@ -299,7 +299,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     public void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
         if (mouseY >= this.top && mouseY < this.bottom
-                && mouseX >= this.left && mouseX < this.right) {
+                && mouseX >= this.left && mouseX < this.right
+                && !this.screen.isCoveredByPopup(mouseX, mouseY)) {
             int width = this.getTooltipWidth();
             for (AbstractEntry entry : this.children()) {
                 if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {

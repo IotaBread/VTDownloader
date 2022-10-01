@@ -14,4 +14,6 @@ public class Constants {
     public static final String VT_DESCRIPTION_MARKER = "vanillatweaks.net";
     public static final String SELECTED_PACKS_FILE = "Selected Packs.txt";
     public static final String SELECTED_PACKS_FILE_HEADER = "Vanilla Tweaks Resource Pack";
+
+    public static final long PACK_DOWNLOAD_TIMEOUT = 30L;
 }
