@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.function.Supplier;
@@ -15,8 +16,8 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
 
     private boolean aborted;
 
-    public ProgressBarScreenPopup(int centerX, int centerY, int width, int height, int color) {
-        super(centerX, centerY, width, height);
+    public ProgressBarScreenPopup(MinecraftClient client, int centerX, int centerY, int width, int height, int color) {
+        super(client, centerX, centerY, width, height);
 
         this.color = color;
     }
@@ -33,7 +34,7 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
     }
 
     private int getBarWidth() {
-        return this.width - BAR_MARGIN * 2;
+        return this.getWidth() - BAR_MARGIN * 2;
     }
 
     @Override

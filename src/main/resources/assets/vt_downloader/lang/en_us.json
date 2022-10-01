@@ -1,5 +1,6 @@
 {
     "vtd.done": "Done",
+    "vtd.error": "Error!",
     "vtd.download": "Download",
     "vtd.download.failed": "Unexpected error!",
     "vtd.download.success": "Pack downloaded!",

@@ -5,6 +5,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 public class Constants {
+    public static final Text ERROR_TEXT = Text.translatable("vtd.error").formatted(Formatting.BOLD);
     public static final Text RESOURCE_PACK_SCREEN_SUBTITLE = Text.translatable("vtd.resourcePack.subtitle")
             .formatted(Formatting.GRAY);
     public static final Text RESOURCE_PACK_BUTTON_TEXT = Text.translatable("vtd.resourcePack.button");

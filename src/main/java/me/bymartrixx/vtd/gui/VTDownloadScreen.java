@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.access.AbstractPackAccess;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
+import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
@@ -17,16 +18,11 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.resource.pack.ResourcePack;
 import net.minecraft.resource.pack.ResourcePackProfile;
 import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +57,7 @@ public class VTDownloadScreen extends Screen {
     private static final int PACK_NAME_FIELD_MARGIN = 10;
     private static final float PROGRESS_BAR_MAX_TIME = 20.0F;
     private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
+    private static final float ERROR_MESSAGE_TIME = 160.0F;
 
     private final Screen parent;
     private final Text subtitle;
@@ -69,6 +66,7 @@ public class VTDownloadScreen extends Screen {
     private Category currentCategory;
 
     private ProgressBarScreenPopup progressBar;
+    private MessageScreenPopup errorPopup;
 
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
@@ -79,6 +77,8 @@ public class VTDownloadScreen extends Screen {
 
     @Nullable
     private String packName;
+    @Nullable
+    private ResourcePackOrganizer.Pack pack;
     private int leftWidth;
     private boolean changed = false;
     private float downloadProgress = -1.0F;
@@ -104,24 +104,7 @@ public class VTDownloadScreen extends Screen {
         this(parent, subtitle);
 
         this.packName = pack.getDisplayName().getString().replaceAll("\\.zip$", "");
-        if (pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) { // #AbstractPack and its inheritors are private
-            ResourcePackProfile profile = ((AbstractPackAccess) pack).vtdownloader$getProfile();
-            List<String> selection;
-            try (ResourcePack resourcePack = profile.createResourcePack();
-                 InputStream stream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE)) {
-                if (stream != null) {
-                    selection = VTDMod.readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
-                } else {
-                    selection = Collections.emptyList();
-                }
-            } catch (Exception e) {
-                // TODO: Show error message
-                VTDMod.LOGGER.error("Failed to read VanillaTweaks pack data", e);
-                return;
-            }
-
-            this.selectionHelper.setSelection(selection);
-        }
+        this.pack = pack;
     }
 
     @Nullable
@@ -170,6 +153,27 @@ public class VTDownloadScreen extends Screen {
                 this.downloadButton.setMessage(DOWNLOAD_FAILED_TEXT);
             }
         }).completeOnTimeout(false, Constants.PACK_DOWNLOAD_TIMEOUT, TimeUnit.SECONDS);
+    }
+
+    private void readResourcePack() {
+        // #AbstractPack and its inheritors are private
+        if (this.pack != null && this.pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) {
+            ResourcePackProfile profile = ((AbstractPackAccess) this.pack).vtdownloader$getProfile();
+
+            VTDMod.readResourcePackData(profile).whenCompleteAsync((selection, throwable) -> {
+                if (throwable != null) {
+                    if (this.errorPopup != null) {
+                        this.errorPopup.show(ERROR_MESSAGE_TIME, Text.literal("Failed to read VanillaTweaks pack data:\n")
+                                .append(throwable.getLocalizedMessage()));
+                    }
+                    VTDMod.LOGGER.error("Failed to read VanillaTweaks pack data", throwable);
+                } else {
+                    this.selectionHelper.setSelection(selection);
+                }
+            });
+        }
+
+        this.pack = null;
     }
 
     public boolean selectCategory(Category category) {
@@ -246,8 +250,12 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.initCategoryButtons();
         this.categorySelector.setSelectedCategory(this.currentCategory);
 
-        this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.width / 2, this.height / 2,
+        this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
+        this.errorPopup = this.addDrawable(new MessageScreenPopup(this.client, this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+
+        this.readResourcePack();
     }
 
     private void updateDownloadButtonActive() {
@@ -265,7 +273,8 @@ public class VTDownloadScreen extends Screen {
     }
 
     public boolean isCoveredByPopup(int mouseX, int mouseY) {
-        return this.progressBar.isMouseOver(mouseX, mouseY);
+        return this.progressBar.isMouseOver(mouseX, mouseY)
+                || this.errorPopup.isMouseOver(mouseX, mouseY);
     }
 
     public int getLeftWidth() {

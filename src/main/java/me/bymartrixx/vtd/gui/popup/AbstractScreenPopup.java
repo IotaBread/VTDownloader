@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tessellator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.GameRenderer;
@@ -13,15 +14,17 @@ import net.minecraft.client.util.math.MatrixStack;
 public abstract class AbstractScreenPopup extends DrawableHelper implements Drawable {
     private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
 
+    protected final MinecraftClient client;
     protected final int centerX;
     protected final int centerY;
-    protected final int width;
-    protected final int height;
+    private int width;
+    private int height;
 
     private boolean show;
     private float shownTime;
 
-    public AbstractScreenPopup(int centerX, int centerY, int width, int height) {
+    public AbstractScreenPopup(MinecraftClient client, int centerX, int centerY, int width, int height) {
+        this.client = client;
         this.centerX = centerX;
         this.centerY = centerY;
         this.width = width;
@@ -47,6 +50,19 @@ public abstract class AbstractScreenPopup extends DrawableHelper implements Draw
 
     protected final int getBottom() {
         return this.getTop() + this.height;
+    }
+
+    protected final int getWidth() {
+        return this.width;
+    }
+
+    protected final int getHeight() {
+        return this.height;
+    }
+
+    protected void updateSize(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {
@@ -112,19 +128,19 @@ public abstract class AbstractScreenPopup extends DrawableHelper implements Draw
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(this.getLeft(), this.getBottom(), 0.0)
                 .uv(0.0F, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
+                .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.getRight(), this.getBottom(), 0.0)
                 .uv(this.width / BACKGROUND_TEXTURE_SIZE, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
+                .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.getRight(), this.getTop(), 0.0)
                 .uv(this.width / BACKGROUND_TEXTURE_SIZE, 0.0F)
-                .color(32, 32, 32, 255)
+                .color(64, 64, 64, 255)
                 .next();
         bufferBuilder.vertex(this.getLeft(), this.getTop(), 0.0)
                 .uv(0.0F, 0.0F)
-                .color(32, 32, 32, 255)
+                .color(64, 64, 64, 255)
                 .next();
         tessellator.draw();
     }

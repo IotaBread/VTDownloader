@@ -15,6 +15,8 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
+import net.minecraft.resource.pack.ResourcePack;
+import net.minecraft.resource.pack.ResourcePackProfile;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.http.HttpResponse;
@@ -28,6 +30,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -229,6 +233,21 @@ public class VTDMod implements ClientModInitializer {
     @Contract("_ -> new")
     public static Identifier getIconId(Pack pack) {
         return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
+    }
+
+    public static CompletableFuture<List<String>> readResourcePackData(ResourcePackProfile profile) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (ResourcePack resourcePack = profile.createResourcePack();
+                 InputStream stream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE)) {
+                if (stream != null) {
+                    return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
+                } else {
+                    return Collections.emptyList();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public static List<String> readSelectedPacks(BufferedReader reader) throws IOException {
