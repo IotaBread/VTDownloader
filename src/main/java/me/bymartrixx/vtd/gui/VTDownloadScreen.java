@@ -8,12 +8,14 @@ import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
+import me.bymartrixx.vtd.gui.widget.ExpandDrawerButtonWidget;
 import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
 import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -49,6 +51,7 @@ public class VTDownloadScreen extends Screen {
     private static final int SELECTED_PACKS_WIDTH = 160;
     private static final int SELECTED_PACKS_TOP_HEIGHT = PACK_SELECTOR_TOP_HEIGHT + 20;
     private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 20;
+    private static final int SELECTED_PACKS_BUTTON_Y = 40;
     private static final int PROGRESS_BAR_HEIGHT = 40;
     private static final int PROGRESS_BAR_WIDTH = 200;
     private static final int PROGRESS_BAR_COLOR = 0xE6FFFFFF;
@@ -71,6 +74,7 @@ public class VTDownloadScreen extends Screen {
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
     private SelectedPacksListWidget selectedPacksList;
+    private ExpandDrawerButtonWidget selectedPacksListButton;
     private PackNameTextFieldWidget packNameField;
     private MutableMessageButtonWidget downloadButton;
     private ButtonWidget doneButton;
@@ -206,6 +210,9 @@ public class VTDownloadScreen extends Screen {
     @Override
     protected void init() {
         this.leftWidth = this.width;
+        this.selectedPacksListButton = this.addSelectableChild(new ExpandDrawerButtonWidget(this.width - 16,
+                SELECTED_PACKS_TOP_HEIGHT + SELECTED_PACKS_BUTTON_Y,
+                SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
         this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 this.currentCategory, this.selectionHelper));
@@ -216,12 +223,7 @@ public class VTDownloadScreen extends Screen {
                 this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
                 this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
 
-        // TODO: Implement better extend button
-        this.addDrawableChild(new ButtonWidget(
-                this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 3 - DOWNLOAD_BUTTON_WIDTH - 40,
-                this.height - BUTTON_HEIGHT - BUTTON_MARGIN, 40, 20, Text.literal("Ext"),
-                button -> this.toggleSelectedPacksListExtended()
-        ));
+        this.addDrawable(this.selectedPacksListButton);
 
         // noinspection ConstantConditions
         this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
