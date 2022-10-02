@@ -45,8 +45,10 @@ public class MessageScreenPopup extends AbstractScreenPopup {
     @Override
     protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = this.client.textRenderer;
-        drawCenteredText(matrices, textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, 0xFFFFFFFF);
+        int color = 0xFFFFFF | this.getFadeAlpha() << 24;
+        drawCenteredText(matrices, textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
-        this.message.drawCenterWithShadow(matrices, this.centerX, this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight);
+        this.message.drawCenterWithShadow(matrices,
+                this.centerX, this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight, textRenderer.fontHeight, color);
     }
 }

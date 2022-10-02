@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
-    private static final boolean DOWNLOAD_DISABLED = true;
+    private static final boolean DOWNLOAD_DISABLED = false;
 
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
@@ -55,7 +55,7 @@ public class VTDownloadScreen extends Screen {
     private static final int SELECTED_PACKS_BUTTON_Y = 40;
     private static final int PROGRESS_BAR_HEIGHT = 40;
     private static final int PROGRESS_BAR_WIDTH = 200;
-    private static final int PROGRESS_BAR_COLOR = 0xE6FFFFFF;
+    private static final int PROGRESS_BAR_COLOR = 0xFFFFFF;
     private static final int PACK_NAME_FIELD_WIDTH = 160;
     private static final int PACK_NAME_FIELD_HEIGHT = 20;
     private static final int PACK_NAME_FIELD_MARGIN = 10;

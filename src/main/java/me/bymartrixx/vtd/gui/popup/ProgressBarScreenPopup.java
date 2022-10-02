@@ -61,15 +61,16 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
         int y1 = this.centerY - BAR_HEIGHT / 2;
         int x2 = x1 + barWidth;
         int y2 = y1 + BAR_HEIGHT;
+        int color = this.color | this.getFadeAlpha() << 24;
 
         // Outline
-        fill(matrices, x1 + BAR_OUTLINE_SIZE, y1, x2 - BAR_OUTLINE_SIZE, y1 + BAR_OUTLINE_SIZE, this.color); // Top line
-        fill(matrices, x1 + BAR_OUTLINE_SIZE, y2 - BAR_OUTLINE_SIZE, x2 - BAR_OUTLINE_SIZE, y2, this.color); // Bottom line
-        fill(matrices, x1, y1, x1 + BAR_OUTLINE_SIZE, y2, this.color); // Left line
-        fill(matrices, x2 - BAR_OUTLINE_SIZE, y1, x2, y2, this.color); // Right line
+        fill(matrices, x1 + BAR_OUTLINE_SIZE, y1, x2 - BAR_OUTLINE_SIZE, y1 + BAR_OUTLINE_SIZE, color); // Top line
+        fill(matrices, x1 + BAR_OUTLINE_SIZE, y2 - BAR_OUTLINE_SIZE, x2 - BAR_OUTLINE_SIZE, y2, color); // Bottom line
+        fill(matrices, x1, y1, x1 + BAR_OUTLINE_SIZE, y2, color); // Left line
+        fill(matrices, x2 - BAR_OUTLINE_SIZE, y1, x2, y2, color); // Right line
 
         // Progress line
         fill(matrices, x1 + BAR_OUTLINE_SIZE * 2, y1 + BAR_OUTLINE_SIZE * 2,
-                x1 + BAR_OUTLINE_SIZE * 2 + progressWidth, y2 - BAR_OUTLINE_SIZE * 2, this.color);
+                x1 + BAR_OUTLINE_SIZE * 2 + progressWidth, y2 - BAR_OUTLINE_SIZE * 2, color);
     }
 }
