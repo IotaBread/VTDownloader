@@ -193,6 +193,9 @@ public class VTDownloadScreen extends Screen {
                     VTDMod.LOGGER.error("Failed to read VanillaTweaks pack data", throwable);
                 } else {
                     this.selectionHelper.setSelection(selection);
+                    this.selectedPacksList.update();
+                    this.packSelector.updateSelection();
+                    this.updateDownloadButtonActive();
                 }
             });
         }

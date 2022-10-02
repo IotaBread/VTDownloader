@@ -119,6 +119,18 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return entries;
     }
 
+    public void updateSelection() {
+        for (List<AbstractEntry> categoryEntries : this.entryCache.values()) {
+            for (AbstractEntry entry : categoryEntries) {
+                if (entry instanceof PackEntry packEntry) {
+                    if (this.selectionHelper.isSelected(packEntry.pack) != packEntry.selectionData.isSelected()) {
+                        packEntry.selectionData.toggleSelection();
+                    }
+                }
+            }
+        }
+    }
+
     private void toggleSelection(PackEntry entry) {
         if (this.editable) {
             this.selectionHelper.toggleSelection(entry);
