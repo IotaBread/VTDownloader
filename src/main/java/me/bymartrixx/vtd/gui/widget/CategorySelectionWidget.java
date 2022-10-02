@@ -69,6 +69,12 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.calculateDimensions();
     }
 
+    public void updateCategories(List<Category> categories) {
+        this.categories = new ArrayList<>(categories);
+        this.children.clear();
+        this.initCategoryButtons();
+    }
+
     public void setCategories(List<Category> categories) {
         this.categories = categories;
     }

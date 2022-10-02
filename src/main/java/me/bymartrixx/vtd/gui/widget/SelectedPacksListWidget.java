@@ -62,6 +62,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return this.extended;
     }
 
+    public void update() {
+        this.clearEntries();
+
+        this.addPacks(this.selectionHelper.getSelectedPacks());
+    }
+
     private void updateSelection(Pack pack, Category category, boolean selected) {
         if (selected) {
             CategoryEntry categoryEntry = this.getOrCreateCategoryEntry(category);

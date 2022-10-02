@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -136,8 +137,15 @@ public class PackSelectionHelper {
         this.selection.addAll(selection);
     }
 
+    public void cleanUpSelection() {
+        List<String> validPacks = this.selection.stream().map(VTDMod.rpCategories::findPack)
+                .filter(Objects::nonNull).map(Pack::getId).toList();
+        this.selection.retainAll(validPacks);
+    }
+
     public Map<Category, List<Pack>> getSelectedPacks() {
         return this.selection.stream().map(VTDMod.rpCategories::findPack)
+                .filter(Objects::nonNull)
                 .map(p -> new AbstractMap.SimpleEntry<>(VTDMod.rpCategories.getCategory(p), p))
                 .collect(Collectors.groupingBy(Map.Entry::getKey, LinkedHashMap::new,
                         Collectors.mapping(Map.Entry::getValue, Collectors.toList())));

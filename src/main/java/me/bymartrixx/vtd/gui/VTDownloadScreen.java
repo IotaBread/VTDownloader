@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.access.AbstractPackAccess;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
+import me.bymartrixx.vtd.data.RpCategories;
 import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
@@ -13,6 +14,7 @@ import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
 import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
 import me.bymartrixx.vtd.gui.widget.PackSelectionHelper;
 import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
+import me.bymartrixx.vtd.gui.widget.ReloadButtonWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.gui.screen.Screen;
@@ -30,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
-    private static final boolean DOWNLOAD_DISABLED = false;
+    private static final boolean DOWNLOAD_DISABLED = true;
 
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
@@ -107,6 +109,26 @@ public class VTDownloadScreen extends Screen {
 
         this.packName = pack.getDisplayName().getString().replaceAll("\\.zip$", "");
         this.pack = pack;
+    }
+
+    private void reloadCategories() {
+        VTDMod.loadRpCategories();
+        this.updateCategories(VTDMod.rpCategories);
+    }
+
+    private void updateCategories(RpCategories data) {
+        this.categories.clear();
+        this.categories.addAll(data.getCategories());
+
+        this.packSelector.updateCategories(this.categories);
+        this.categorySelector.updateCategories(this.categories);
+
+        this.selectionHelper.cleanUpSelection();
+        this.selectedPacksList.update();
+
+        this.currentCategory = this.categories.size() > 0 ? this.categories.get(0) : null;
+        this.categorySelector.setSelectedCategory(this.currentCategory);
+        this.packSelector.setCategory(this.currentCategory);
     }
 
     @Nullable
@@ -238,6 +260,9 @@ public class VTDownloadScreen extends Screen {
                 this.height - BUTTON_HEIGHT - BUTTON_MARGIN, DOWNLOAD_BUTTON_WIDTH, BUTTON_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
         this.updateDownloadButtonActive();
+
+        this.addDrawableChild(new ReloadButtonWidget(BUTTON_MARGIN, BUTTON_MARGIN,
+                Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
 
         this.doneButton = this.addDrawableChild(new ButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN, this.height - BUTTON_HEIGHT - BUTTON_MARGIN,
