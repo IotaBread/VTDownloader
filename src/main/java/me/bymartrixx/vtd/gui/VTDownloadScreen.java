@@ -61,9 +61,9 @@ public class VTDownloadScreen extends Screen {
     private static final int SELECTED_PACKS_WIDTH = 160;
     private static final int SELECTED_PACKS_CENTER_X = SELECTED_PACKS_WIDTH / 2;
     private static final int SELECTED_PACKS_TOP_HEIGHT = PACK_SELECTOR_TOP_HEIGHT + 6;
-    private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 6;
+    private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 36;
     private static final int SELECTED_PACKS_BUTTON_Y = 40;
-    private static final int SHARE_BUTTON_WIDTH = 80;
+    private static final int SHARE_BUTTON_WIDTH = 120;
     private static final int SHARE_BUTTON_CENTER_X = SHARE_BUTTON_WIDTH / 2;
     private static final int DONE_BUTTON_WIDTH = 80;
     private static final int DOWNLOAD_BUTTON_WIDTH = 100;
@@ -319,9 +319,9 @@ public class VTDownloadScreen extends Screen {
 
         this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
-        this.shareButton = this.addSelectableChild(new ButtonWidget(
+        this.shareButton = this.addDrawableChild(new ButtonWidget(
                 this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
-                SELECTED_PACKS_TOP_HEIGHT - WIDGET_MARGIN - WIDGET_HEIGHT,
+                this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN,
                 SHARE_BUTTON_WIDTH, WIDGET_HEIGHT, SHARE_TEXT, button -> this.share()
         ));
 
@@ -341,9 +341,6 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.setCategories(this.categories);
         this.categorySelector.initCategoryButtons();
         this.categorySelector.setSelectedCategory(this.currentCategory);
-
-        // Render over category selector
-        this.addDrawable(this.shareButton);
 
         // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
