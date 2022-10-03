@@ -25,10 +25,6 @@ repositories {
 		name = 'Quilt Snapshots'
 		url = 'https://maven.quiltmc.org/repository/snapshot'
 	}
-	maven {
-		name = 'OroArmor'
-		url = 'https://maven.oroarmor.com'
-	}
 }
 
 dependencies {

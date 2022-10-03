@@ -255,14 +255,14 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
     }
 
-    @Override // renderEntry
-    protected void m_enzpxkzi(MatrixStack matrices, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
+    @Override
+    protected void renderEntry(MatrixStack matrices, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
         AbstractEntry entry = this.getEntry(index);
 
         if (this.isSelectedEntry(index)) {
             int outlineColor = this.isFocused() ? -1 : SELECTION_OUTLINE_COLOR;
             int color = this.getEntrySelectionColor(entry);
-            this.m_ugejzjin(matrices, entryY, width, height, outlineColor, color);
+            this.drawEntrySelectionHighlight(matrices, entryY, width, height, outlineColor, color);
         }
 
         entry.render(matrices, index, entryY, entryX, width, height, mouseX, mouseY,
