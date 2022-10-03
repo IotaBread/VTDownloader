@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
+import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.AbstractParentElement;
@@ -189,7 +190,9 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 int width = this.getScrollbarEndX() - this.getScrollbarStartX();
                 int barSize = (this.width * this.width) / this.getButtonsWidth();
                 barSize = MathHelper.clamp(barSize, SCROLLBAR_MIN_WIDTH, width);
+
                 double factor = Math.max(1, maxScroll / (this.width - barSize));
+
                 this.setScrollAmount(this.getScrollAmount() + deltaX * factor);
             }
 
@@ -406,18 +409,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 "BL-1/BR-1 = " + this.getButtonLeft(last) + "/" + this.getButtonRight(last)
         );
 
-        // Make text half its size
-        matrices.push();
-        matrices.scale(0.5f, 0.5f, 0.5f);
-
-        float lineHeight = textRenderer.fontHeight + 2;
-        float startY = this.screen.height * 2 - lineHeight * debugInfo.size();
-        for (int i = 0; i < debugInfo.size(); i++) {
-            String text = debugInfo.get(i);
-            textRenderer.draw(matrices, text, 0, startY + i * lineHeight, 0xFFCCCCCC);
-        }
-
-        matrices.pop();
+        RenderUtil.renderDebugInfo(matrices, textRenderer, this.left, this.height, debugInfo);
     }
     // endregion
 

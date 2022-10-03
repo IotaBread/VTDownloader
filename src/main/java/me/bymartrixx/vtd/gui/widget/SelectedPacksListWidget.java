@@ -24,13 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWidget.AbstractEntry> {
+    private static final Text HEADER = Text.translatable("vtd.selectedPacks")
+            .formatted(Formatting.BOLD, Formatting.UNDERLINE);
+
     private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
     private static final int ITEM_HEIGHT = 16;
     private static final int HEADER_HEIGHT = 16;
     private static final int ROW_LEFT_RIGHT_MARGIN = 6;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
     private static final int PACK_ENTRY_LEFT_MARGIN = 16;
-    private static final int DOUBLE_CLICK_THRESHOLD = 200;
 
     private static final int HORIZONTAL_SHADOWS_BACKGROUND_Z = -100;
     private static final int HORIZONTAL_SHADOWS_SIZE = 4;
@@ -119,7 +121,6 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private CategoryEntry getOrCreateCategoryEntry(Category category) {
         int i = this.getCategoryEntryIndex(category);
         if (i == -1) {
-            // TODO: Cache the entry
             CategoryEntry entry = new CategoryEntry(this, category);
             this.addEntry(entry);
             return entry;
@@ -141,7 +142,6 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private PackEntry getPackEntry(Pack pack, Category category) {
         int i = this.getPackEntryIndex(pack);
         if (i == -1) {
-            // TODO: Cache the entry
             return new PackEntry(this, category, pack);
         }
 
@@ -197,8 +197,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     @Override
     protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
-        Text text = Text.translatable("vtd.selectedPacks").formatted(Formatting.BOLD, Formatting.UNDERLINE);
-        drawCenteredText(matrices, this.client.textRenderer, text, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
+        drawCenteredText(matrices, this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
     }
 
     @Override
@@ -341,6 +340,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
                     this.widget.screen.selectCategory(this.category);
                 }
+
                 this.lastClickTime = time;
             }
 
@@ -408,6 +408,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
                     this.widget.screen.goToPack(this.pack, this.category);
                 }
+
                 this.lastClickTime = time;
             }
 

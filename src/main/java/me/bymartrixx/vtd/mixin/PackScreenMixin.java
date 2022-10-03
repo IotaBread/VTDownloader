@@ -3,6 +3,7 @@ package me.bymartrixx.vtd.mixin;
 import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
+import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -30,7 +31,9 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.vtdownloader$isResourcePackScreen()) {
-            this.addDrawableChild(new ButtonWidget(this.width / 2 - 75, this.height - 24, 150, 20, Constants.RESOURCE_PACK_BUTTON_TEXT, button -> {
+            this.addDrawableChild(new ButtonWidget(this.width / 2 - Util.VTD_BUTTON_CENTER_X,
+                    this.height - Util.VTD_BUTTON_BOTTOM_MARGIN, Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT,
+                    Constants.RESOURCE_PACK_BUTTON_TEXT, button -> {
                 // noinspection ConstantConditions
                 this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
             }));

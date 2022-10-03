@@ -5,27 +5,24 @@ import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
+import me.bymartrixx.vtd.util.RenderUtil;
+import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
-import net.minecraft.client.font.TextHandler;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.ColorUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.StringVisitable;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,16 +34,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DISABLE_ICONS = true;
 
-    private static final Text ERROR_URL = Text.of(VTDMod.BASE_URL).copy()
-            .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE)
-            .styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, VTDMod.BASE_URL)));
-    private static final Text ERROR_HEADER_TEXT = Text.translatable("vtd.packError.title.1").formatted(Formatting.BOLD, Formatting.ITALIC);
-    private static final Text ERROR_HEADER_TEXT_2 = Text.translatable("vtd.packError.title.2").formatted(Formatting.BOLD, Formatting.ITALIC);
-    private static final Text ERROR_TEXT = Text.translatable("vtd.packError.body.1");
-    private static final Text ERROR_TEXT_2 = Text.translatable("vtd.packError.body.2");
-    private static final Text ERROR_TEXT_3 = Text.translatable("vtd.packError.body.3", ERROR_URL);
-    private static final List<Text> ERROR_LINES = List.of(ERROR_HEADER_TEXT, ERROR_HEADER_TEXT_2,
-            ERROR_TEXT, ERROR_TEXT_2, ERROR_TEXT_3);
+    private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
+    private static final Text ERROR_HEADER = Text.translatable("vtd.packError.title")
+            .formatted(Formatting.BOLD, Formatting.ITALIC);;
+    private static final Text ERROR_BODY = Text.translatable("vtd.packError.body", ERROR_URL);
+    private static final Text ERROR_TEXT = Text.empty().append(ERROR_HEADER).append("\n").append(ERROR_BODY);
 
     public static final int ITEM_HEIGHT = 32;
     private static final int WARNING_MARGIN = 6;
@@ -63,6 +55,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private Category category;
     private boolean editable = true;
 
+    private final List<OrderedText> errorLines;
     private final MultilineText errorText;
 
     private final PackSelectionHelper selectionHelper;
@@ -74,7 +67,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.category = category;
         this.selectionHelper = selectionHelper;
 
-        this.errorText = MultilineText.create(client.textRenderer, ERROR_LINES);
+        this.errorLines = Util.getMultilineTextLines(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
+        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
 
         this.children().addAll(getPackEntries(category));
     }
@@ -203,18 +197,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return (int) (this.width / 2.5);
     }
 
-    @Nullable
-    private Style getErrorStyleAt(double mouseX, int line) {
-        TextRenderer textRenderer = this.client.textRenderer;
-        Text text = ERROR_LINES.get(line);
-        int width = textRenderer.getWidth(text);
-        int startX = this.getCenterX() - width / 2;
-        int endX = startX + width;
-
-        return mouseX >= startX && mouseX < endX ?
-                textRenderer.getTextHandler().getStyleAt(text, (int) mouseX - startX) : null;
-    }
-
     // region input callbacks
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -226,15 +208,18 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             int endX = x + textWidth / 2;
 
             int y = this.getCenterY();
-            int lineHeight = getLineHeight(this.client.textRenderer);
+            TextRenderer textRenderer = this.client.textRenderer;
+            int lineHeight = getLineHeight(textRenderer);
             int startY = y - lineHeight * 2;
             int endY = y + lineHeight * 3;
 
             if (mouseX >= startX && mouseX < endX && mouseY >= startY && mouseY < endY) {
-                int line = (int) ((mouseY - startY) / lineHeight);
-                Style style = this.getErrorStyleAt(mouseX, line);
+                int l = (int) ((mouseY - startY) / lineHeight);
+                OrderedText line = this.errorLines.get(l);
+                Style style = Util.getStyleAt(textRenderer, x, mouseX, line);
 
-                if (style != null && style.getClickEvent() != null && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                if (style != null && style.getClickEvent() != null
+                        && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
                     this.screen.handleTextClick(style);
                     return true;
                 }
@@ -295,18 +280,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
-        // Make text half its size
-        matrices.push();
-        matrices.scale(0.5f, 0.5f, 0.5f);
-
-        float lineHeight = textRenderer.fontHeight + TEXT_MARGIN;
-        float startY = this.height * 2 - lineHeight * debugInfo.size();
-        for (int i = 0; i < debugInfo.size(); i++) {
-            String text = debugInfo.get(i);
-            textRenderer.draw(matrices, text, this.left, startY + i * lineHeight, 0xFFCCCCCC);
-        }
-
-        matrices.pop();
+        RenderUtil.renderDebugInfo(matrices, textRenderer, this.left, this.height, debugInfo);
     }
 
     public void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
@@ -452,31 +426,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public static class WarningEntry extends AbstractEntry {
-        /**
-         * Parse an 0xAARRGGBB color from `rgba(red, green, blue, alpha)`
-         */
-        private static int parseColor(String color) {
-            String format = color.substring(0, color.indexOf("("));
-            if (color.endsWith(")")) {
-                List<String> components = Arrays.stream(color.substring(color.indexOf("(") + 1, color.length() - 1)
-                        .split(",")).map(String::trim).toList();
-
-                if (format.equals("rgba")) {
-                    if (components.size() == 4) {
-                        int red = Integer.parseInt(components.get(0));
-                        int green = Integer.parseInt(components.get(1));
-                        int blue = Integer.parseInt(components.get(2));
-                        float alpha = Float.parseFloat(components.get(3));
-
-                        return ColorUtil.ARGB32.getArgb((int) (alpha * 255), red, green, blue);
-                    }
-                }
-            }
-
-            VTDMod.LOGGER.warn("Unknown color format: " + color);
-            return 0x00000000;
-        }
-
         private final Category.Warning warning;
         private final int color;
 
@@ -487,7 +436,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             super(client, screen);
             this.warning = warning;
 
-            this.color = parseColor(warning.getColor());
+            this.color = Util.parseColor(warning.getColor());
         }
 
         private List<Text> getWrappedText(int maxWidth) {
@@ -547,27 +496,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         protected final List<Text> wrapEscapedText(String text, int maxWidth) {
-            return wrapText(escapeText(text), maxWidth);
-        }
-
-        private String escapeText(String text) {
-            // Remove html tags
-            return StringUtils.normalizeSpace(text.replaceAll("(?!<br>)<[^>]*>", " "))
-                    .replaceAll("<br>", "\n"); // Replace <br> after normalizing to keep new lines
-        }
-
-        private List<Text> wrapText(String text, int maxWidth) {
-            TextHandler textHandler = this.client.textRenderer.getTextHandler();
-            List<StringVisitable> visitableLines = textHandler.wrapLines(text, maxWidth, Style.EMPTY);
-            return visitableLines.stream().map(StringVisitable::getString).map(Text::of).toList();
+            return Util.wrapText(this.client.textRenderer, Util.removeHtmlTags(text), maxWidth);
         }
 
         protected final MultilineText createMultilineText(List<Text> lines) {
-            if (lines.size() > 2) {
-                lines = lines.subList(0, 2);
-            }
-
-            return MultilineText.create(this.client.textRenderer, lines);
+            return Util.createMultilineText(this.client.textRenderer, lines, 2);
         }
 
         protected abstract List<Text> getTooltipText(int width);

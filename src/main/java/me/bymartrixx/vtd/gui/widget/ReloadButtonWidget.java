@@ -1,6 +1,7 @@
 package me.bymartrixx.vtd.gui.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -43,14 +44,7 @@ public class ReloadButtonWidget extends ButtonWidget {
         this.renderBackground(matrices, client, mouseX, mouseY);
 
         int color = this.active ? 0xFFFFFF : 0xA0A0A0;
-        drawCenteredScaledText(matrices, textRenderer, ICON, this.x + this.width / 2, this.y + (this.height - 16) / 2,
+        RenderUtil.drawCenteredScaledText(matrices, textRenderer, ICON, this.x + this.width / 2, this.y + (this.height - 16) / 2,
                 color | MathHelper.ceil(this.alpha * 255.0F) << 24, 2.0F);
-    }
-
-    private static void drawCenteredScaledText(MatrixStack matrices, TextRenderer textRenderer, Text text, int centerX, int y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, scale);
-        drawCenteredText(matrices, textRenderer, text, (int) (centerX / scale), (int) (y / scale), color);
-        matrices.pop();
     }
 }

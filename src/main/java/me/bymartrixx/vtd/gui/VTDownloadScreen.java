@@ -18,15 +18,14 @@ import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.ReloadButtonWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
+import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.pack.ResourcePackProfile;
-import net.minecraft.text.ClickEvent;
 import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -45,6 +44,7 @@ public class VTDownloadScreen extends Screen {
     private static final Text SHARE_TEXT = Text.translatable("vtd.share");
     private static final Text SHARE_FAILED_TEXT = Text.translatable("vtd.share.failed");
     private static final Function<Text, Text> SHARE_CODE_TEXT = code -> Text.translatable("vtd.share.code", code);
+    private static final Text READ_PACK_DATA_FAILED_TEXT = Text.translatable("vtd.readPackDataFailed");
     private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
 
     private static final int MAX_NAME_LENGTH = 64;
@@ -225,9 +225,7 @@ public class VTDownloadScreen extends Screen {
     private void showSharePopup(String code) {
         if (code != null && this.sharePopup != null) {
             String url = VTDMod.BASE_URL + "/share#" + code;
-            Text codeText = Text.literal(url).formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE)
-                    .styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
-            this.sharePopup.show(SHARE_MESSAGE_TIME, SHARE_CODE_TEXT.apply(codeText));
+            this.sharePopup.show(SHARE_MESSAGE_TIME, SHARE_CODE_TEXT.apply(Util.urlText(url)));
         }
     }
 
@@ -239,8 +237,8 @@ public class VTDownloadScreen extends Screen {
             VTDMod.readResourcePackData(profile).whenCompleteAsync((selection, throwable) -> {
                 if (throwable != null) {
                     if (this.errorPopup != null) {
-                        this.errorPopup.show(ERROR_MESSAGE_TIME, Text.literal("Failed to read VanillaTweaks pack data:\n")
-                                .append(throwable.getLocalizedMessage()));
+                        this.errorPopup.show(ERROR_MESSAGE_TIME, READ_PACK_DATA_FAILED_TEXT.copy()
+                                .append("\n").append(throwable.getLocalizedMessage()));
                     }
                     VTDMod.LOGGER.error("Failed to read VanillaTweaks pack data", throwable);
                 } else {
@@ -361,6 +359,7 @@ public class VTDownloadScreen extends Screen {
             this.shareButton.active = this.selectionHelper.hasSelection();
         }
         if (this.downloadButton != null) {
+            // TODO: Show message when name is invalid
             this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
         }
     }
