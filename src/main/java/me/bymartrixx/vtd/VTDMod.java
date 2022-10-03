@@ -8,6 +8,8 @@ import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.DownloadPackResponseData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.data.RpCategories;
+import me.bymartrixx.vtd.data.SharePackRequestData;
+import me.bymartrixx.vtd.data.SharePackResponseData;
 import me.bymartrixx.vtd.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -63,6 +65,7 @@ public class VTDMod implements ClientModInitializer {
     private static final ExecutorService DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool(DOWNLOAD_THREAD_FACTORY);
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(DownloadPackRequestData.class, new DownloadPackRequestData.Serializer())
+            .registerTypeAdapter(SharePackRequestData.class, new SharePackRequestData.Serializer())
             .create();
     public static final String MOD_NAME = "VTDownloader";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
@@ -200,6 +203,38 @@ public class VTDMod implements ClientModInitializer {
                 throw new RuntimeException("Failed to read pack download response", e);
             }
         }, DOWNLOAD_EXECUTOR);
+    }
+
+    public static CompletableFuture<String> executeShare(SharePackRequestData requestData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpPost request = createHttpPost("/assets/server/sharecode.php");
+
+                List<NameValuePair> params = Collections.singletonList(
+                        new BasicNameValuePair("data", GSON.toJson(requestData)));
+                request.setEntity(new UrlEncodedFormEntity(params));
+
+                return executeRequest(request);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to execute pack share request", e);
+            }
+        }).thenApplyAsync(response -> {
+            int code = response.getStatusLine().getStatusCode();
+            if (code / 100 != 2) {
+                throw new IllegalStateException("Pack share request returned status code " + code);
+            }
+
+            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
+                return GSON.fromJson(new InputStreamReader(stream), SharePackResponseData.class);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read pack share response", e);
+            }
+        }).thenApplyAsync(data -> {
+            if (data.getResult().equals("error")) {
+                throw new IllegalStateException("There was an error sharing the pack");
+            }
+            return data.getCode();
+        });
     }
 
     public static CompletableFuture<Boolean> downloadIcon(Pack pack) {

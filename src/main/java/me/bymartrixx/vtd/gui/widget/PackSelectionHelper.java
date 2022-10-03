@@ -151,6 +151,15 @@ public class PackSelectionHelper {
                         Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 
+    public Map<String, List<String>> getSelectedPacksPrimitive() {
+        return this.selection.stream().map(VTDMod.rpCategories::findPack)
+                .filter(Objects::nonNull)
+                .map(p -> new AbstractMap.SimpleEntry<>(VTDMod.rpCategories.getCategory(p), p))
+                .map(e -> new AbstractMap.SimpleEntry<>(e.getKey().getId(), e.getValue().getId()))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, LinkedHashMap::new,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+    }
+
     public interface SelectionChangeCallback {
         void onSelectionChanged(Pack pack, Category category, boolean selected);
     }

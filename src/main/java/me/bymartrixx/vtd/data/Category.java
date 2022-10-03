@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class Category {
@@ -76,6 +77,10 @@ public class Category {
 
     public boolean isHardIncompatible() {
         return this.hardIncompatible || HARD_INCOMPATIBLE_CATEGORIES.contains(this.getName());
+    }
+
+    public String getId() {
+        return this.name.toLowerCase(Locale.ROOT).replaceAll("\\s", "-");
     }
 
     @SuppressWarnings("ClassCanBeRecord") // Gson doesn't support records

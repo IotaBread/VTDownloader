@@ -6,6 +6,7 @@ import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.data.RpCategories;
+import me.bymartrixx.vtd.data.SharePackRequestData;
 import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
@@ -22,13 +23,16 @@ import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.pack.ResourcePackProfile;
+import net.minecraft.text.ClickEvent;
 import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
@@ -38,29 +42,39 @@ public class VTDownloadScreen extends Screen {
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
     private static final Text DOWNLOAD_FAILED_TEXT = Text.translatable("vtd.download.failed");
     private static final Text DOWNLOAD_SUCCESS_TEXT = Text.translatable("vtd.download.success");
+    private static final Text SHARE_TEXT = Text.translatable("vtd.share");
+    private static final Text SHARE_FAILED_TEXT = Text.translatable("vtd.share.failed");
+    private static final Function<Text, Text> SHARE_CODE_TEXT = code -> Text.translatable("vtd.share.code", code);
     private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
 
     private static final int MAX_NAME_LENGTH = 64;
 
-    private static final int BUTTON_HEIGHT = 20;
-    private static final int DONE_BUTTON_WIDTH = 80;
-    private static final int DOWNLOAD_BUTTON_WIDTH = 100;
-    private static final int BUTTON_MARGIN = 10;
+    private static final int WIDGET_HEIGHT = 20;
+    private static final int WIDGET_MARGIN = 10;
+
+    private static final int TITLE_Y = 8;
+    private static final int SUBTITLE_Y = 20;
+    private static final int CATEGORY_SELECTOR_Y = 32;
 
     private static final int PACK_SELECTOR_TOP_HEIGHT = 66;
     private static final int PACK_SELECTOR_BOTTOM_HEIGHT = 36;
     private static final int SELECTED_PACKS_WIDTH = 160;
+    private static final int SELECTED_PACKS_CENTER_X = SELECTED_PACKS_WIDTH / 2;
     private static final int SELECTED_PACKS_TOP_HEIGHT = PACK_SELECTOR_TOP_HEIGHT + 6;
     private static final int SELECTED_PACKS_BOTTOM_HEIGHT = PACK_SELECTOR_BOTTOM_HEIGHT + 6;
     private static final int SELECTED_PACKS_BUTTON_Y = 40;
+    private static final int SHARE_BUTTON_WIDTH = 80;
+    private static final int SHARE_BUTTON_CENTER_X = SHARE_BUTTON_WIDTH / 2;
+    private static final int DONE_BUTTON_WIDTH = 80;
+    private static final int DOWNLOAD_BUTTON_WIDTH = 100;
     private static final int PROGRESS_BAR_HEIGHT = 40;
     private static final int PROGRESS_BAR_WIDTH = 200;
     private static final int PROGRESS_BAR_COLOR = 0xFFFFFF;
     private static final int PACK_NAME_FIELD_WIDTH = 160;
-    private static final int PACK_NAME_FIELD_HEIGHT = 20;
-    private static final int PACK_NAME_FIELD_MARGIN = 10;
+
     private static final float PROGRESS_BAR_MAX_TIME = 20.0F;
     private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
+    private static final float SHARE_MESSAGE_TIME = 200.0F;
     private static final float ERROR_MESSAGE_TIME = 160.0F;
 
     private final Screen parent;
@@ -70,12 +84,14 @@ public class VTDownloadScreen extends Screen {
     private Category currentCategory;
 
     private ProgressBarScreenPopup progressBar;
+    private MessageScreenPopup sharePopup;
     private MessageScreenPopup errorPopup;
 
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
     private SelectedPacksListWidget selectedPacksList;
     private PackNameTextFieldWidget packNameField;
+    private ButtonWidget shareButton;
     private MutableMessageButtonWidget downloadButton;
     private ButtonWidget doneButton;
 
@@ -87,6 +103,10 @@ public class VTDownloadScreen extends Screen {
     private boolean changed = false;
     private float downloadProgress = -1.0F;
     private float downloadMessageTime;
+    @Nullable
+    private SharePackRequestData lastShareData;
+    @Nullable
+    private String lastShareCode;
 
     private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
@@ -100,7 +120,7 @@ public class VTDownloadScreen extends Screen {
 
         this.selectionHelper.addCallback((pack, category, selected) -> {
             this.changed = true;
-            this.updateDownloadButtonActive();
+            this.updateButtons();
         });
     }
 
@@ -157,7 +177,7 @@ public class VTDownloadScreen extends Screen {
                 this.packNameField.isBlank() ? null : this.packNameField.getText());
 
         download.whenCompleteAsync((success, throwable) -> {
-            this.updateDownloadButtonActive();
+            this.updateButtons();
             this.doneButton.active = true;
             this.packNameField.setEditable(true);
             this.packSelector.setEditable(true);
@@ -179,6 +199,38 @@ public class VTDownloadScreen extends Screen {
         }).completeOnTimeout(false, Constants.PACK_DOWNLOAD_TIMEOUT, TimeUnit.SECONDS);
     }
 
+    private void share() {
+        SharePackRequestData data = new SharePackRequestData("resourcepacks", VTDMod.VT_VERSION,
+                this.selectionHelper.getSelectedPacksPrimitive());
+        if (data.equals(this.lastShareData)) {
+            this.showSharePopup(this.lastShareCode);
+            return;
+        }
+
+        VTDMod.executeShare(data).whenCompleteAsync((code, throwable) -> {
+            if (throwable != null) {
+                VTDMod.LOGGER.error("Failed to get resource pack share code", throwable);
+                this.errorPopup.show(ERROR_MESSAGE_TIME, SHARE_FAILED_TEXT.copy()
+                        .append("\n").append(throwable.getLocalizedMessage()));
+                return;
+            }
+
+            this.lastShareData = data;
+            this.lastShareCode = code;
+
+            this.showSharePopup(code);
+        });
+    }
+
+    private void showSharePopup(String code) {
+        if (code != null && this.sharePopup != null) {
+            String url = VTDMod.BASE_URL + "/share#" + code;
+            Text codeText = Text.literal(url).formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE)
+                    .styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+            this.sharePopup.show(SHARE_MESSAGE_TIME, SHARE_CODE_TEXT.apply(codeText));
+        }
+    }
+
     private void readResourcePack() {
         // #AbstractPack and its inheritors are private
         if (this.pack != null && this.pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) {
@@ -195,7 +247,7 @@ public class VTDownloadScreen extends Screen {
                     this.selectionHelper.setSelection(selection);
                     this.selectedPacksList.update();
                     this.packSelector.updateSelection();
-                    this.updateDownloadButtonActive();
+                    this.updateButtons();
                 }
             });
         }
@@ -233,9 +285,17 @@ public class VTDownloadScreen extends Screen {
     @Override
     protected void init() {
         this.leftWidth = this.width;
-        ExpandDrawerButtonWidget selectedPacksListButton = this.addSelectableChild(new ExpandDrawerButtonWidget(this.width - 16,
+
+        // Handle clicks before the pack selector
+        ExpandDrawerButtonWidget selectedPacksListButton = this.addSelectableChild(new ExpandDrawerButtonWidget(
+                this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
                 SELECTED_PACKS_TOP_HEIGHT + SELECTED_PACKS_BUTTON_Y,
                 SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
+        this.sharePopup = this.addSelectableChild(new MessageScreenPopup(this.client, this, this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), SHARE_TEXT));
+        this.errorPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this, this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+
         this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 this.currentCategory, this.selectionHelper));
@@ -246,47 +306,60 @@ public class VTDownloadScreen extends Screen {
                 this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
                 this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
 
+        // Render over the pack selector and selected packs list
         this.addDrawable(selectedPacksListButton);
 
         // noinspection ConstantConditions
         this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
-                this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - PACK_NAME_FIELD_MARGIN - PACK_NAME_FIELD_WIDTH,
-                this.height - PACK_NAME_FIELD_HEIGHT - PACK_NAME_FIELD_MARGIN, PACK_NAME_FIELD_WIDTH,
-                PACK_NAME_FIELD_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
+                this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - WIDGET_MARGIN - PACK_NAME_FIELD_WIDTH,
+                this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
+                WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
                 this.client.getResourcePackDir().toPath()));
         this.packNameField.setMaxLength(MAX_NAME_LENGTH);
-        this.packNameField.setChangedListener(s -> this.updateDownloadButtonActive());
+        this.packNameField.setChangedListener(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
 
-        this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
-                this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
-                this.height - BUTTON_HEIGHT - BUTTON_MARGIN, DOWNLOAD_BUTTON_WIDTH, BUTTON_HEIGHT, DOWNLOAD_TEXT,
-                button -> this.download()));
-        this.updateDownloadButtonActive();
-
-        this.addDrawableChild(new ReloadButtonWidget(BUTTON_MARGIN, BUTTON_MARGIN,
+        this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
+        this.shareButton = this.addSelectableChild(new ButtonWidget(
+                this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
+                SELECTED_PACKS_TOP_HEIGHT - WIDGET_MARGIN - WIDGET_HEIGHT,
+                SHARE_BUTTON_WIDTH, WIDGET_HEIGHT, SHARE_TEXT, button -> this.share()
+        ));
+
+        this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
+                this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
+                this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
+                button -> this.download()));
+        this.updateButtons();
 
         this.doneButton = this.addDrawableChild(new ButtonWidget(
-                this.width - DONE_BUTTON_WIDTH - BUTTON_MARGIN, this.height - BUTTON_HEIGHT - BUTTON_MARGIN,
-                DONE_BUTTON_WIDTH, BUTTON_HEIGHT,
+                this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN,
+                DONE_BUTTON_WIDTH, WIDGET_HEIGHT,
                 ScreenTexts.DONE, button -> this.closeScreen()
         ));
 
-        this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, 32));
+        this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
         this.categorySelector.setCategories(this.categories);
         this.categorySelector.initCategoryButtons();
         this.categorySelector.setSelectedCategory(this.currentCategory);
 
+        // Render over category selector
+        this.addDrawable(this.shareButton);
+
+        // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
-        this.errorPopup = this.addDrawable(new MessageScreenPopup(this.client, this.width / 2, this.height / 2,
-                this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+        this.addDrawable(this.sharePopup);
+        this.addDrawable(this.errorPopup);
 
         this.readResourcePack();
     }
 
-    private void updateDownloadButtonActive() {
+    private void updateButtons() {
+        if (this.shareButton != null) {
+            this.shareButton.active = this.selectionHelper.hasSelection();
+        }
         if (this.downloadButton != null) {
             this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
         }
@@ -298,10 +371,13 @@ public class VTDownloadScreen extends Screen {
 
         this.categorySelector.updateScreenWidth();
         this.packSelector.updateScreenWidth();
+
+        this.shareButton.x = this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X;
     }
 
     public boolean isCoveredByPopup(int mouseX, int mouseY) {
         return this.progressBar.isMouseOver(mouseX, mouseY)
+                || this.sharePopup.isMouseOver(mouseX, mouseY)
                 || this.errorPopup.isMouseOver(mouseX, mouseY);
     }
 
@@ -313,8 +389,8 @@ public class VTDownloadScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(0);
         super.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
-        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, 20, 0xFFFFFF);
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
+        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);
 
         this.renderDebugInfo(matrices, mouseX, mouseY);
         this.packSelector.renderTooltips(matrices, mouseX, mouseY);

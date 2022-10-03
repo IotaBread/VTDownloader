@@ -17,7 +17,7 @@ public class ExpandDrawerButtonWidget extends DrawableHelper implements Element,
     private static final Identifier TEXTURE = new Identifier("vt_downloader", "textures/drawer_tab.png");
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 64;
-    private static final int TAB_WIDTH = 16;
+    public static final int TAB_WIDTH = 16;
     private static final int TAB_HEIGHT = 32;
 
     private final int x;

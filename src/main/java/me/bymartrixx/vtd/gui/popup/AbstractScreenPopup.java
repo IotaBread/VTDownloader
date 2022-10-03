@@ -38,6 +38,10 @@ public abstract class AbstractScreenPopup extends DrawableHelper implements Draw
         this.shownTime = time;
     }
 
+    public boolean shouldShow() {
+        return this.show;
+    }
+
     protected final int getLeft() {
         return this.centerX - this.width / 2;
     }
