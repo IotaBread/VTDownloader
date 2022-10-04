@@ -99,6 +99,8 @@ public class VTDownloadScreen extends Screen {
     private String packName;
     @Nullable
     private ResourcePackOrganizer.Pack pack;
+    @Nullable
+    private String defaultPackName;
     private int leftWidth;
     private boolean changed = false;
     private float downloadProgress = -1.0F;
@@ -129,6 +131,7 @@ public class VTDownloadScreen extends Screen {
 
         this.packName = pack.getDisplayName().getString().replaceAll("\\.zip$", "");
         this.pack = pack;
+        this.defaultPackName = this.packName;
     }
 
     private void reloadCategories() {
@@ -312,7 +315,7 @@ public class VTDownloadScreen extends Screen {
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - WIDGET_MARGIN - PACK_NAME_FIELD_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
                 WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
-                this.client.getResourcePackDir().toPath()));
+                this.client.getResourcePackDir().toPath(), this.defaultPackName));
         this.packNameField.setMaxLength(MAX_NAME_LENGTH);
         this.packNameField.setChangedListener(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
@@ -356,7 +359,6 @@ public class VTDownloadScreen extends Screen {
             this.shareButton.active = this.selectionHelper.hasSelection();
         }
         if (this.downloadButton != null) {
-            // TODO: Show message when name is invalid
             this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
         }
     }
@@ -390,6 +392,7 @@ public class VTDownloadScreen extends Screen {
 
         this.renderDebugInfo(matrices, mouseX, mouseY);
         this.packSelector.renderTooltips(matrices, mouseX, mouseY);
+        this.renderPackNameFieldTooltip(matrices, mouseX, mouseY);
 
         this.updateTime(delta);
     }
@@ -397,6 +400,15 @@ public class VTDownloadScreen extends Screen {
     private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
         this.packSelector.renderDebugInfo(matrices, mouseX, mouseY);
         this.categorySelector.renderDebugInfo(matrices);
+    }
+
+    private void renderPackNameFieldTooltip(MatrixStack matrices, int mouseX, int mouseY) {
+        if (this.packNameField.isMouseOver(mouseX, mouseY)) {
+            Text text = this.packNameField.getTooltipText();
+            if (text != null) {
+                this.renderTooltip(matrices, text, mouseX, mouseY);
+            }
+        }
     }
 
     private void updateTime(float delta) {

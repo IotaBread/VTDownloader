@@ -16,14 +16,26 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     private static final Pattern RESERVED_WINDOWS_NAME = Pattern.compile("^(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?$", Pattern.CASE_INSENSITIVE);
     private static final Pattern INVALID_WINDOWS_NAME = Pattern.compile("^.*\\.$");
 
+    private static final Text FILE_EXISTS_TEXT = Text.translatable("vtd.fileNameValidity.fileExists");
+    private static final Text INVALID_WINDOWS_NAME_TEXT = Text.translatable("vtd.fileNameValidity.invalidWindows");
+    private static final Text RESERVED_WINDOWS_NAME_TEXT = Text.translatable("vtd.fileNameValidity.reservedWindows");
+    private static final Text REGEX_DOESNT_MATCH_TEXT = Text.translatable("vtd.fileNameValidity.regexDoesntMatch", FILE_NAME_REGEX);
+
+    private static final int ERROR_COLOR = 0xFFEA5146;
+    private static final int ERROR_FOCUSED_COLOR = 0xFFFF6666;
+    private static final int WARNING_COLOR = 0xFFF2B50C;
+    private static final int WARNING_FOCUSED_COLOR = 0xFFFFEF0F;
+
     private final TextRenderer textRenderer; // TextFieldWidget#textRenderer is private
     private final Path directory;
+    private final String defaultName;
     private NameStatus nameStatus = NameStatus.VALID;
 
-    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable String copyText, Text text, Path directory) {
+    public PackNameTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable String copyText, Text text, Path directory, @Nullable String defaultName) {
         super(textRenderer, x, y, width, height, text);
         this.textRenderer = textRenderer;
         this.directory = directory;
+        this.defaultName = defaultName;
 
         super.setChangedListener(this::onChange);
 
@@ -63,13 +75,48 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         return !this.nameStatus.isError();
     }
 
+    private boolean isNewName() {
+        return this.defaultName == null || !this.defaultName.equals(this.getText());
+    }
+
+    @Nullable
+    public Text getTooltipText() {
+        return switch (this.nameStatus) {
+            case FILE_EXISTS -> this.isNewName() ? FILE_EXISTS_TEXT : null;
+            case RESERVED_WINDOWS -> RESERVED_WINDOWS_NAME_TEXT;
+            case INVALID_WINDOWS -> INVALID_WINDOWS_NAME_TEXT;
+            case REGEX_DOESNT_MATCH -> REGEX_DOESNT_MATCH_TEXT;
+            case VALID -> null;
+        };
+    }
+
     @Override
     public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         super.renderButton(matrices, mouseX, mouseY, delta);
-        if (this.isVisible() && this.getText().isEmpty()) {
-            int x = this.x + 4;
-            int y = this.y + (this.height - 8) / 2;
-            this.textRenderer.drawWithShadow(matrices, this.getMessage(), x, y, 0x707070);
+        if (this.isVisible()) {
+            if (this.getText().isEmpty()) {
+                int x = this.x + 4;
+                int y = this.y + (this.height - 8) / 2;
+                this.textRenderer.drawWithShadow(matrices, this.getMessage(), x, y, 0x707070);
+            }
+
+            this.renderOutline(matrices);
+        }
+    }
+
+    private void renderOutline(MatrixStack matrices) {
+        int color = -1;
+        if (this.nameStatus.isError()) {
+            color = this.isFocused() ? ERROR_FOCUSED_COLOR : ERROR_COLOR;
+        } else if (this.nameStatus == NameStatus.FILE_EXISTS && this.isNewName()) {
+            color = this.isFocused() ? WARNING_FOCUSED_COLOR : WARNING_COLOR;
+        }
+
+        if (color != -1) {
+            fill(matrices, this.x - 1, this.y - 1, this.x + this.width + 1, this.y, color);
+            fill(matrices, this.x - 1, this.y + this.height, this.x + this.width + 1, this.y + this.height + 1, color);
+            fill(matrices, this.x - 1, this.y, this.x, this.y + this.height, color);
+            fill(matrices, this.x + this.width, this.y, this.x + this.width + 1, this.y + this.height, color);
         }
     }
 
