@@ -38,6 +38,7 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
 
     @Override
     public boolean vtdownloader$isAvailablePackList() {
+        // Available packs list uses "pack.available.title" as title
         return this.title.asComponent() instanceof TranslatableComponent c && c.getKey().contains("available");
     }
 
@@ -88,10 +89,10 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
                 float u = 0.0F;
                 float v = 0.0F;
                 if (!this.vtdownloader$editable) {
-                    v = 16.0F;
+                    v = PENCIL_SIZE;
                 } else if (mouseX >= pencilX && mouseX < pencilX + PENCIL_SIZE
                         && mouseY >= pencilY && mouseY < pencilY + PENCIL_SIZE) {
-                    u = 16.0F;
+                    u = PENCIL_SIZE;
                 }
 
                 DrawableHelper.drawTexture(matrices, pencilX, pencilY,

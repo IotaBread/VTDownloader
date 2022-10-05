@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 
@@ -56,21 +57,15 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
         }
 
         int barWidth = this.getBarWidth();
-        int progressWidth = Math.round((barWidth - BAR_OUTLINE_SIZE * 4) * p);
-        int x1 = this.centerX - barWidth / 2;
-        int y1 = this.centerY - BAR_HEIGHT / 2;
-        int x2 = x1 + barWidth;
-        int y2 = y1 + BAR_HEIGHT;
+        int progressWidth = Math.round((barWidth - BAR_OUTLINE_SIZE * 2) * p);
+        int x = this.centerX - barWidth / 2;
+        int y = this.centerY - BAR_HEIGHT / 2;
         int color = this.color | this.getFadeAlpha() << 24;
 
-        // Outline
-        fill(matrices, x1 + BAR_OUTLINE_SIZE, y1, x2 - BAR_OUTLINE_SIZE, y1 + BAR_OUTLINE_SIZE, color); // Top line
-        fill(matrices, x1 + BAR_OUTLINE_SIZE, y2 - BAR_OUTLINE_SIZE, x2 - BAR_OUTLINE_SIZE, y2, color); // Bottom line
-        fill(matrices, x1, y1, x1 + BAR_OUTLINE_SIZE, y2, color); // Left line
-        fill(matrices, x2 - BAR_OUTLINE_SIZE, y1, x2, y2, color); // Right line
+        RenderUtil.drawOutline(matrices, x, y, barWidth, BAR_HEIGHT, BAR_OUTLINE_SIZE, color);
 
         // Progress line
-        fill(matrices, x1 + BAR_OUTLINE_SIZE * 2, y1 + BAR_OUTLINE_SIZE * 2,
-                x1 + BAR_OUTLINE_SIZE * 2 + progressWidth, y2 - BAR_OUTLINE_SIZE * 2, color);
+        fill(matrices, x + BAR_OUTLINE_SIZE, y + BAR_OUTLINE_SIZE,
+                x + BAR_OUTLINE_SIZE + progressWidth, y + BAR_HEIGHT - BAR_OUTLINE_SIZE, color);
     }
 }

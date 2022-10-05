@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Util {
-    public static final int VTD_BUTTON_WIDTH = 150;
+    public static final int VTD_BUTTON_WIDTH = 160;
     public static final int VTD_BUTTON_CENTER_X = VTD_BUTTON_WIDTH / 2;
     public static final int VTD_BUTTON_HEIGHT = 20;
     public static final int VTD_BUTTON_BOTTOM_MARGIN = 24;

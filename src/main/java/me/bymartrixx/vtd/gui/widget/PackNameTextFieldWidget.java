@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
+import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -115,10 +116,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         }
 
         if (color != -1) {
-            fill(matrices, this.x - 1, this.y - 1, this.x + this.width + 1, this.y, color);
-            fill(matrices, this.x - 1, this.y + this.height, this.x + this.width + 1, this.y + this.height + 1, color);
-            fill(matrices, this.x - 1, this.y, this.x, this.y + this.height, color);
-            fill(matrices, this.x + this.width, this.y, this.x + this.width + 1, this.y + this.height, color);
+            RenderUtil.drawOutline(matrices, this.x, this.y, this.width, this.height, 1, color);
         }
     }
 

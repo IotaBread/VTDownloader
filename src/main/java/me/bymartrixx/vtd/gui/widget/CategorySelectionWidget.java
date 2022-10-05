@@ -478,7 +478,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     @Override
     public SelectionType getType() {
-        // TODO
         return SelectionType.NONE;
     }
 }
