@@ -11,9 +11,14 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
+// Doesn't extend ButtonWidget to allow dynamic positioning
 public class CategoryButtonWidget extends DrawableHelper implements Element, Selectable {
     private static final int TEXTURE_HEIGHT = 20;
     private static final int TEXTURE_V_OFFSET = 46;
@@ -65,6 +70,7 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.hovered && !this.selected) {
+            this.playDownSound(MinecraftClient.getInstance().getSoundManager());
             return this.screen.selectCategory(this.category);
         }
 
@@ -72,8 +78,31 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
     }
 
     @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.selected) {
+            return false;
+        }
+
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_SPACE || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            this.playDownSound(MinecraftClient.getInstance().getSoundManager());
+            return this.screen.selectCategory(this.category);
+        }
+
+        return Element.super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private void playDownSound(SoundManager soundManager) {
+        soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    }
+
+    @Override
     public SelectionType getType() {
-        // TODO
+        if (this.focused) {
+            return SelectionType.FOCUSED;
+        } else if (this.hovered) {
+            return SelectionType.HOVERED;
+        }
+
         return SelectionType.NONE;
     }
 
