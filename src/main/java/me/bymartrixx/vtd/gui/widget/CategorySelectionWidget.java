@@ -142,6 +142,10 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 + (this.screen.width != this.screen.getLeftWidth() ? BUTTON_WIDTH : 0);
     }
 
+    private void scroll(int amount) {
+        this.setScrollAmount(this.getScrollAmount() + amount);
+    }
+
     private int getMaxScroll() {
         return Math.max(0, getButtonsWidth() - this.width + LEFT_RIGHT_PADDING * 2);
     }
@@ -158,6 +162,29 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.scrolling = button == GLFW.GLFW_MOUSE_BUTTON_1 &&
                 mouseX >= this.getScrollbarStartX() && mouseX < this.getScrollbarEndX() &&
                 mouseY >= this.getScrollbarStartY() && mouseY < this.getScrollbarEndY();
+    }
+
+    private void ensureVisible(CategoryButtonWidget button) {
+        int buttonLeft = this.getButtonLeft(this.children.indexOf(button));
+        int scrollAmount = buttonLeft - this.left - LEFT_RIGHT_PADDING * 2 - BUTTON_WIDTH;
+        if (scrollAmount < 0) {
+            this.scroll(scrollAmount);
+        }
+
+        scrollAmount = this.right - buttonLeft - BUTTON_WIDTH * 2;
+        if (scrollAmount < 0) {
+            this.scroll(-scrollAmount);
+        }
+    }
+
+    @Override
+    public boolean changeFocus(boolean lookForwards) {
+        boolean focused = super.changeFocus(lookForwards);
+        if (focused) {
+            this.ensureVisible((CategoryButtonWidget) this.getFocused());
+        }
+
+        return focused;
     }
 
     // region input callbacks
@@ -207,12 +234,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         this.setScrollAmount(this.getScrollAmount() - amount * BUTTON_WIDTH / 2);
         return true;
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // TODO: Allow selecting categories from the keyboard
-        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     // Needed to allow scrolling
