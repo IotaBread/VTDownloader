@@ -21,6 +21,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     private static final Text RESERVED_WINDOWS_NAME_TEXT = Text.translatable("vtd.fileNameValidity.reservedWindows");
     private static final Text REGEX_DOESNT_MATCH_TEXT = Text.translatable("vtd.fileNameValidity.regexDoesntMatch", FILE_NAME_REGEX);
 
+    public static final int MAX_LENGTH = 64;
     private static final int ERROR_COLOR = 0xFFEA5146;
     private static final int ERROR_FOCUSED_COLOR = 0xFFFF6666;
     private static final int WARNING_COLOR = 0xFFF2B50C;
@@ -38,6 +39,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         this.defaultName = defaultName;
 
         super.setChangedListener(this::onChange);
+        this.setMaxLength(MAX_LENGTH);
 
         if (copyText != null) {
             this.setText(copyText);

@@ -47,8 +47,6 @@ public class VTDownloadScreen extends Screen {
     private static final Text READ_PACK_DATA_FAILED_TEXT = Text.translatable("vtd.readPackDataFailed");
     private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
 
-    private static final int MAX_NAME_LENGTH = 64;
-
     private static final int WIDGET_HEIGHT = 20;
     private static final int WIDGET_MARGIN = 10;
 
@@ -285,30 +283,48 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     protected void init() {
+        // Reset left width
         this.leftWidth = this.width;
 
-        // Handle clicks before the pack selector
-        ExpandDrawerButtonWidget selectedPacksListButton = this.addSelectableChild(new ExpandDrawerButtonWidget(
-                this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
-                SELECTED_PACKS_TOP_HEIGHT + SELECTED_PACKS_BUTTON_Y,
-                SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
-        this.sharePopup = this.addSelectableChild(new MessageScreenPopup(this.client, this, this.width / 2, this.height / 2,
-                this.width / 2, (int) (this.height / 1.5), SHARE_TEXT));
-        this.errorPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this, this.width / 2, this.height / 2,
-                this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
-
-        this.packSelector = this.addDrawableChild(new PackSelectionListWidget(this.client, this, this.width,
+        // Draw before everything else
+        this.packSelector = this.addDrawable(new PackSelectionListWidget(this.client, this, this.width,
                 this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
                 this.currentCategory, this.selectionHelper));
         this.packSelector.updateCategories(this.categories);
 
-        this.selectedPacksList = this.addDrawableChild(new SelectedPacksListWidget(this, this.client,
+        this.selectedPacksList = this.addDrawable(new SelectedPacksListWidget(this, this.client,
                 SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
                 this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
                 this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
 
-        // Render over the pack selector and selected packs list
-        this.addDrawable(selectedPacksListButton);
+        // Reload button
+        this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
+                Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
+
+        this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
+        this.categorySelector.init(this.categories, this.currentCategory);
+
+        ExpandDrawerButtonWidget expandButton = this.addDrawable(new ExpandDrawerButtonWidget(this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
+                SELECTED_PACKS_TOP_HEIGHT + SELECTED_PACKS_BUTTON_Y,
+                SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
+
+        // Handle clicks before the pack selector
+        this.sharePopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+                this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), SHARE_TEXT));
+        this.errorPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+                this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+
+        this.addSelectableChild(expandButton);
+        this.addSelectableChild(this.packSelector);
+        this.addSelectableChild(this.selectedPacksList);
+
+        this.shareButton = this.addDrawableChild(new ButtonWidget(
+                this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
+                this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN,
+                SHARE_BUTTON_WIDTH, WIDGET_HEIGHT, SHARE_TEXT, button -> this.share()
+        ));
 
         // noinspection ConstantConditions
         this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
@@ -316,23 +332,13 @@ public class VTDownloadScreen extends Screen {
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
                 WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
                 this.client.getResourcePackDir().toPath(), this.defaultPackName));
-        this.packNameField.setMaxLength(MAX_NAME_LENGTH);
         this.packNameField.setChangedListener(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
-
-        this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
-                Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
-        this.shareButton = this.addDrawableChild(new ButtonWidget(
-                this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
-                this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN,
-                SHARE_BUTTON_WIDTH, WIDGET_HEIGHT, SHARE_TEXT, button -> this.share()
-        ));
 
         this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
-        this.updateButtons();
 
         this.doneButton = this.addDrawableChild(new ButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN,
@@ -340,17 +346,13 @@ public class VTDownloadScreen extends Screen {
                 ScreenTexts.DONE, button -> this.closeScreen()
         ));
 
-        this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
-        this.categorySelector.setCategories(this.categories);
-        this.categorySelector.initCategoryButtons();
-        this.categorySelector.setSelectedCategory(this.currentCategory);
-
         // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
         this.addDrawable(this.sharePopup);
         this.addDrawable(this.errorPopup);
 
+        this.updateButtons();
         this.readResourcePack();
     }
 
@@ -370,6 +372,7 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.updateScreenWidth();
         this.packSelector.updateScreenWidth();
 
+        this.shareButton.visible = extended;
         this.shareButton.x = this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X;
     }
 
