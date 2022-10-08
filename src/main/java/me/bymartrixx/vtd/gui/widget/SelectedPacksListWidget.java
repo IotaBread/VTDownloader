@@ -18,6 +18,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -30,9 +31,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
     private static final int ITEM_HEIGHT = 16;
     private static final int HEADER_HEIGHT = 16;
-    private static final int ROW_LEFT_RIGHT_MARGIN = 6;
+    private static final int ROW_LEFT_RIGHT_MARGIN = 2;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
-    private static final int PACK_ENTRY_LEFT_MARGIN = 16;
 
     private static final int HORIZONTAL_SHADOWS_BACKGROUND_Z = -100;
     private static final int HORIZONTAL_SHADOWS_SIZE = 4;
@@ -169,6 +169,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     @Override
+    protected boolean isSelectedEntry(int index) {
+        return this.getFocused() == this.getEntry(index);
+    }
+
+    @Override
     public int getRowWidth() {
         return this.width - ROW_LEFT_RIGHT_MARGIN * 2;
     }
@@ -178,10 +183,61 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return this.left + this.getRowWidth() + SCROLLBAR_LEFT_MARGIN;
     }
 
+    private void moveFocus(MoveDirection direction) {
+        int offset = direction == MoveDirection.UP ? -1 : 1;
+        if (!this.children().isEmpty()) {
+            AbstractEntry current = this.getFocused();
+            int currentIndex = current != null ? this.children().indexOf(current) : -1;
+
+            int index = MathHelper.clamp(currentIndex + offset, 0, this.getEntryCount() - 1);
+            if (index != currentIndex) {
+                AbstractEntry entry = this.getEntry(index);
+                this.setFocused(entry);
+                this.ensureVisible(entry);
+            }
+        }
+    }
+
+    @Override
+    protected boolean isFocused() {
+        return this.screen.getFocused() == this;
+    }
+
     // region input callbacks
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         return this.extended && super.isMouseOver(mouseX, mouseY);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.isFocused()) {
+            if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                this.moveFocus(MoveDirection.DOWN);
+                return true;
+            } else if (keyCode == GLFW.GLFW_KEY_UP) {
+                this.moveFocus(MoveDirection.UP);
+                return true;
+            }
+
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                AbstractEntry focusedEntry = this.getFocused();
+                if (focusedEntry != null) {
+                    focusedEntry.selectEntry();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean changeFocus(boolean lookForwards) {
+        if (this.extended) {
+            return !this.isFocused();
+        }
+
+        return false;
     }
     // endregion
 
@@ -309,6 +365,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         protected abstract String getTextString();
 
+        protected abstract void selectEntry();
+
         protected Text getText() {
             if (this.text != null) {
                 return this.text;
@@ -338,7 +396,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
                 long time = System.currentTimeMillis();
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                    this.widget.screen.selectCategory(this.category);
+                    this.selectEntry();
                 }
 
                 this.lastClickTime = time;
@@ -350,6 +408,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         @Override
         protected String getTextString() {
             return this.category.getName();
+        }
+
+        @Override
+        protected void selectEntry() {
+            this.widget.screen.selectCategory(this.category);
         }
 
         @Override
@@ -398,7 +461,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         protected String getTextString() {
-            return this.pack.getName();
+            return "> " + this.pack.getName();
+        }
+
+        @Override
+        protected void selectEntry() {
+            this.widget.screen.goToPack(this.pack, this.category);
         }
 
         @Override
@@ -406,7 +474,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
                 long time = System.currentTimeMillis();
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                    this.widget.screen.goToPack(this.pack, this.category);
+                    this.selectEntry();
                 }
 
                 this.lastClickTime = time;
@@ -417,7 +485,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawTextWithShadow(matrices, this.client.textRenderer, this.getText(), x + PACK_ENTRY_LEFT_MARGIN, y, this.getColor());
+            drawTextWithShadow(matrices, this.client.textRenderer, this.getText(), x, y, this.getColor());
         }
 
         @Override

@@ -10,6 +10,7 @@ import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
@@ -20,6 +21,8 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -197,6 +200,37 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return (int) (this.width / 2.5);
     }
 
+    private void moveFocus(MoveDirection direction) {
+        int offset = direction == MoveDirection.UP ? -1 : 1;
+        if (!this.children().isEmpty()) {
+            int start = this.children().get(0) instanceof WarningEntry ? 1 : 0;
+            AbstractEntry current = this.getFocused();
+            int currentIndex = current != null ? this.children().indexOf(current) : -1;
+
+            int index = MathHelper.clamp(currentIndex + offset, start, this.getEntryCount() - 1);
+            if (index != currentIndex) {
+                AbstractEntry entry = this.getEntry(index);
+                this.setFocused(entry);
+                this.ensureVisible(entry);
+            }
+        }
+    }
+
+    @Override
+    protected boolean isFocused() {
+        return this.screen.getFocused() == this;
+    }
+
+    @Override
+    public void setFocused(@Nullable Element focused) {
+        super.setFocused(focused);
+
+        // Set focused element as list when focusing an entry
+        if (focused != null && !this.isFocused()) {
+            this.screen.setFocused(this);
+        }
+    }
+
     // region input callbacks
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -228,6 +262,34 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.isFocused()) {
+            if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                this.moveFocus(MoveDirection.DOWN);
+                return true;
+            } else if (keyCode == GLFW.GLFW_KEY_UP) {
+                this.moveFocus(MoveDirection.UP);
+                return true;
+            }
+
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                AbstractEntry focusedEntry = this.getFocused();
+                if (focusedEntry instanceof PackEntry entry) {
+                    this.toggleSelection(entry);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean changeFocus(boolean lookForwards) {
+        return !this.isFocused();
+    }
+
     // endregion
 
     // region render
@@ -244,10 +306,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     protected void renderEntry(MatrixStack matrices, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
         AbstractEntry entry = this.getEntry(index);
 
+        boolean focused = this.isFocused() && this.getFocused() == entry;
         if (this.isSelectedEntry(index)) {
-            int outlineColor = this.isFocused() ? -1 : SELECTION_OUTLINE_COLOR;
+            int outlineColor = focused ? 0xFFFFFFFF : SELECTION_OUTLINE_COLOR;
             int color = this.getEntrySelectionColor(entry);
             this.drawEntrySelectionHighlight(matrices, entryY, width, height, outlineColor, color);
+        } else if (focused) {
+            RenderUtil.drawOutline(matrices, entryX - 1, entryY - 1, width - 2, height + 2, 1, 0xFFFFFFFF);
         }
 
         entry.render(matrices, index, entryY, entryX, width, height, mouseX, mouseY,
@@ -275,6 +340,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "C = " + (hasCategory ? this.category.getName() : "null"),
                 "HI = " + (hasCategory ? this.category.isHardIncompatible() : "N/A"),
                 "S = " + this.selectionHelper.getSelection(),
+                "F = " + this.getFocused(),
                 "E = " + this.editable,
                 "IC = " + this.selectionHelper.usedColors,
                 "MX/MY = " + mouseX + "/" + mouseY
@@ -423,6 +489,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             RenderSystem.disableBlend();
         }
         // endregion
+
+
+        @Override
+        public String toString() {
+            return "Pack " + this.pack.getName();
+        }
     }
 
     public static class WarningEntry extends AbstractEntry {
@@ -484,6 +556,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.getText(width).drawCenterWithShadow(matrices, x, y);
         }
         // endregion
+
+
+        @Override
+        public String toString() {
+            return "Warning";
+        }
     }
 
     public static abstract class AbstractEntry extends EntryListWidget.Entry<AbstractEntry> {
