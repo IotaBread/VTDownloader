@@ -1,5 +1,4 @@
 {
-    "vtd.done": "Done",
     "vtd.error": "Error!",
     "vtd.download": "Download",
     "vtd.download.failed": "Unexpected error!",
@@ -20,6 +19,5 @@
     "vtd.selectedPacks": "Selected packs",
     "vtd.readPackDataFailed": "Failed to read VanillaTweaks pack data:",
     "vtd.unsavedPackWarning.header": "Warning: Unsaved Pack",
-    "vtd.unsavedPackWarning.text": "All changes made to this pack will be lost!",
-    "vtd.title": "VTDownloader"
+    "vtd.unsavedPackWarning.text": "All changes made to this pack will be lost!"
 }
