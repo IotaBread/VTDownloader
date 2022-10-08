@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -108,7 +109,14 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder) {
-        // TODO
+        builder.put(NarrationPart.TITLE, ClickableWidget.getNarrationMessage(this.text));
+        if (!this.selected) {
+            if (this.focused) {
+                builder.put(NarrationPart.USAGE, Text.translatable("narration.button.usage.focused"));
+            } else {
+                builder.put(NarrationPart.USAGE, Text.translatable("narration.button.usage.hovered"));
+            }
+        }
     }
 
     @Override

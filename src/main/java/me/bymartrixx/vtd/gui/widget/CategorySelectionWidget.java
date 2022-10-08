@@ -468,7 +468,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder) {
-        // TODO
     }
 
     @Override

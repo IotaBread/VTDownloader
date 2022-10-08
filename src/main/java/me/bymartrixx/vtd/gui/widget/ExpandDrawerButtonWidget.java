@@ -79,6 +79,5 @@ public class ExpandDrawerButtonWidget extends DrawableHelper implements Element,
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder) {
-        // TODO
     }
 }

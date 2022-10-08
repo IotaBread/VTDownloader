@@ -5,6 +5,7 @@ import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
+import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
@@ -12,6 +13,7 @@ import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -365,7 +367,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder) {
-        // TODO
+        builder.put(NarrationPart.TITLE, Constants.RESOURCE_PACK_SCREEN_SUBTITLE);
     }
 
     public static class PackEntry extends AbstractEntry {
