@@ -36,8 +36,8 @@ import java.util.Objects;
 
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     // DEBUG
-    private static final boolean SHOW_DEBUG_INFO = true;
-    private static final boolean DISABLE_ICONS = true;
+    private static final boolean SHOW_DEBUG_INFO = false;
+    private static final boolean DISABLE_ICONS = false;
 
     private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
     private static final Text ERROR_HEADER = Text.translatable("vtd.packError.title")
