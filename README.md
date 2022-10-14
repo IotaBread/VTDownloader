@@ -5,10 +5,13 @@
 [ ![GitHub release](https://img.shields.io/github/v/release/ByMartrixX/VTDownloader?color=blue&include_prereleases&label=download&style=flat-square) ](https://github.com/ByMartrixx/VTDownloader/releases/latest)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ByMartrixX/VTDownloader/Java%20CI%20with%20Gradle?style=flat-square)
 
-<img src="https://i.imgur.com/77kxz8x.png" width="150">
+**Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) to work properly**
 
 Pick and download [Vanilla Tweaks](https://vanillatweaks.net) resource packs directly from your Minecraft Client!
-From the game menu, go to Options > Resource Packs > Download VT Pack, pick your texture packs, and press download. The pack will be directly downloaded to your resource packs folder.
+From the resource packs selection screen, click on the "Download VT Resource Pack" button, pick your texture packs, and press download.
+The pack will be directly downloaded to your resource packs folder, no moving files around required!
+
+You can also edit your downloaded packs directly from the resource packs screen by clicking on the pencil icon!
 
 Suggestions? [Start a discussion](https://github.com/ByMartrixx/VTDownloader/discussions/new) or [Open an issue](https://github.com/ByMartrixx/VTDownloader/issues/new)
 
@@ -20,7 +23,4 @@ Suggestions? [Start a discussion](https://github.com/ByMartrixx/VTDownloader/dis
 
 ### Planned features
 
-- Incompatible packs warning
-- Editing packs from the Resource Packs screen
-- Share button
 - Datapacks
