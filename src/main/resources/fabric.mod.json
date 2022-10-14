@@ -28,5 +28,9 @@
 
     "depends": {
         "minecraft": ">=1.19.1 <1.20"
+    },
+
+    "custom": {
+        "vt_version": "${vt_version}"
     }
 }

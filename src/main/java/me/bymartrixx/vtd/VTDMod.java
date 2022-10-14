@@ -84,9 +84,7 @@ public class VTDMod implements ClientModInitializer {
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (container.isPresent()) {
-            version = container.get().getMetadata().getVersion().toString();
-            vtVersion = version.substring(version.indexOf('+') + 1);
-            vtVersion = vtVersion.contains("+") ? vtVersion.substring(0, vtVersion.indexOf('+')) : vtVersion; // Remove build number if present
+            vtVersion = container.get().getMetadata().getCustomValue("vt_version").getAsString();
         }
 
         VERSION = version;

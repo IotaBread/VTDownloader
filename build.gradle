@@ -12,7 +12,7 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.archives_base_name
 group = project.maven_group
 
-version = project.mod_version + '+' + project.vt_version
+version = project.mod_version
 boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
 version = !isBuild ? version : "${version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 
@@ -38,9 +38,10 @@ dependencies {
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "vt_version", project.vt_version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.version, "vt_version": project.vt_version
 	}
 }
 
