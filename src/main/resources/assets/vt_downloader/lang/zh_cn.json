@@ -1,0 +1,23 @@
+{
+    "vtd.error": "错误!",
+    "vtd.download": "下载",
+    "vtd.download.failed": "意外错误！",
+    "vtd.download.success": "包下载成功！",
+    "vtd.share": "分享",
+    "vtd.share.failed": "获取资源包共享代码失败",
+    "vtd.share.code": "您的共享代码是 %s。点击链接将打开或复制到剪贴板",
+    "vtd.fileNameValidity.fileExists": "该名称的文件已存在",
+    "vtd.fileNameValidity.invalidWindows": "该文件名是无效的 Windows 名称",
+    "vtd.fileNameValidity.regexDoesntMatch": "文件名必须匹配 %s",
+    "vtd.fileNameValidity.reservedWindows": "该文件名是保留窗口名称",
+    "vtd.packError.title": "尝试获取包时出错。",
+    "vtd.packError.body": "请检查您的互联网连接，站点 %s 正常工作。",
+    "vtd.resourcePack.button": "下载 VT 资源包",
+    "vtd.resourcePack.nameField": "资源包名称...",
+    "vtd.resourcePack.subtitle": "选择资源包",
+    "vtd.resourcePack.reload": "重新加载资源包",
+    "vtd.selectedPacks": "选定包",
+    "vtd.readPackDataFailed": "无法读取原生调试包数据：",
+    "vtd.unsavedPackWarning.header": "警告：未保存的包",
+    "vtd.unsavedPackWarning.text": "对此包的所有更改都将丢失！"
+}
