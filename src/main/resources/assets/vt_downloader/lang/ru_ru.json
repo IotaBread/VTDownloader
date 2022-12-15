@@ -1,0 +1,23 @@
+{
+    "vtd.error": "Ошибка!",
+    "vtd.download": "Скачать",
+    "vtd.download.failed": "Непредвиденная ошибка!",
+    "vtd.download.success": "Набор загружен!",
+    "vtd.share": "Поделиться",
+    "vtd.share.failed": "Не удалось получить код набора",
+    "vtd.share.code": "Ваш код набора: %s. При нажатии на ссылку она откроется или скопируется в буфер обмена",
+    "vtd.fileNameValidity.fileExists": "Файл с таким именем уже существует",
+    "vtd.fileNameValidity.invalidWindows": "Файл с таким именем не допустим в Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "Имя файла должно совпадать с %s",
+    "vtd.fileNameValidity.reservedWindows": "Данное имя файла зарезервировано для Windows",
+    "vtd.packError.title": "При получении наборов произошла ошибка.",
+    "vtd.packError.body": "Пожалуйста проверьте подключение к интернету и то что сайт %s работает нормально.",
+    "vtd.resourcePack.button": "Скачать набор ресурсов VT",
+    "vtd.resourcePack.nameField": "Название набора...",
+    "vtd.resourcePack.subtitle": "Выберете наборы ресурсов",
+    "vtd.resourcePack.reload": "Перезагрузить наборы ресурсов",
+    "vtd.selectedPacks": "Выбрать наборы",
+    "vtd.readPackDataFailed": "Не удалось прочитать данные набора VanillaTweaks:",
+    "vtd.unsavedPackWarning.header": "Внимание: Несохранённый набор",
+    "vtd.unsavedPackWarning.text": "Все изменения в наборе будут потеряны!"
+}
