@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.File;
+import java.nio.file.Path;
 
 @Mixin(PackScreen.class)
 public class PackScreenMixin extends Screen implements PackScreenAccess {
     @Shadow
     @Final
-    private File file;
+    private Path file;
 
     protected PackScreenMixin(Text title) {
         super(title);
@@ -31,12 +31,12 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.vtdownloader$isResourcePackScreen()) {
-            this.addDrawableChild(new ButtonWidget(this.width / 2 - Util.VTD_BUTTON_CENTER_X,
-                    this.height - Util.VTD_BUTTON_BOTTOM_MARGIN, Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT,
-                    Constants.RESOURCE_PACK_BUTTON_TEXT, button -> {
+            ButtonWidget.Builder button = ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
                 // noinspection ConstantConditions
                 this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
-            }));
+            }).position(this.width / 2 - Util.VTD_BUTTON_CENTER_X, this.height - Util.VTD_BUTTON_BOTTOM_MARGIN)
+                    .size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT);
+            this.addDrawableChild(button.build());
         }
     }
 

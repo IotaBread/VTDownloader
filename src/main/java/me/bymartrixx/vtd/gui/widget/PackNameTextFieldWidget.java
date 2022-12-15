@@ -98,8 +98,8 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         super.renderButton(matrices, mouseX, mouseY, delta);
         if (this.isVisible()) {
             if (this.getText().isEmpty()) {
-                int x = this.x + 4;
-                int y = this.y + (this.height - 8) / 2;
+                int x = this.getX() + 4;
+                int y = this.getY() + (this.height - 8) / 2;
                 this.textRenderer.drawWithShadow(matrices, this.getMessage(), x, y, 0x707070);
             }
 
@@ -116,7 +116,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         }
 
         if (color != -1) {
-            RenderUtil.drawOutline(matrices, this.x, this.y, this.width, this.height, 1, color);
+            RenderUtil.drawOutline(matrices, this.getX(), this.getY(), this.width, this.height, 1, color);
         }
     }
 

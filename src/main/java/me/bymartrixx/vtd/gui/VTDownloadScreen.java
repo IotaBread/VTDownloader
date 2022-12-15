@@ -174,7 +174,7 @@ public class VTDownloadScreen extends Screen {
 
         // noinspection ConstantConditions
         CompletableFuture<Boolean> download = VTDMod.executePackDownload(data, f -> this.downloadProgress = f,
-                this.client.getResourcePackDir().toPath(),
+                this.client.getResourcePackDir(),
                 this.packNameField.isBlank() ? null : this.packNameField.getText());
 
         download.whenCompleteAsync((success, throwable) -> {
@@ -320,18 +320,18 @@ public class VTDownloadScreen extends Screen {
         this.addSelectableChild(this.packSelector);
         this.addSelectableChild(this.selectedPacksList);
 
-        this.shareButton = this.addDrawableChild(new ButtonWidget(
-                this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
-                this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN,
-                SHARE_BUTTON_WIDTH, WIDGET_HEIGHT, SHARE_TEXT, button -> this.share()
-        ));
+        this.shareButton = this.addDrawableChild(ButtonWidget.builder(SHARE_TEXT, button -> this.share())
+                .position(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
+                        this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN)
+                .size(SHARE_BUTTON_WIDTH, WIDGET_HEIGHT)
+                .build());
 
         // noinspection ConstantConditions
         this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - WIDGET_MARGIN - PACK_NAME_FIELD_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
                 WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
-                this.client.getResourcePackDir().toPath(), this.defaultPackName));
+                this.client.getResourcePackDir(), this.defaultPackName));
         this.packNameField.setChangedListener(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
 
@@ -340,11 +340,10 @@ public class VTDownloadScreen extends Screen {
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
 
-        this.doneButton = this.addDrawableChild(new ButtonWidget(
-                this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN,
-                DONE_BUTTON_WIDTH, WIDGET_HEIGHT,
-                ScreenTexts.DONE, button -> this.closeScreen()
-        ));
+        this.doneButton = this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> this.closeScreen())
+                .position(this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN)
+                .size(DONE_BUTTON_WIDTH, WIDGET_HEIGHT)
+                .build());
 
         // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
@@ -373,7 +372,7 @@ public class VTDownloadScreen extends Screen {
         this.packSelector.updateScreenWidth();
 
         this.shareButton.visible = extended;
-        this.shareButton.x = this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X;
+        this.shareButton.setX(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X);
     }
 
     public boolean isCoveredByPopup(int mouseX, int mouseY) {

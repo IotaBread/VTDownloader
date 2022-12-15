@@ -19,7 +19,7 @@ public class ReloadButtonWidget extends ButtonWidget {
     private static final int BUTTON_SIZE = 20;
 
     public ReloadButtonWidget(int x, int y, Text message, PressAction onPress) {
-        super(x, y, BUTTON_SIZE, BUTTON_SIZE, message, onPress);
+        super(x, y, BUTTON_SIZE, BUTTON_SIZE, message, onPress, ButtonWidget.DEFAULT_NARRATION);
     }
 
     @Override
@@ -36,15 +36,15 @@ public class ReloadButtonWidget extends ButtonWidget {
         RenderSystem.enableDepthTest();
 
         int imageY = this.getYImage(this.isHoveredOrFocused());
-        this.drawTexture(matrices, this.x, this.y,
+        this.drawTexture(matrices, this.getX(), this.getY(),
                 0, TEXTURE_V_OFFSET + imageY * TEXTURE_HEIGHT, this.width / 2, this.height);
-        this.drawTexture(matrices, this.x + this.width / 2, this.y,
+        this.drawTexture(matrices, this.getX() + this.width / 2, this.getY(),
                 TEXTURE_WIDTH - this.width / 2, TEXTURE_V_OFFSET + imageY * TEXTURE_HEIGHT, this.width / 2, this.height);
 
         this.renderBackground(matrices, client, mouseX, mouseY);
 
         int color = this.active ? 0xFFFFFF : 0xA0A0A0;
-        RenderUtil.drawCenteredScaledText(matrices, textRenderer, ICON, this.x + this.width / 2, this.y + (this.height - 16) / 2,
+        RenderUtil.drawCenteredScaledText(matrices, textRenderer, ICON, this.getX() + this.width / 2, this.getY() + (this.height - 16) / 2,
                 color | MathHelper.ceil(this.alpha * 255.0F) << 24, 2.0F);
     }
 }

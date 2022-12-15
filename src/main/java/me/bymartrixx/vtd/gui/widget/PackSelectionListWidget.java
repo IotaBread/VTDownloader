@@ -239,7 +239,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
             // Handle clicks when the error is shown
             int x = this.getCenterX();
-            int textWidth = this.errorText.m_crhihbev();
+            int textWidth = this.errorText.getMaxWidth();
             int startX = x - textWidth / 2;
             int endX = x + textWidth / 2;
 

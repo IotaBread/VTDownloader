@@ -8,7 +8,7 @@ public class MutableMessageButtonWidget extends ButtonWidget {
     private Text currentMessage;
 
     public MutableMessageButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
-        super(x, y, width, height, message, onPress);
+        super(x, y, width, height, message, onPress, ButtonWidget.DEFAULT_NARRATION);
         this.defaultMessage = message;
         this.currentMessage = message;
     }

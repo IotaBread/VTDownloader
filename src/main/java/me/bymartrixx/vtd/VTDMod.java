@@ -17,6 +17,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
+import net.minecraft.resource.ResourceIoSupplier;
 import net.minecraft.resource.pack.ResourcePack;
 import net.minecraft.resource.pack.ResourcePackProfile;
 import net.minecraft.util.Identifier;
@@ -269,12 +270,14 @@ public class VTDMod implements ClientModInitializer {
 
     public static CompletableFuture<List<String>> readResourcePackData(ResourcePackProfile profile) {
         return CompletableFuture.supplyAsync(() -> {
-            try (ResourcePack resourcePack = profile.createResourcePack();
-                 InputStream stream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE)) {
-                if (stream != null) {
-                    return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
-                } else {
-                    return Collections.emptyList();
+            try (ResourcePack resourcePack = profile.createResourcePack()) {
+                ResourceIoSupplier<InputStream> fileStream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE);
+                try (InputStream stream = fileStream != null ? fileStream.get() : null){
+                    if (stream != null) {
+                        return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
+                    } else {
+                        return Collections.emptyList();
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

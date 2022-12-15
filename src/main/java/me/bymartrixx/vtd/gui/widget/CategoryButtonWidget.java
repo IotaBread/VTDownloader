@@ -93,7 +93,7 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
     }
 
     private void playDownSound(SoundManager soundManager) {
-        soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        soundManager.play(PositionedSoundInstance.m_ozjrizqc(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     @Override
