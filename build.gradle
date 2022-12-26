@@ -1,9 +1,9 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
+	alias libs.plugins.fabric.loom
+	alias libs.plugins.minotaur
+	alias libs.plugins.cursegradle
+	alias libs.plugins.loom.quiltflower
 	id 'maven-publish'
-	id 'com.modrinth.minotaur' version '2.2.0'
-	id 'com.matthewprenger.cursegradle' version '1.4.0'
-	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -29,11 +29,11 @@ repositories {
 
 dependencies {
 	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "org.quiltmc:quilt-mappings:${minecraft_version}+build.${project.quilt_mappings_build}:intermediary-v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft libs.minecraft
+	mappings variantOf(libs.quilt.mappings) { classifier("intermediary-v2") }
+	modImplementation libs.fabric.loader
 
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation libs.fabric.api
 }
 
 processResources {
