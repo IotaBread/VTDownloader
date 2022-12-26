@@ -3,7 +3,7 @@
 **DISCLAIMER: None of the content that can be downloaded from the mod was created by me. Everything (but the mod) was created by the VanillaTweaks team.**
 
 [ ![GitHub release](https://img.shields.io/github/v/release/ByMartrixX/VTDownloader?color=blue&include_prereleases&label=download&style=flat-square) ](https://github.com/ByMartrixx/VTDownloader/releases/latest)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ByMartrixX/VTDownloader/Java%20CI%20with%20Gradle?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ByMartrixX/VTDownloader/gradle.yml?branch=1.19&style=flat-square)
 
 **Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) to work properly**
 
