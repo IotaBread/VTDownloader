@@ -8,7 +8,8 @@
     "PackListWidgetMixin$ResourcePackEntryMixin",
     "PackScreenMixin",
     "ResourcePackOrganizerMixin",
-    "ResourcePackOrganizerMixin$AbstractPackMixin"
+    "ResourcePackOrganizerMixin$AbstractPackMixin",
+    "compat.RecursiveResourcesPackScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -25,6 +25,9 @@ repositories {
 		name = 'Quilt Snapshots'
 		url = 'https://maven.quiltmc.org/repository/snapshot'
 	}
+
+	// Recursive resources maven
+	maven { url "https://maven.enjarai.nl/releases" }
 }
 
 dependencies {
@@ -34,6 +37,10 @@ dependencies {
 	modImplementation libs.fabric.loader
 
 	modImplementation libs.fabric.api
+
+	modImplementation(libs.recursive.resources) {
+		exclude group: "com.terraformersmc", module: "modmenu"
+	}
 }
 
 processResources {

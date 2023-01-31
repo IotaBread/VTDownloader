@@ -31,6 +31,10 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     private void addVTDButton(CallbackInfo info) {
         // Checks if it is the resource pack screen and not the data pack screen
         if (this.vtdownloader$isResourcePackScreen()) {
+            // Only create the button if it's not a modded one like the one Recursive Resources has
+            //noinspection ConstantValue
+            if ((Class<?>) getClass() != PackScreen.class) return;
+
             ButtonWidget.Builder button = ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
                 // noinspection ConstantConditions
                 this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));

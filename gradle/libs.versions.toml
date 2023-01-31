@@ -5,12 +5,17 @@ fabric_loader = "0.14.11"
 
 fabric_api = "0.70.0+1.19.3"
 
+# Other mods
+recursive_resources = "2.2.3+1.19.3"
+
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 quilt_mappings = { module = "org.quiltmc:quilt-mappings", version.ref = "quilt_mappings" }
 fabric_loader =  { module = "net.fabricmc:fabric-loader", version.ref = "fabric_loader" }
 
 fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric_api" }
+
+recursive_resources = { module = "nl.enjarai:recursive-resources", version.ref = "recursive_resources" }
 
 [plugins]
 fabric_loom = { id = "fabric-loom", version = "1.0-SNAPSHOT" }
