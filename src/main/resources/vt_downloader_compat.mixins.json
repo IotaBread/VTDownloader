@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "package": "me.bymartrixx.vtd.mixin.compat",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [],
+  "client": [
+    "RecursiveResourcesPackScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

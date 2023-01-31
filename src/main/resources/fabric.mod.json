@@ -23,7 +23,8 @@
         ]
     },
     "mixins": [
-        "vt_downloader.mixins.json"
+        "vt_downloader.mixins.json",
+        "vt_downloader_compat.mixins.json"
     ],
 
     "depends": {
