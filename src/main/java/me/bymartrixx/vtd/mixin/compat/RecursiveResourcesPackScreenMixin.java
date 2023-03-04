@@ -34,7 +34,7 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackScreen imple
         super(screen, resourcePackManager, consumer, path, text);
     }
 
-    @Shadow @Final
+    @Shadow(remap = false) @Final
     private MinecraftClient client;
 
     @Shadow
