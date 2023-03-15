@@ -12,7 +12,7 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.archives_base_name
 group = project.maven_group
 
-version = project.mod_version
+version = "${project.mod_version}+${libs.versions.minecraft.get()}"
 boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
 version = !isBuild ? version : "${version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 
@@ -84,10 +84,10 @@ modrinth {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.19.3"
+	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.19.4"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
-	gameVersions = ['1.19.3']
+	gameVersions = ['1.19.4']
 	loaders = ['fabric', 'quilt']
 }
 
@@ -99,12 +99,11 @@ curseforge {
 		id = '432425'
 		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
-		addGameVersion '1.19.3'
-		addGameVersion '1.19-Snapshot'
+		addGameVersion '1.19.4'
 		addGameVersion 'Fabric'
 		addGameVersion 'Quilt'
 		mainArtifact(remapJar) {
-			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.19.3"
+			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.19.4"
 		}
 		afterEvaluate {
 			uploadTask.dependsOn('remapJar')
