@@ -1,18 +1,13 @@
 package me.bymartrixx.vtd.gui.popup;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tessellator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormats;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 
 public abstract class AbstractScreenPopup extends DrawableHelper implements Drawable {
-    private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
+    private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final float FADE_TIME = 20.0F;
 
     protected final MinecraftClient client;
@@ -108,62 +103,21 @@ public abstract class AbstractScreenPopup extends DrawableHelper implements Draw
     @Override
     public final void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if (this.show) {
-            this.renderBackground();
+            this.renderBackground(matrices);
             this.renderContent(matrices, mouseX, mouseY, delta);
 
             this.updateShownTime(delta);
         }
     }
 
-    protected void renderBackground() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
-
-        RenderSystem.disableTexture();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
+    protected void renderBackground(MatrixStack matrices) {
         int alpha = this.getFadeAlpha();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(this.getLeft() - 1, this.getBottom() + 1, 0.0)
-                .color(0, 0, 0, alpha)
-                .next();
-        bufferBuilder.vertex(this.getRight() + 1, this.getBottom() + 1, 0.0)
-                .color(0, 0, 0, alpha)
-                .next();
-        bufferBuilder.vertex(this.getRight() + 1, this.getTop() - 1, 0.0)
-                .color(0, 0, 0, alpha)
-                .next();
-        bufferBuilder.vertex(this.getLeft() - 1, this.getTop() - 1, 0.0)
-                .color(0, 0, 0, alpha)
-                .next();
-        tessellator.draw();
-
-        RenderSystem.enableTexture();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        fill(matrices, this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24);
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.getLeft(), this.getBottom(), 0.0)
-                .uv(0.0F, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, alpha)
-                .next();
-        bufferBuilder.vertex(this.getRight(), this.getBottom(), 0.0)
-                .uv(this.width / BACKGROUND_TEXTURE_SIZE, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, alpha)
-                .next();
-        bufferBuilder.vertex(this.getRight(), this.getTop(), 0.0)
-                .uv(this.width / BACKGROUND_TEXTURE_SIZE, 0.0F)
-                .color(64, 64, 64, alpha)
-                .next();
-        bufferBuilder.vertex(this.getLeft(), this.getTop(), 0.0)
-                .uv(0.0F, 0.0F)
-                .color(64, 64, 64, alpha)
-                .next();
-        tessellator.draw();
+        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
+        drawTexture(matrices, this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
     protected abstract void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta);

@@ -202,36 +202,36 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return (int) (this.width / 2.5);
     }
 
-    private void moveFocus(MoveDirection direction) {
-        int offset = direction == MoveDirection.UP ? -1 : 1;
-        if (!this.children().isEmpty()) {
-            int start = this.children().get(0) instanceof WarningEntry ? 1 : 0;
-            AbstractEntry current = this.getFocused();
-            int currentIndex = current != null ? this.children().indexOf(current) : -1;
-
-            int index = MathHelper.clamp(currentIndex + offset, start, this.getEntryCount() - 1);
-            if (index != currentIndex) {
-                AbstractEntry entry = this.getEntry(index);
-                this.setFocused(entry);
-                this.ensureVisible(entry);
-            }
-        }
-    }
+    // private void moveFocus(MoveDirection direction) {
+    //     int offset = direction == MoveDirection.UP ? -1 : 1;
+    //     if (!this.children().isEmpty()) {
+    //         int start = this.children().get(0) instanceof WarningEntry ? 1 : 0;
+    //         AbstractEntry current = this.getFocused();
+    //         int currentIndex = current != null ? this.children().indexOf(current) : -1;
+    //
+    //         int index = MathHelper.clamp(currentIndex + offset, start, this.getEntryCount() - 1);
+    //         if (index != currentIndex) {
+    //             AbstractEntry entry = this.getEntry(index);
+    //             this.setFocused(entry);
+    //             this.ensureVisible(entry);
+    //         }
+    //     }
+    // }
 
     @Override
-    protected boolean isFocused() {
+    public boolean isFocused() {
         return this.screen.getFocused() == this;
     }
 
-    @Override
-    public void setFocused(@Nullable Element focused) {
-        super.setFocused(focused);
-
-        // Set focused element as list when focusing an entry
-        if (focused != null && !this.isFocused()) {
-            this.screen.setFocused(this);
-        }
-    }
+    // @Override
+    // public void setFocused(@Nullable Element focused) {
+    //     super.setFocused(focused);
+    //
+    //     // Set focused element as list when focusing an entry
+    //     if (focused != null && !this.isFocused()) {
+    //         this.screen.setFocused(this);
+    //     }
+    // }
 
     // region input callbacks
     @Override
@@ -268,13 +268,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.isFocused()) {
-            if (keyCode == GLFW.GLFW_KEY_DOWN) {
-                this.moveFocus(MoveDirection.DOWN);
-                return true;
-            } else if (keyCode == GLFW.GLFW_KEY_UP) {
-                this.moveFocus(MoveDirection.UP);
-                return true;
-            }
+            // if (keyCode == GLFW.GLFW_KEY_DOWN) {
+            //     this.moveFocus(MoveDirection.DOWN);
+            //     return true;
+            // } else if (keyCode == GLFW.GLFW_KEY_UP) {
+            //     this.moveFocus(MoveDirection.UP);
+            //     return true;
+            // }
 
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 AbstractEntry focusedEntry = this.getFocused();
@@ -287,10 +287,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return false;
     }
 
-    @Override
-    public boolean changeFocus(boolean lookForwards) {
-        return !this.isFocused();
-    }
+    // @Override
+    // public boolean changeFocus(boolean lookForwards) {
+    //     return !this.isFocused();
+    // }
 
     // endregion
 

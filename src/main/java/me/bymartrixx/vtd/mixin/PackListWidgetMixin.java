@@ -7,7 +7,6 @@ import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
@@ -32,6 +31,9 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
     @Shadow @Final
     private Text title;
 
+    @Shadow @Final
+    PackScreen field_41715;
+
     private PackListWidgetMixin(MinecraftClient minecraftClient, int i, int j, int k, int l, int m) {
         super(minecraftClient, i, j, k, l, m);
     }
@@ -47,6 +49,16 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         return this.itemHeight;
     }
 
+    @Override
+    public boolean vtdownloader$isResourcePackList() {
+        return ((PackScreenAccess) this.field_41715).vtdownloader$isResourcePackScreen();
+    }
+
+    @Override
+    public PackScreen vtdownloader$getScreen() {
+        return this.field_41715;
+    }
+
     @Mixin(PackListWidget.ResourcePackEntry.class)
     public static abstract class ResourcePackEntryMixin {
         private static final int PENCIL_TEXTURE_SIZE = 32;
@@ -59,8 +71,6 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         @Shadow @Final
         protected MinecraftClient client;
         @Shadow @Final
-        protected Screen screen;
-        @Shadow @Final
         private ResourcePackOrganizer.Pack pack;
 
         @Unique
@@ -69,10 +79,10 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         private boolean vtdownloader$editable;
 
         @Inject(at = @At("TAIL"), method = "<init>")
-        private void vtdownloader$init(MinecraftClient client, PackListWidget widget, Screen screen, ResourcePackOrganizer.Pack pack, CallbackInfo ci) {
-            if (screen instanceof PackScreen packScreen && ((PackScreenAccess) packScreen).vtdownloader$isResourcePackScreen()) {
+        private void vtdownloader$init(MinecraftClient client, PackListWidget widget, ResourcePackOrganizer.Pack pack, CallbackInfo ci) {
+            if (((PackListWidgetAccess) widget).vtdownloader$isResourcePackList()) {
                 this.vtdownloader$vtPack = pack.getDescription().getString().contains(Constants.VT_DESCRIPTION_MARKER);
-                this.vtdownloader$editable = this.vtdownloader$vtPack && ((PackListWidgetAccess) widget).vtdownloader$isAvailablePackList();
+                this.vtdownloader$editable = this.vtdownloader$vtPack && ((PackListWidgetAccess) this.widget).vtdownloader$isAvailablePackList();
             }
         }
 
@@ -114,7 +124,8 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
 
                 if (clickedX >= pencilX && clickedX < pencilX + PENCIL_SIZE
                         && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
-                    this.client.setScreen(new VTDownloadScreen(this.screen, Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
+                    this.client.setScreen(new VTDownloadScreen(((PackListWidgetAccess) this.widget).vtdownloader$getScreen(),
+                            Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
                 }
             }
         }

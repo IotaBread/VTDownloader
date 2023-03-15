@@ -19,7 +19,6 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private static final Text HEADER = Text.translatable("vtd.selectedPacks")
             .formatted(Formatting.BOLD, Formatting.UNDERLINE);
 
-    private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
+    private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final int ITEM_HEIGHT = 16;
     private static final int HEADER_HEIGHT = 16;
     private static final int ROW_LEFT_RIGHT_MARGIN = 2;
@@ -184,23 +183,23 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return this.left + this.getRowWidth() + SCROLLBAR_LEFT_MARGIN;
     }
 
-    private void moveFocus(MoveDirection direction) {
-        int offset = direction == MoveDirection.UP ? -1 : 1;
-        if (!this.children().isEmpty()) {
-            AbstractEntry current = this.getFocused();
-            int currentIndex = current != null ? this.children().indexOf(current) : -1;
-
-            int index = MathHelper.clamp(currentIndex + offset, 0, this.getEntryCount() - 1);
-            if (index != currentIndex) {
-                AbstractEntry entry = this.getEntry(index);
-                this.setFocused(entry);
-                this.ensureVisible(entry);
-            }
-        }
-    }
+    // private void moveFocus(MoveDirection direction) {
+    //     int offset = direction == MoveDirection.UP ? -1 : 1;
+    //     if (!this.children().isEmpty()) {
+    //         AbstractEntry current = this.getFocused();
+    //         int currentIndex = current != null ? this.children().indexOf(current) : -1;
+    //
+    //         int index = MathHelper.clamp(currentIndex + offset, 0, this.getEntryCount() - 1);
+    //         if (index != currentIndex) {
+    //             AbstractEntry entry = this.getEntry(index);
+    //             this.setFocused(entry);
+    //             this.ensureVisible(entry);
+    //         }
+    //     }
+    // }
 
     @Override
-    protected boolean isFocused() {
+    public boolean isFocused() {
         return this.screen.getFocused() == this;
     }
 
@@ -213,13 +212,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.isFocused()) {
-            if (keyCode == GLFW.GLFW_KEY_DOWN) {
-                this.moveFocus(MoveDirection.DOWN);
-                return true;
-            } else if (keyCode == GLFW.GLFW_KEY_UP) {
-                this.moveFocus(MoveDirection.UP);
-                return true;
-            }
+            // if (keyCode == GLFW.GLFW_KEY_DOWN) {
+            //     this.moveFocus(MoveDirection.DOWN);
+            //     return true;
+            // } else if (keyCode == GLFW.GLFW_KEY_UP) {
+            //     this.moveFocus(MoveDirection.UP);
+            //     return true;
+            // }
 
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 AbstractEntry focusedEntry = this.getFocused();
@@ -232,14 +231,14 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return false;
     }
 
-    @Override
-    public boolean changeFocus(boolean lookForwards) {
-        if (this.extended) {
-            return !this.isFocused();
-        }
-
-        return false;
-    }
+    // @Override
+    // public boolean changeFocus(boolean lookForwards) {
+    //     if (this.extended) {
+    //         return !this.isFocused();
+    //     }
+    //
+    //     return false;
+    // }
     // endregion
 
     // region render
@@ -253,7 +252,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     @Override
-    protected void renderHeader(MatrixStack matrices, int x, int y, Tessellator tessellator) {
+    protected void renderHeader(MatrixStack matrices, int x, int y) {
         drawCenteredText(matrices, this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
     }
 
@@ -261,91 +260,23 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     protected void renderList(MatrixStack matrices, int x, int y, float delta) {
         super.renderList(matrices, x, y, delta);
 
-        this.renderHorizontalShadows();
+        this.renderHorizontalShadows(matrices);
     }
 
-    private void renderHorizontalShadows() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
-
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+    private void renderHorizontalShadows(MatrixStack matrices) {
+        // @see EntryListWidget#render -> if (this.renderHorizontalShadows)
         RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthFunc(GlConst.GL_ALWAYS);
+        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
 
-        int z = HORIZONTAL_SHADOWS_BACKGROUND_Z;
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.left, this.top, z)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex((this.left + this.width), this.top, z)
-                .uv((this.left + this.width) / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex((this.left + this.width), 0.0, z)
-                .uv((this.left + this.width) / BACKGROUND_TEXTURE_SIZE, 0.0F)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.left, 0.0, z)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, 0.0F)
-                .color(64, 64, 64, 255)
-                .next();
+        // Background
+        drawTexture(matrices, this.left, 0, this.left, 0.0F, this.width, this.top, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        drawTexture(matrices, this.left, this.bottom, this.left, this.bottom, this.width, this.height - this.bottom, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
 
-        bufferBuilder.vertex(this.left, this.height, z)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex((this.left + this.width), this.height, z)
-                .uv((this.left + this.width) / BACKGROUND_TEXTURE_SIZE, this.height / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex((this.left + this.width), this.bottom, z)
-                .uv((this.left + this.width) / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.left, this.bottom, z)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        tessellator.draw();
-
-        RenderSystem.depthFunc(GlConst.GL_LEQUAL);
-        RenderSystem.disableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-        RenderSystem.disableTexture();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
+        // Shadows
         int size = HORIZONTAL_SHADOWS_SIZE;
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(this.left, (this.top + size), 0.0)
-                .color(0, 0, 0, 0)
-                .next();
-        bufferBuilder.vertex(this.right, (this.top + size), 0.0)
-                .color(0, 0, 0, 0)
-                .next();
-        bufferBuilder.vertex(this.right, this.top, 0.0)
-                .color(0, 0, 0, 255)
-                .next();
-        bufferBuilder.vertex(this.left, this.top, 0.0)
-                .color(0, 0, 0, 255)
-                .next();
-
-        bufferBuilder.vertex(this.left, this.bottom, 0.0)
-                .color(0, 0, 0, 255)
-                .next();
-        bufferBuilder.vertex(this.right, this.bottom, 0.0)
-                .color(0, 0, 0, 255)
-                .next();
-        bufferBuilder.vertex(this.right, (this.bottom - size), 0.0)
-                .color(0, 0, 0, 0)
-                .next();
-        bufferBuilder.vertex(this.left, (this.bottom - size), 0.0)
-                .color(0, 0, 0, 0)
-                .next();
-        tessellator.draw();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        fillGradient(matrices, this.left, this.top, this.right, this.top + size, 0xFF000000, 0x00000000);
+        fillGradient(matrices, this.left, this.bottom - size, this.right, this.bottom, 0x00000000, 0xFF000000);
     }
     // endregion
 

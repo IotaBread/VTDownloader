@@ -1,12 +1,12 @@
 [versions]
-minecraft = "1.19.3"
-quilt_mappings = "1.19.3+build.21"
+minecraft = "1.19.4"
+quilt_mappings = "1.19.4+build.3"
 fabric_loader = "0.14.11"
 
-fabric_api = "0.73.0+1.19.3"
+fabric_api = "0.75.3+1.19.4"
 
 # Other mods
-recursive_resources = "2.2.3+1.19.3"
+recursive_resources = "2.2.4+1.19.4"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
@@ -18,7 +18,7 @@ fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fab
 recursive_resources = { module = "nl.enjarai:recursive-resources", version.ref = "recursive_resources" }
 
 [plugins]
-fabric_loom = { id = "fabric-loom", version = "1.0-SNAPSHOT" }
-minotaur = { id = "com.modrinth.minotaur", version = "2.2.0" }
+fabric_loom = { id = "fabric-loom", version = "1.1-SNAPSHOT" }
+minotaur = { id = "com.modrinth.minotaur", version = "2.7.5" }
 cursegradle = { id = "com.matthewprenger.cursegradle", version = "1.4.0" }
 loom_quiltflower = { id = "io.github.juuxel.loom-quiltflower", version = "1.8.+" }

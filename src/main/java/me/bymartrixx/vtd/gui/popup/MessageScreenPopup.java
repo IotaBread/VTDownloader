@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -60,6 +61,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = this.client.textRenderer;
         int color = 0xFFFFFF | this.getFadeAlpha() << 24;
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         drawCenteredText(matrices, textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
         this.message.drawCenterWithShadow(matrices,
@@ -92,6 +94,16 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         }
 
         return Element.super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    // TODO
+    @Override
+    public void setFocused(boolean focused) {
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
     }
 
     @Override

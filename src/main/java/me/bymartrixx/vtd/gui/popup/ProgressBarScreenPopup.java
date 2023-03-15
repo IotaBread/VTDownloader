@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
@@ -62,6 +63,7 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
         int y = this.centerY - BAR_HEIGHT / 2;
         int color = this.color | this.getFadeAlpha() << 24;
 
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderUtil.drawOutline(matrices, x, y, barWidth, BAR_HEIGHT, BAR_OUTLINE_SIZE, color);
 
         // Progress line

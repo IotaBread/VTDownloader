@@ -5,7 +5,6 @@ import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -30,8 +29,8 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackScreen imple
     private static final Text VTD_TEXT = Text.literal("VTDownloader");
     private static final int BUTTON_Y_OFFSET = 48;
 
-    public RecursiveResourcesPackScreenMixin(Screen screen, ResourcePackManager resourcePackManager, Consumer<ResourcePackManager> consumer, Path path, Text text) {
-        super(screen, resourcePackManager, consumer, path, text);
+    public RecursiveResourcesPackScreenMixin(ResourcePackManager resourcePackManager, Consumer<ResourcePackManager> consumer, Path path, Text text) {
+        super(resourcePackManager, consumer, path, text);
     }
 
     @Shadow(remap = false) @Final

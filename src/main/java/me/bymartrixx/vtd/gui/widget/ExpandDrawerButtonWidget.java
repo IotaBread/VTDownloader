@@ -55,6 +55,16 @@ public class ExpandDrawerButtonWidget extends DrawableHelper implements Element,
         return Element.super.mouseClicked(mouseX, mouseY, button);
     }
 
+    // TODO
+    @Override
+    public void setFocused(boolean focused) {
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
+    }
+
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

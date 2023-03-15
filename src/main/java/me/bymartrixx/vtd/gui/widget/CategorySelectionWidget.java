@@ -183,15 +183,15 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         }
     }
 
-    @Override
-    public boolean changeFocus(boolean lookForwards) {
-        boolean focused = super.changeFocus(lookForwards);
-        if (focused) {
-            this.ensureVisible((CategoryButtonWidget) this.getFocused());
-        }
-
-        return focused;
-    }
+    // @Override
+    // public boolean changeFocus(boolean lookForwards) {
+    //     boolean focused = super.changeFocus(lookForwards);
+    //     if (focused) {
+    //         this.ensureVisible((CategoryButtonWidget) this.getFocused());
+    //     }
+    //
+    //     return focused;
+    // }
 
     // region input callbacks
     @Override
@@ -255,7 +255,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground();
         this.renderCategories(matrices, mouseX, mouseY, delta);
-        this.renderScrollbar();
+        this.renderScrollbar(matrices);
         this.renderMargin();
     }
 
@@ -300,14 +300,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         }
     }
 
-    private void renderScrollbar() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
-
-        if (shouldHaveScrollbar()) {
-            RenderSystem.disableTexture();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
+    private void renderScrollbar(MatrixStack matrices) {
+        if (this.shouldHaveScrollbar()) {
             int startX = this.getScrollbarStartX();
             int endX = this.getScrollbarEndX();
             int startY = this.getScrollbarStartY();
@@ -322,52 +316,10 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 x = startX;
             }
 
-            // Draw slider area
-            bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-            bufferBuilder.vertex(startX, endY, 0.0)
-                    .color(0, 0, 0, 255)
-                    .next();
-            bufferBuilder.vertex(endX, endY, 0.0)
-                    .color(0, 0, 0, 255)
-                    .next();
-            bufferBuilder.vertex(endX, startY, 0.0)
-                    .color(0, 0, 0, 255)
-                    .next();
-            bufferBuilder.vertex(startX, startY, 0.0)
-                    .color(0, 0, 0, 255)
-                    .next();
-
-            // Draw scroll bar
-            bufferBuilder.vertex(x, endY, 0.0)
-                    .color(128, 128, 128, 255)
-                    .next();
-            bufferBuilder.vertex(x + size, endY, 0.0)
-                    .color(128, 128, 128, 255)
-                    .next();
-            bufferBuilder.vertex(x + size, startY, 0.0)
-                    .color(128, 128, 128, 255)
-                    .next();
-            bufferBuilder.vertex(x, startY, 0.0)
-                    .color(128, 128, 128, 255)
-                    .next();
-
-            // Draw scroll bar highlight
-            bufferBuilder.vertex(x, endY - 1, 0.0)
-                    .color(192, 192, 192, 255)
-                    .next();
-            bufferBuilder.vertex(x + size - 1, endY - 1, 0.0)
-                    .color(192, 192, 192, 255)
-                    .next();
-            bufferBuilder.vertex(x + size - 1, startY, 0.0)
-                    .color(192, 192, 192, 255)
-                    .next();
-            bufferBuilder.vertex(x, startY, 0.0)
-                    .color(192, 192, 192, 255)
-                    .next();
-            tessellator.draw();
+            fill(matrices, startX, startY, endX, endY, 0xFF000000); // Slider area
+            fill(matrices, x, startY, x + size, endY, 0xFF808080); // Scroll bar
+            fill(matrices, x, startY, x + size - 1, endY - 1, 0xFFC0C0C0); // Scroll bar highlight
         }
-
-        RenderSystem.enableTexture();
     }
 
     // Render a margin over the category buttons to make them look as if they were partially under the background

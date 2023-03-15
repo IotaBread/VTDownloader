@@ -92,8 +92,18 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
         return Element.super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    // TODO
+    @Override
+    public void setFocused(boolean focused) {
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
+    }
+
     private void playDownSound(SoundManager soundManager) {
-        soundManager.play(PositionedSoundInstance.m_ozjrizqc(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        soundManager.play(PositionedSoundInstance.create(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     @Override
@@ -119,11 +129,11 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
         }
     }
 
-    @Override
-    public boolean changeFocus(boolean lookForwards) {
-        this.focused = !this.focused;
-        return this.focused;
-    }
+    // @Override
+    // public boolean changeFocus(boolean lookForwards) {
+    //     this.focused = !this.focused;
+    //     return this.focused;
+    // }
 
     private boolean isHoveredOrFocused() {
         return this.hovered || this.focused;

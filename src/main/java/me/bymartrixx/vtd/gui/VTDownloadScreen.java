@@ -387,7 +387,7 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(0);
+        this.renderBackgroundTexture(matrices);
         super.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
         drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);

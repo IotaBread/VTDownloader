@@ -94,8 +94,9 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     }
 
     @Override
-    public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.renderButton(matrices, mouseX, mouseY, delta);
+    public void drawWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawWidget(matrices, mouseX, mouseY, delta);
+
         if (this.isVisible()) {
             if (this.getText().isEmpty()) {
                 int x = this.getX() + 4;
