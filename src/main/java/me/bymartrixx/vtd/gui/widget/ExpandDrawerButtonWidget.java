@@ -1,19 +1,16 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
-public class ExpandDrawerButtonWidget extends DrawableHelper implements Element, Drawable, Selectable {
+public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
     private static final Identifier TEXTURE = new Identifier("vt_downloader", "textures/drawer_tab.png");
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 64;
@@ -66,20 +63,14 @@ public class ExpandDrawerButtonWidget extends DrawableHelper implements Element,
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         boolean hovered = mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
         float u = hovered ? TAB_WIDTH : 0.0F;
         float v = this.extended ? TAB_HEIGHT : 0.0F;
-        // noinspection SuspiciousNameCombination - flipped params in the mappings
-        drawTexture(matrices, this.getLeft(), this.y, 0, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        graphics.drawTexture(TEXTURE, this.getLeft(), this.y, 0, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override

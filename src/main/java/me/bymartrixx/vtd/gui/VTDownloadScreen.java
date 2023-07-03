@@ -19,12 +19,12 @@ import me.bymartrixx.vtd.gui.widget.ReloadButtonWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.pack.ResourcePackProfile;
-import net.minecraft.text.ScreenTexts;
+import net.minecraft.text.CommonTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -340,7 +340,7 @@ public class VTDownloadScreen extends Screen {
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
 
-        this.doneButton = this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> this.closeScreen())
+        this.doneButton = this.addDrawableChild(ButtonWidget.builder(CommonTexts.DONE, button -> this.closeScreen())
                 .position(this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN)
                 .size(DONE_BUTTON_WIDTH, WIDGET_HEIGHT)
                 .build());
@@ -386,29 +386,29 @@ public class VTDownloadScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
-        drawCenteredText(matrices, this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        this.renderBackgroundTexture(graphics);
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
+        graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);
 
-        this.renderDebugInfo(matrices, mouseX, mouseY);
-        this.packSelector.renderTooltips(matrices, mouseX, mouseY);
-        this.renderPackNameFieldTooltip(matrices, mouseX, mouseY);
+        this.renderDebugInfo(graphics, mouseX, mouseY);
+        this.packSelector.renderTooltips(graphics, mouseX, mouseY);
+        this.renderPackNameFieldTooltip(graphics, mouseX, mouseY);
 
         this.updateTime(delta);
     }
 
-    private void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
-        this.packSelector.renderDebugInfo(matrices, mouseX, mouseY);
-        this.categorySelector.renderDebugInfo(matrices);
+    private void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
+        this.packSelector.renderDebugInfo(graphics, mouseX, mouseY);
+        this.categorySelector.renderDebugInfo(graphics);
     }
 
-    private void renderPackNameFieldTooltip(MatrixStack matrices, int mouseX, int mouseY) {
+    private void renderPackNameFieldTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
         if (this.packNameField.isMouseOver(mouseX, mouseY)) {
             Text text = this.packNameField.getTooltipText();
             if (text != null) {
-                this.renderTooltip(matrices, text, mouseX, mouseY);
+                graphics.drawTooltip(this.textRenderer, text, mouseX, mouseY);
             }
         }
     }

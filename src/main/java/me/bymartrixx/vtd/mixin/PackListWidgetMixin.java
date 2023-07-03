@@ -1,18 +1,15 @@
 package me.bymartrixx.vtd.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.access.PackListWidgetAccess;
 import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.component.TranslatableComponent;
 import org.spongepowered.asm.mixin.Final;
@@ -32,7 +29,7 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
     private Text title;
 
     @Shadow @Final
-    PackScreen field_41715;
+    PackScreen screen;
 
     private PackListWidgetMixin(MinecraftClient minecraftClient, int i, int j, int k, int l, int m) {
         super(minecraftClient, i, j, k, l, m);
@@ -51,12 +48,12 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
 
     @Override
     public boolean vtdownloader$isResourcePackList() {
-        return ((PackScreenAccess) this.field_41715).vtdownloader$isResourcePackScreen();
+        return ((PackScreenAccess) this.screen).vtdownloader$isResourcePackScreen();
     }
 
     @Override
     public PackScreen vtdownloader$getScreen() {
-        return this.field_41715;
+        return this.screen;
     }
 
     @Mixin(PackListWidget.ResourcePackEntry.class)
@@ -87,12 +84,10 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         }
 
         @Inject(at = @At("TAIL"), method = "render")
-        private void renderEditButton(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight,
-                                      int mouseX, int mouseY, boolean hovered, float tickDelta,CallbackInfo ci) {
+        private void renderEditButton(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight,
+                                      int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
             if (this.vtdownloader$vtPack) {
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                RenderSystem.setShaderTexture(0, Constants.PENCIL_TEXTURE);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
                 int pencilX = x + entryWidth - PENCIL_SIZE - PENCIL_RIGHT_MARGIN;
                 int pencilY = y + entryHeight - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
@@ -105,7 +100,7 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
                     u = PENCIL_SIZE;
                 }
 
-                DrawableHelper.drawTexture(matrices, pencilX, pencilY,
+                graphics.drawTexture(Constants.PENCIL_TEXTURE, pencilX, pencilY,
                         u, v, PENCIL_SIZE, PENCIL_SIZE, PENCIL_TEXTURE_SIZE, PENCIL_TEXTURE_SIZE);
             }
         }

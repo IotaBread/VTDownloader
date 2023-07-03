@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Mixin(targets = "nl.enjarai.recursiveresources.gui.CustomResourcePackScreen")
+@Mixin(targets = "nl.enjarai.recursiveresources.gui.FolderedResourcePackScreen")
 public abstract class RecursiveResourcesPackScreenMixin extends PackScreen implements PackScreenAccess {
     private static final Text OPEN_FOLDER_TEXT = Text.translatable("pack.openFolder");
     private static final int LIST_WIDTH = 200;

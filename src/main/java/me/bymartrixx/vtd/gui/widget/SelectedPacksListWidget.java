@@ -1,22 +1,15 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.platform.GlConst;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tessellator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
@@ -243,40 +236,39 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     // region render
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         if (!this.extended) {
             return;
         }
 
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
     }
 
     @Override
-    protected void renderHeader(MatrixStack matrices, int x, int y) {
-        drawCenteredText(matrices, this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
+    protected void renderHeader(GuiGraphics graphics, int x, int y) {
+        graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
     }
 
     @Override
-    protected void renderList(MatrixStack matrices, int x, int y, float delta) {
-        super.renderList(matrices, x, y, delta);
+    protected void renderList(GuiGraphics graphics, int x, int y, float delta) {
+        super.renderList(graphics, x, y, delta);
 
-        this.renderHorizontalShadows(matrices);
+        this.renderHorizontalShadows(graphics);
     }
 
-    private void renderHorizontalShadows(MatrixStack matrices) {
+    private void renderHorizontalShadows(GuiGraphics graphics) {
         // @see EntryListWidget#render -> if (this.renderHorizontalShadows)
-        RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
+        graphics.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
 
         // Background
-        drawTexture(matrices, this.left, 0, this.left, 0.0F, this.width, this.top, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
-        drawTexture(matrices, this.left, this.bottom, this.left, this.bottom, this.width, this.height - this.bottom, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, 0, this.left, 0.0F, this.width, this.top, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, this.bottom, this.left, this.bottom, this.width, this.height - this.bottom, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
 
         // Shadows
         int size = HORIZONTAL_SHADOWS_SIZE;
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        fillGradient(matrices, this.left, this.top, this.right, this.top + size, 0xFF000000, 0x00000000);
-        fillGradient(matrices, this.left, this.bottom - size, this.right, this.bottom, 0x00000000, 0xFF000000);
+        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.top, this.right, this.top + size, 0xFF000000, 0x00000000, 0);
+        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.bottom - size, this.right, this.bottom, 0x00000000, 0xFF000000, 0);
     }
     // endregion
 
@@ -309,8 +301,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawTextWithShadow(matrices, this.client.textRenderer, this.getText(), x, y, 0xFFFFFF);
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            graphics.drawShadowedText(this.client.textRenderer, this.getText(), x, y, 0xFFFFFF);
         }
     }
 
@@ -416,8 +408,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawTextWithShadow(matrices, this.client.textRenderer, this.getText(), x, y, this.getColor());
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            graphics.drawShadowedText(this.client.textRenderer, this.getText(), x, y, this.getColor());
         }
 
         @Override

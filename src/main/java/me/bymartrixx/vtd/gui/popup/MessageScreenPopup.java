@@ -1,16 +1,15 @@
 package me.bymartrixx.vtd.gui.popup;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -58,13 +57,13 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     }
 
     @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = this.client.textRenderer;
         int color = 0xFFFFFF | this.getFadeAlpha() << 24;
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        drawCenteredText(matrices, textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
+        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
-        this.message.drawCenterWithShadow(matrices,
+        this.message.render(graphics,
                 this.centerX, this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight, textRenderer.fontHeight, color);
     }
 

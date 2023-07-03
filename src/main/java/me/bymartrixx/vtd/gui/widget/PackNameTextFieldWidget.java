@@ -2,8 +2,8 @@ package me.bymartrixx.vtd.gui.widget;
 
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,21 +94,21 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
     }
 
     @Override
-    public void drawWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawWidget(matrices, mouseX, mouseY, delta);
+    public void drawWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.drawWidget(graphics, mouseX, mouseY, delta);
 
         if (this.isVisible()) {
             if (this.getText().isEmpty()) {
                 int x = this.getX() + 4;
                 int y = this.getY() + (this.height - 8) / 2;
-                this.textRenderer.drawWithShadow(matrices, this.getMessage(), x, y, 0x707070);
+                graphics.drawShadowedText(this.textRenderer, this.getMessage(), x, y, 0x707070);
             }
 
-            this.renderOutline(matrices);
+            this.renderOutline(graphics);
         }
     }
 
-    private void renderOutline(MatrixStack matrices) {
+    private void renderOutline(GuiGraphics graphics) {
         int color = -1;
         if (this.nameStatus.isError()) {
             color = this.isFocused() ? ERROR_FOCUSED_COLOR : ERROR_COLOR;
@@ -117,7 +117,7 @@ public class PackNameTextFieldWidget extends TextFieldWidget {
         }
 
         if (color != -1) {
-            RenderUtil.drawOutline(matrices, this.getX(), this.getY(), this.width, this.height, 1, color);
+            RenderUtil.drawOutline(graphics, this.getX(), this.getY(), this.width, this.height, 1, color);
         }
     }
 

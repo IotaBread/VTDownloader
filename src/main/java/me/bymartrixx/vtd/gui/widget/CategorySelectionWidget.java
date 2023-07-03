@@ -13,10 +13,11 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.AbstractParentElement;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
@@ -252,10 +253,10 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     // region render
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         this.renderBackground();
-        this.renderCategories(matrices, mouseX, mouseY, delta);
-        this.renderScrollbar(matrices);
+        this.renderCategories(graphics, mouseX, mouseY, delta);
+        this.renderScrollbar(graphics);
         this.renderMargin();
     }
 
@@ -264,7 +265,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -287,7 +288,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         tessellator.draw();
     }
 
-    private void renderCategories(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    private void renderCategories(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         for (int i = 0; i < this.children.size(); i++) {
             CategoryButtonWidget button = this.children.get(i);
             int left = getButtonLeft(i);
@@ -295,12 +296,12 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
             // Render only if the button is at least partially visible (else it'd be out of the screen)
             if (right > this.left && left < this.right) {
-                button.render(matrices, left, this.top + TOP_BOTTOM_PADDING, mouseX, mouseY, delta);
+                button.render(graphics, left, this.top + TOP_BOTTOM_PADDING, mouseX, mouseY, delta);
             }
         }
     }
 
-    private void renderScrollbar(MatrixStack matrices) {
+    private void renderScrollbar(GuiGraphics graphics) {
         if (this.shouldHaveScrollbar()) {
             int startX = this.getScrollbarStartX();
             int endX = this.getScrollbarEndX();
@@ -316,9 +317,9 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 x = startX;
             }
 
-            fill(matrices, startX, startY, endX, endY, 0xFF000000); // Slider area
-            fill(matrices, x, startY, x + size, endY, 0xFF808080); // Scroll bar
-            fill(matrices, x, startY, x + size - 1, endY - 1, 0xFFC0C0C0); // Scroll bar highlight
+            graphics.fill(startX, startY, endX, endY, 0xFF000000); // Slider area
+            graphics.fill(x, startY, x + size, endY, 0xFF808080); // Scroll bar
+            graphics.fill(x, startY, x + size - 1, endY - 1, 0xFFC0C0C0); // Scroll bar highlight
         }
     }
 
@@ -328,7 +329,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         // Left side
@@ -370,7 +371,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         tessellator.draw();
     }
 
-    public void renderDebugInfo(MatrixStack matrices) {
+    public void renderDebugInfo(GuiGraphics graphics) {
         if (!SHOW_DEBUG_INFO) return;
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
@@ -388,7 +389,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 "BL-1/BR-1 = " + this.getButtonLeft(last) + "/" + this.getButtonRight(last)
         );
 
-        RenderUtil.renderDebugInfo(matrices, textRenderer, this.left, this.height, debugInfo);
+        RenderUtil.renderDebugInfo(graphics, textRenderer, this.left, this.height, debugInfo);
     }
     // endregion
 

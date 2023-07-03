@@ -1,12 +1,11 @@
 package me.bymartrixx.vtd.gui.popup;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screen.Screen;
 
-public abstract class AbstractScreenPopup extends DrawableHelper implements Drawable {
+public abstract class AbstractScreenPopup implements Drawable {
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final float FADE_TIME = 20.0F;
 
@@ -101,24 +100,23 @@ public abstract class AbstractScreenPopup extends DrawableHelper implements Draw
     protected void reset() {}
 
     @Override
-    public final void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public final void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         if (this.show) {
-            this.renderBackground(matrices);
-            this.renderContent(matrices, mouseX, mouseY, delta);
+            this.renderBackground(graphics);
+            this.renderContent(graphics, mouseX, mouseY, delta);
 
             this.updateShownTime(delta);
         }
     }
 
-    protected void renderBackground(MatrixStack matrices) {
+    protected void renderBackground(GuiGraphics graphics) {
         int alpha = this.getFadeAlpha();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        fill(matrices, this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24);
+        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24);
 
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
-        drawTexture(matrices, this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        graphics.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
+        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
-    protected abstract void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta);
+    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);
 }

@@ -11,20 +11,16 @@ import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -296,42 +292,42 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     // region render
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
 
         if (this.children().isEmpty()) {
-            this.renderError(matrices);
+            this.renderError(graphics);
         }
     }
 
     @Override
-    protected void renderEntry(MatrixStack matrices, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
+    protected void renderEntry(GuiGraphics graphics, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
         AbstractEntry entry = this.getEntry(index);
 
         boolean focused = this.isFocused() && this.getFocused() == entry;
         if (this.isSelectedEntry(index)) {
             int outlineColor = focused ? 0xFFFFFFFF : SELECTION_OUTLINE_COLOR;
             int color = this.getEntrySelectionColor(entry);
-            this.drawEntrySelectionHighlight(matrices, entryY, width, height, outlineColor, color);
+            this.drawEntrySelectionHighlight(graphics, entryY, width, height, outlineColor, color);
         } else if (focused) {
-            RenderUtil.drawOutline(matrices, entryX - 1, entryY - 1, width - 2, height + 2, 1, 0xFFFFFFFF);
+            RenderUtil.drawOutline(graphics, entryX - 1, entryY - 1, width - 2, height + 2, 1, 0xFFFFFFFF);
         }
 
-        entry.render(matrices, index, entryY, entryX, width, height, mouseX, mouseY,
+        entry.render(graphics, index, entryY, entryX, width, height, mouseX, mouseY,
                 Objects.equals(this.getHoveredEntry(), entry), delta);
     }
 
-    private void renderError(MatrixStack matrices) {
+    private void renderError(GuiGraphics graphics) {
         TextRenderer textRenderer = this.client.textRenderer;
 
         int x = this.getCenterX();
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
-        this.errorText.drawCenterWithShadow(matrices, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
+        this.errorText.render(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
     }
 
-    public void renderDebugInfo(MatrixStack matrices, int mouseX, int mouseY) {
+    public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
         if (!SHOW_DEBUG_INFO) return;
         TextRenderer textRenderer = this.client.textRenderer;
 
@@ -348,16 +344,16 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
-        RenderUtil.renderDebugInfo(matrices, textRenderer, this.left, this.height, debugInfo);
+        RenderUtil.renderDebugInfo(graphics, textRenderer, this.left, this.height, debugInfo);
     }
 
-    public void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
+    public void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         if (mouseY >= this.top && mouseY < this.bottom
                 && mouseX >= this.left && mouseX < this.right
                 && !this.screen.isCoveredByPopup(mouseX, mouseY)) {
             int width = this.getTooltipWidth();
             for (AbstractEntry entry : this.children()) {
-                if (entry.renderTooltip(matrices, mouseX, mouseY, width)) {
+                if (entry.renderTooltip(graphics, mouseX, mouseY, width)) {
                     break;
                 }
             }
@@ -463,32 +459,27 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         // region entryRender
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             TextRenderer textRenderer = this.client.textRenderer;
             int iconSize = entryHeight - ICON_MARGIN * 2;
             int centerX = x + (iconSize + entryWidth) / 2; // center over area left to the icon
-            drawCenteredText(matrices, textRenderer, this.name, centerX, y, 0xFFFFFF);
+            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, y, 0xFFFFFF);
 
-            this.renderDescription(matrices, centerX, y + getLineHeight(textRenderer), entryWidth - iconSize);
-            if (!DISABLE_ICONS) this.renderIcon(matrices, x + ICON_MARGIN, y + ICON_MARGIN, iconSize);
+            this.renderDescription(graphics, centerX, y + getLineHeight(textRenderer), entryWidth - iconSize);
+            if (!DISABLE_ICONS) this.renderIcon(graphics, x + ICON_MARGIN, y + ICON_MARGIN, iconSize);
         }
 
-        private void renderDescription(MatrixStack matrices, int x, int y, int width) {
-            getShortDescription(width - TEXT_MARGIN).drawCenterWithShadow(matrices, x, y);
+        private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
+            getShortDescription(width - TEXT_MARGIN).render(graphics, x, y);
         }
 
-        private void renderIcon(MatrixStack matrices, int x, int y, int size) {
+        private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
             downloadIcon();
             if (!this.iconExists) return;
 
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShaderTexture(0, this.icon);
-            RenderSystem.enableBlend();
+            graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-            drawTexture(matrices, x, y, 0.0F, 0.0F, size, size, size, size);
-
-            RenderSystem.disableBlend();
+            graphics.drawTexture(this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
 
@@ -542,20 +533,20 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         // region warningRender
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.renderBackground(matrices, x + WARNING_BG_MARGIN, y + WARNING_BG_MARGIN, entryWidth - WARNING_BG_MARGIN * 2, entryHeight - WARNING_BG_MARGIN * 2);
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            this.renderBackground(graphics, x + WARNING_BG_MARGIN, y + WARNING_BG_MARGIN, entryWidth - WARNING_BG_MARGIN * 2, entryHeight - WARNING_BG_MARGIN * 2);
 
             int width = entryWidth - WARNING_MARGIN * 2;
-            this.renderText(matrices, x + WARNING_MARGIN + width / 2, y + WARNING_MARGIN, width);
+            this.renderText(graphics, x + WARNING_MARGIN + width / 2, y + WARNING_MARGIN, width);
         }
 
-        private void renderBackground(MatrixStack matrices, int x, int y, int width, int height) {
+        private void renderBackground(GuiGraphics graphics, int x, int y, int width, int height) {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            fill(matrices, x, y, x + width, y + height, this.color);
+            graphics.fill(x, y, x + width, y + height, this.color);
         }
 
-        private void renderText(MatrixStack matrices, int x, int y, int width) {
-            this.getText(width).drawCenterWithShadow(matrices, x, y);
+        private void renderText(GuiGraphics graphics, int x, int y, int width) {
+            this.getText(width).render(graphics, x, y);
         }
         // endregion
 
@@ -586,9 +577,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         protected abstract List<Text> getTooltipText(int width);
 
         // region baseEntryRender
-        protected boolean renderTooltip(MatrixStack matrices, int mouseX, int mouseY, int width) {
+        protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
-                this.screen.renderTooltip(matrices, this.getTooltipText(width), mouseX, mouseY);
+                graphics.drawTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
                 return true;
             }
 

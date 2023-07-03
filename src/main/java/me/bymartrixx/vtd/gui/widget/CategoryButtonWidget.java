@@ -1,26 +1,23 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 // Doesn't extend ButtonWidget to allow dynamic positioning
-public class CategoryButtonWidget extends DrawableHelper implements Element, Selectable {
+public class CategoryButtonWidget implements Element, Selectable {
     private static final int TEXTURE_HEIGHT = 20;
     private static final int TEXTURE_V_OFFSET = 46;
 
@@ -41,31 +38,26 @@ public class CategoryButtonWidget extends DrawableHelper implements Element, Sel
         this.category = category;
     }
 
-    public void render(MatrixStack matrices, int x, int y, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, float delta) {
         this.hovered = mouseX >= x && mouseY >= y && mouseX < x + this.width && mouseY < y + this.height;
-        this.renderButton(matrices, x, y);
+        this.renderButton(graphics, x, y);
     }
 
-    public void renderButton(MatrixStack matrices, int x, int y) {
+    public void renderButton(GuiGraphics graphics, int x, int y) {
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, ClickableWidget.WIDGETS_TEXTURE);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
+        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         int buttonCenter = this.width / 2;
 
         int yImage = getYImage(this.isHoveredOrFocused());
         int v = TEXTURE_V_OFFSET + yImage * TEXTURE_HEIGHT;
-        this.drawTexture(matrices, x, y, 0, v, buttonCenter, this.height);
-        this.drawTexture(matrices, x + buttonCenter, y, 200 - buttonCenter, v, buttonCenter, this.height);
+        graphics.drawTexture(ClickableWidget.WIDGETS_TEXTURE, x, y, 0, v, buttonCenter, this.height);
+        graphics.drawTexture(ClickableWidget.WIDGETS_TEXTURE, x + buttonCenter, y, 200 - buttonCenter, v, buttonCenter, this.height);
 
         int textColor = this.selected ? 0xA0A0A0 : 0xFFFFFF;
-        drawCenteredText(matrices, textRenderer, this.text, x + buttonCenter, y + (this.height - 8) / 2, textColor);
+        graphics.drawCenteredShadowedText(textRenderer, this.text, x + buttonCenter, y + (this.height - 8) / 2, textColor);
     }
 
     @Override

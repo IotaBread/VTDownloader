@@ -1,8 +1,8 @@
 package me.bymartrixx.vtd.gui.widget;
 
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class ReloadButtonWidget extends ButtonWidget {
@@ -15,15 +15,15 @@ public class ReloadButtonWidget extends ButtonWidget {
     }
 
     @Override
-    protected void drawScrollableText(MatrixStack matrices, TextRenderer textRenderer, int xOffset, int color) {
+    protected void drawScrollingText(GuiGraphics graphics, TextRenderer textRenderer, int xOffset, int color) {
         // ClickableWidget#drawScrollableText
         int scale = 2;
         int left = (this.getX() + xOffset) / scale;
         int right = (this.getX() + this.getWidth() - xOffset) / scale;
 
-        matrices.push();
-        matrices.scale(scale, scale, scale);
-        drawScrollableText(matrices, textRenderer, ICON, left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
-        matrices.pop();
+        graphics.getMatrices().push();
+        graphics.getMatrices().scale(scale, scale, scale);
+        drawScrollingText(graphics, textRenderer, ICON, left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
+        graphics.getMatrices().pop();
     }
 }

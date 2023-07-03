@@ -3,7 +3,7 @@ package me.bymartrixx.vtd.gui.popup;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.function.Supplier;
 
@@ -51,7 +51,7 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
     }
 
     @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         float p = this.progress.get();
         if (p < 0.0F) {
             return;
@@ -64,10 +64,10 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
         int color = this.color | this.getFadeAlpha() << 24;
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderUtil.drawOutline(matrices, x, y, barWidth, BAR_HEIGHT, BAR_OUTLINE_SIZE, color);
+        RenderUtil.drawOutline(graphics, x, y, barWidth, BAR_HEIGHT, BAR_OUTLINE_SIZE, color);
 
         // Progress line
-        fill(matrices, x + BAR_OUTLINE_SIZE, y + BAR_OUTLINE_SIZE,
+        graphics.fill(x + BAR_OUTLINE_SIZE, y + BAR_OUTLINE_SIZE,
                 x + BAR_OUTLINE_SIZE + progressWidth, y + BAR_HEIGHT - BAR_OUTLINE_SIZE, color);
     }
 }
