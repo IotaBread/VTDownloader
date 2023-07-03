@@ -10,6 +10,7 @@ import me.bymartrixx.vtd.data.SharePackRequestData;
 import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
+import me.bymartrixx.vtd.gui.widget.DebugButtonWidget;
 import me.bymartrixx.vtd.gui.widget.ExpandDrawerButtonWidget;
 import me.bymartrixx.vtd.gui.widget.MutableMessageButtonWidget;
 import me.bymartrixx.vtd.gui.widget.PackNameTextFieldWidget;
@@ -36,6 +37,7 @@ import java.util.function.Function;
 public class VTDownloadScreen extends Screen {
     // DEBUG
     private static final boolean DOWNLOAD_DISABLED = false;
+    private static final boolean DEBUG_BUTTON = true;
 
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
@@ -46,6 +48,7 @@ public class VTDownloadScreen extends Screen {
     private static final Function<Text, Text> SHARE_CODE_TEXT = code -> Text.translatable("vtd.share.code", code);
     private static final Text READ_PACK_DATA_FAILED_TEXT = Text.translatable("vtd.readPackDataFailed");
     private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
+    private static final Text PLACEHOLDER_TEXT = Text.literal("Lorem ipsum dolor sit amet");
 
     private static final int WIDGET_HEIGHT = 20;
     private static final int WIDGET_MARGIN = 10;
@@ -74,6 +77,7 @@ public class VTDownloadScreen extends Screen {
     private static final float DOWNLOAD_MESSAGE_MAX_TIME = 120.0F;
     private static final float SHARE_MESSAGE_TIME = 200.0F;
     private static final float ERROR_MESSAGE_TIME = 160.0F;
+    private static final float DEBUG_MESSAGE_TIME = 200.0F;
 
     private final Screen parent;
     private final Text subtitle;
@@ -84,6 +88,9 @@ public class VTDownloadScreen extends Screen {
     private ProgressBarScreenPopup progressBar;
     private MessageScreenPopup sharePopup;
     private MessageScreenPopup errorPopup;
+    // DEBUG
+    @Nullable
+    private MessageScreenPopup debugPopup;
 
     private CategorySelectionWidget categorySelector;
     private PackSelectionListWidget packSelector;
@@ -301,6 +308,11 @@ public class VTDownloadScreen extends Screen {
         this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
 
+        if (DEBUG_BUTTON) this.addDrawableChild(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
+                WIDGET_MARGIN, PLACEHOLDER_TEXT, button -> {
+            if (this.debugPopup != null) this.debugPopup.show(DEBUG_MESSAGE_TIME, PLACEHOLDER_TEXT);
+        }));
+
         this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
         this.categorySelector.init(this.categories, this.currentCategory);
 
@@ -315,6 +327,9 @@ public class VTDownloadScreen extends Screen {
         this.errorPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+        if (DEBUG_BUTTON) this.debugPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+                this.width / 2, this.height / 2,
+                this.width / 2, (int) (this.height / 1.5), PLACEHOLDER_TEXT));
 
         this.addSelectableChild(expandButton);
         this.addSelectableChild(this.packSelector);
@@ -350,6 +365,7 @@ public class VTDownloadScreen extends Screen {
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
         this.addDrawable(this.sharePopup);
         this.addDrawable(this.errorPopup);
+        this.addDrawable(this.debugPopup);
 
         this.updateButtons();
         this.readResourcePack();
@@ -378,7 +394,8 @@ public class VTDownloadScreen extends Screen {
     public boolean isCoveredByPopup(int mouseX, int mouseY) {
         return this.progressBar.isMouseOver(mouseX, mouseY)
                 || this.sharePopup.isMouseOver(mouseX, mouseY)
-                || this.errorPopup.isMouseOver(mouseX, mouseY);
+                || this.errorPopup.isMouseOver(mouseX, mouseY)
+                || (this.debugPopup != null && this.debugPopup.isMouseOver(mouseX, mouseY));
     }
 
     public int getLeftWidth() {

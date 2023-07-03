@@ -8,10 +8,14 @@ import net.minecraft.text.Text;
 public class ReloadButtonWidget extends ButtonWidget {
     private static final Text ICON = Text.literal("\u21BB"); // Clockwise arrow ↻
 
-    private static final int BUTTON_SIZE = 20;
+    public static final int BUTTON_SIZE = 20;
 
     public ReloadButtonWidget(int x, int y, Text message, PressAction onPress) {
         super(x, y, BUTTON_SIZE, BUTTON_SIZE, message, onPress, ButtonWidget.DEFAULT_NARRATION);
+    }
+
+    protected Text getIconText() {
+        return ICON;
     }
 
     @Override
@@ -23,7 +27,7 @@ public class ReloadButtonWidget extends ButtonWidget {
 
         graphics.getMatrices().push();
         graphics.getMatrices().scale(scale, scale, scale);
-        drawScrollingText(graphics, textRenderer, ICON, left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
+        drawScrollingText(graphics, textRenderer, this.getIconText(), left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
         graphics.getMatrices().pop();
     }
 }

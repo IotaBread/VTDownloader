@@ -1,6 +1,5 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
@@ -541,7 +540,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderBackground(GuiGraphics graphics, int x, int y, int width, int height) {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             graphics.fill(x, y, x + width, y + height, this.color);
         }
 

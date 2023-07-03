@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screen.Screen;
 public abstract class AbstractScreenPopup implements Drawable {
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final float FADE_TIME = 20.0F;
+    protected static final int RENDER_Z = 1;
 
     protected final MinecraftClient client;
     protected final int centerX;
@@ -103,7 +104,12 @@ public abstract class AbstractScreenPopup implements Drawable {
     public final void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         if (this.show) {
             this.renderBackground(graphics);
+
+            // Render the content on top of everything else
+            graphics.getMatrices().push();
+            graphics.getMatrices().translate(0, 0, RENDER_Z);
             this.renderContent(graphics, mouseX, mouseY, delta);
+            graphics.getMatrices().pop();
 
             this.updateShownTime(delta);
         }
@@ -112,10 +118,10 @@ public abstract class AbstractScreenPopup implements Drawable {
     protected void renderBackground(GuiGraphics graphics) {
         int alpha = this.getFadeAlpha();
         graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24);
+        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, RENDER_Z, alpha << 24);
 
         graphics.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
-        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.getLeft(), this.getTop(), RENDER_Z, 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
     protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);
