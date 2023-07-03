@@ -28,6 +28,8 @@ repositories {
 
 	// Recursive resources maven
 	maven { url "https://maven.enjarai.nl/releases" }
+	// Required for recursive resources
+	maven { url "https://maven.enjarai.nl/mirrors" }
 }
 
 dependencies {
