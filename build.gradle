@@ -87,10 +87,10 @@ modrinth {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.19.4"
+	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.20.1"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
-	gameVersions = ['1.19.4']
+	gameVersions = ['1.20.1']
 	loaders = ['fabric', 'quilt']
 }
 
@@ -102,11 +102,11 @@ curseforge {
 		id = '432425'
 		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
-		addGameVersion '1.19.4'
+		addGameVersion '1.20.1'
 		addGameVersion 'Fabric'
 		addGameVersion 'Quilt'
 		mainArtifact(remapJar) {
-			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.19.4"
+			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.20.1"
 		}
 		afterEvaluate {
 			uploadTask.dependsOn('remapJar')

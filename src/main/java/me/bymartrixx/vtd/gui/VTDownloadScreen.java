@@ -37,7 +37,7 @@ import java.util.function.Function;
 public class VTDownloadScreen extends Screen {
     // DEBUG
     private static final boolean DOWNLOAD_DISABLED = false;
-    private static final boolean DEBUG_BUTTON = true;
+    private static final boolean DEBUG_BUTTON = false;
 
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
