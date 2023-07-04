@@ -132,12 +132,5 @@ publishing {
 	repositories {
 		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 		mavenLocal()
-//		maven {
-//			url 's3://maven.bymartrixx.me'
-//			credentials(AwsCredentials) {
-//				accessKey = System.env.AWS_ACCESS_KEY ?: findProperty('mavenAccessKey')
-//				secretKey = System.env.AWS_SECRET_KEY ?: findProperty('mavenSecretKey')
-//			}
-//		}
 	}
 }
