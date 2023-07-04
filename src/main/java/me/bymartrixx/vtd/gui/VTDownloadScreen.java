@@ -365,7 +365,7 @@ public class VTDownloadScreen extends Screen {
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
         this.addDrawable(this.sharePopup);
         this.addDrawable(this.errorPopup);
-        this.addDrawable(this.debugPopup);
+        if (this.debugPopup != null) this.addDrawable(this.debugPopup);
 
         this.updateButtons();
         this.readResourcePack();
