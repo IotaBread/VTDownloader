@@ -191,7 +191,11 @@ public class VTDownloadScreen extends Screen {
             this.packSelector.setEditable(true);
 
             if (throwable != null) {
+                this.progressBar.abortWait();
                 VTDMod.LOGGER.error("Pack download failed", throwable);
+                this.errorPopup.show(ERROR_MESSAGE_TIME, DOWNLOAD_FAILED_TEXT.copy()
+                        .append("\n").append(throwable.getLocalizedMessage()));
+                this.downloadButton.setMessage(DOWNLOAD_FAILED_TEXT);
                 return;
             }
 
