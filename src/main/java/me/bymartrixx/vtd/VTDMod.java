@@ -58,7 +58,7 @@ import java.util.function.Consumer;
 
 public class VTDMod implements ClientModInitializer {
     // DEBUG
-    private static final boolean USE_LOCAL_CATEGORIES = true;
+    public static final boolean USE_LOCAL_CATEGORIES = false;
 
     private static final ThreadFactory DOWNLOAD_THREAD_FACTORY = new ThreadFactoryBuilder()
             .setNameFormat("VT Download %d").build();
@@ -155,6 +155,8 @@ public class VTDMod implements ClientModInitializer {
     public static CompletableFuture<Boolean> executePackDownload(
             DownloadPackRequestData requestData, Consumer<Float> progressCallback,
             Path downloadPath, @Nullable String userFileName) {
+        LOGGER.debug("Downloading resource packs: {}", GSON.toJson(requestData));
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpPost request = createHttpPost("/assets/server/zipresourcepacks.php");

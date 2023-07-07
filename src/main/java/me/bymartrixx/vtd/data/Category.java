@@ -1,13 +1,22 @@
 package me.bymartrixx.vtd.data;
 
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+@JsonAdapter(Category.CustomTypeAdapterFactory.class)
 public class Category {
     public static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of("Menu Panoramas", "Options Backgrounds", "Colorful Slime");
 
@@ -125,7 +134,9 @@ public class Category {
         }
     }
 
-    public class SubCategory extends Category {
+    public static class SubCategory extends Category {
+        private Category parent;
+
         public SubCategory(String name, List<Pack> packs) {
             super(name, packs);
         }
@@ -139,7 +150,11 @@ public class Category {
         }
 
         public Category getParent() {
-            return Category.this;
+            if (this.parent == null) {
+                throw new IllegalStateException("Parent category for '" + this.getName() + "' is null");
+            }
+
+            return this.parent;
         }
 
         @Override
@@ -151,6 +166,37 @@ public class Category {
         @Override
         public String getId() {
             return this.getParent().getId() + "." + super.getId();
+        }
+    }
+
+    static class CustomTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            TypeAdapter<T> defaultAdapter = gson.getDelegateAdapter(this, type);
+
+            // Delegate writing and reading to the default adapter
+            return new TypeAdapter<>() {
+                @Override
+                public void write(JsonWriter out, T value) throws IOException {
+                    defaultAdapter.write(out, value);
+                }
+
+                @Override
+                public T read(JsonReader in) throws IOException {
+                    T result = defaultAdapter.read(in);
+
+                    if (result instanceof Category category) {
+                        // Link sub categories to their parents post-deserialization
+                        if (category.getSubCategories() != null) {
+                            for (SubCategory subCategory : category.getSubCategories()) {
+                                subCategory.parent = category;
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+            };
         }
     }
 }

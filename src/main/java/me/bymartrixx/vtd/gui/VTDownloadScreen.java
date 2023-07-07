@@ -166,7 +166,7 @@ public class VTDownloadScreen extends Screen {
 
     private void download() {
         this.changed = false;
-        if (DOWNLOAD_DISABLED) return;
+        if (DOWNLOAD_DISABLED || VTDMod.USE_LOCAL_CATEGORIES) return;
 
         this.downloadProgress = 0.0F;
         this.progressBar.show(PROGRESS_BAR_MAX_TIME, () -> this.downloadProgress, () -> this.downloadProgress = -1.0F);
