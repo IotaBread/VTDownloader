@@ -13,6 +13,9 @@ public class Category {
 
     @SerializedName("category")
     private final String name;
+    @SerializedName("categories")
+    @Nullable
+    private List<SubCategory> subCategories;
     private final List<Pack> packs;
     @Nullable
     private Warning warning = null;
@@ -28,13 +31,28 @@ public class Category {
         this.buildPacksById();
     }
 
+    public Category(String name, @Nullable List<SubCategory> subCategories, List<Pack> packs) {
+        this(name, packs);
+        this.subCategories = subCategories;
+    }
+
     public Category(String name, List<Pack> packs, @Nullable Warning warning) {
         this(name, packs);
         this.warning = warning;
     }
 
+    public Category(String name, @Nullable List<SubCategory> subCategories, List<Pack> packs, @Nullable Warning warning) {
+        this(name, subCategories, packs);
+        this.warning = warning;
+    }
+
     public Category(String name, List<Pack> packs, @Nullable Warning warning, boolean hardIncompatible) {
         this(name, packs, warning);
+        this.hardIncompatible = hardIncompatible;
+    }
+
+    public Category(String name, @Nullable List<SubCategory> subCategories, List<Pack> packs, @Nullable Warning warning, boolean hardIncompatible) {
+        this(name, subCategories, packs, warning);
         this.hardIncompatible = hardIncompatible;
     }
 
@@ -51,6 +69,11 @@ public class Category {
 
     public String getName() {
         return this.name;
+    }
+
+    @Nullable
+    public List<SubCategory> getSubCategories() {
+        return this.subCategories;
     }
 
     public List<Pack> getPacks() {
@@ -99,6 +122,29 @@ public class Category {
 
         public String getColor() {
             return color;
+        }
+    }
+
+    public class SubCategory extends Category {
+        public SubCategory(String name, List<Pack> packs) {
+            super(name, packs);
+        }
+
+        public SubCategory(String name, List<Pack> packs, @Nullable Warning warning) {
+            super(name, packs, warning);
+        }
+
+        public SubCategory(String name, List<Pack> packs, @Nullable Warning warning, boolean hardIncompatible) {
+            super(name, packs, warning, hardIncompatible);
+        }
+
+        public Category getParent() {
+            return Category.this;
+        }
+
+        @Override
+        public String getId() {
+            return this.getParent().getId() + "." + super.getId();
         }
     }
 }
