@@ -101,6 +101,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         for (Pack pack : category.getPacks()) {
+            // Experimental packs aren't shown in the web page, at least for now
+            if (pack.isExperimental()) {
+                continue;
+            }
+
             PackEntry entry = new PackEntry(this, pack);
             entries.add(entry);
             if (this.selectionHelper.isSelected(pack)) {
