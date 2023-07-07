@@ -76,6 +76,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public void setCategory(Category category) {
         this.category = category;
 
+        this.setFocusedChild(null);
         this.replaceEntries(this.getPackEntries(category));
         this.setScrollAmount(this.getScrollAmount()); // Clamp scroll amount to the new max value
     }
@@ -581,12 +582,25 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             return Collections.emptyList();
         }
 
-        // TODO: mouseClicked
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                this.screen.selectCategory(this.category);
+                return true;
+            }
+
+            return false;
+        }
 
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             // TODO: Make sub category more visible
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + entryHeight / 2, 0xFFFFFF);
+        }
+
+        @Override
+        public String toString() {
+            return "Sub category " + this.category.getName();
         }
     }
 

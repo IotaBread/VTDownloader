@@ -266,9 +266,14 @@ public class VTDownloadScreen extends Screen {
     }
 
     public boolean selectCategory(Category category) {
+        Category selectorCategory = category;
+        if (category instanceof Category.SubCategory subCategory) {
+            selectorCategory = subCategory.getParent();
+        }
+
         if (this.currentCategory != category) {
             this.currentCategory = category;
-            this.categorySelector.setSelectedCategory(category);
+            this.categorySelector.setSelectedCategory(selectorCategory);
             this.packSelector.setCategory(category);
             return true;
         }
