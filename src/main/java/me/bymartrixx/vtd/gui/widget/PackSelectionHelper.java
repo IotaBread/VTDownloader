@@ -38,20 +38,34 @@ public class PackSelectionHelper {
         this.usedColors.clear();
 
         // Create all incompatibility groups
+        List<Pack> packs = new ArrayList<>();
         for (Category c : categories) {
+            if (c.getSubCategories() != null) {
+                for (Category.SubCategory subCategory : c.getSubCategories()) {
+                    if (subCategory.isHardIncompatible()) {
+                        this.allIncompatibilityGroups.add(new CategoryIncompatibilityGroup(subCategory));
+                        continue;
+                    }
+
+                    packs.addAll(subCategory.getPacks());
+                }
+            }
+
             if (c.isHardIncompatible()) {
                 this.allIncompatibilityGroups.add(new CategoryIncompatibilityGroup(c));
                 continue;
             }
 
-            for (Pack pack : c.getPacks()) {
-                int i;
-                // noinspection SuspiciousMethodCalls DefaultIncompatibilityGroup#equals also works for packs
-                if ((i = this.allIncompatibilityGroups.indexOf(pack)) == -1) {
-                    this.allIncompatibilityGroups.add(new DefaultIncompatibilityGroup(pack));
-                } else {
-                    ((DefaultIncompatibilityGroup) this.allIncompatibilityGroups.get(i)).bases.add(pack.getId());
-                }
+            packs.addAll(c.getPacks());
+        }
+
+        for (Pack pack : packs) {
+            int i;
+            // noinspection SuspiciousMethodCalls DefaultIncompatibilityGroup#equals also works for packs
+            if ((i = this.allIncompatibilityGroups.indexOf(pack)) == -1) {
+                this.allIncompatibilityGroups.add(new DefaultIncompatibilityGroup(pack));
+            } else {
+                ((DefaultIncompatibilityGroup) this.allIncompatibilityGroups.get(i)).bases.add(pack.getId());
             }
         }
 

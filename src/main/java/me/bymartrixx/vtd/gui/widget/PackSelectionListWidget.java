@@ -31,7 +31,7 @@ import java.util.Objects;
 
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     // DEBUG
-    private static final boolean SHOW_DEBUG_INFO = false;
+    private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DISABLE_ICONS = false;
 
     private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
@@ -110,6 +110,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             entries.add(entry);
             if (this.selectionHelper.isSelected(pack)) {
                 entry.selectionData.toggleSelection();
+            }
+        }
+
+        if (category.getSubCategories() != null) {
+            for (Category.SubCategory subCategory : category.getSubCategories()) {
+                entries.add(new SubCategoryEntry(this.client, this.screen, subCategory));
             }
         }
 
@@ -554,10 +560,33 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
         // endregion
 
-
         @Override
         public String toString() {
             return "Warning";
+        }
+    }
+
+    public static class SubCategoryEntry extends AbstractEntry {
+        private final Category.SubCategory category;
+        private final Text name;
+
+        protected SubCategoryEntry(MinecraftClient client, VTDownloadScreen screen, Category.SubCategory category) {
+            super(client, screen);
+            this.category = category;
+            this.name = Text.literal(category.getName()).formatted(Formatting.BOLD);
+        }
+
+        @Override
+        protected List<Text> getTooltipText(int width) {
+            return Collections.emptyList();
+        }
+
+        // TODO: mouseClicked
+
+        @Override
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            // TODO: Make sub category more visible
+            graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + entryHeight / 2, 0xFFFFFF);
         }
     }
 

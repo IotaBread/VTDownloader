@@ -143,6 +143,12 @@ public class Category {
         }
 
         @Override
+        @Nullable
+        public List<SubCategory> getSubCategories() {
+            return null;
+        }
+
+        @Override
         public String getId() {
             return this.getParent().getId() + "." + super.getId();
         }
