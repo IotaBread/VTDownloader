@@ -89,7 +89,7 @@ modrinth {
 	versionNumber = project.version
 	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.20.1"
 	uploadFile = remapJar
-	changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
+	changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
 	gameVersions = ['1.20.1']
 	loaders = ['fabric', 'quilt']
 }
@@ -100,7 +100,7 @@ curseforge {
 	}
 	project {
 		id = '432425'
-		changelog = "A changelog can be found at https://github.com/ByMartrixx/VTDownloader/releases/tag/${project.mod_version}"
+		changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
 		addGameVersion '1.20.1'
 		addGameVersion 'Fabric'

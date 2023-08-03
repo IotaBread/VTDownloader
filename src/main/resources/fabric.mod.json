@@ -6,11 +6,11 @@
     "name": "VTDownloader",
     "description": "Pick and download Vanilla Tweaks resource packs directly from your Minecraft client!\n\nCredits:\nVanilla Tweaks: https://vanillatweaks.net/",
     "authors": [
-        "ByMartrixx"
+        "IotaBread"
     ],
     "contact": {
-        "sources": "https://github.com/ByMartrixx/VTDownloader",
-        "issues": "https://github.com/ByMartrixx/VTDownloader/issues"
+        "sources": "https://github.com/IotaBread/VTDownloader",
+        "issues": "https://github.com/IotaBread/VTDownloader/issues"
     },
 
     "license": "MIT",
