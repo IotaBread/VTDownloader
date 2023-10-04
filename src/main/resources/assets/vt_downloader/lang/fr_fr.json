@@ -1,0 +1,23 @@
+{
+    "vtd.error": "Erreur !",
+    "vtd.download": "Télécharger",
+    "vtd.download.failed": "Erreur inattendue !",
+    "vtd.download.success": "Pack téléchargé !",
+    "vtd.share": "Partager",
+    "vtd.share.failed": "Impossible d'obtenir le code de partage du pack de ressources",
+    "vtd.share.code": "Votre code de partage est %s. En cliquant sur le lien, vous l'ouvrirez ou le copierez dans votre presse-papiers",
+    "vtd.fileNameValidity.fileExists": "Un fichier portant ce nom existe déjà",
+    "vtd.fileNameValidity.invalidWindows": "Ce nom de fichier est invalide sur Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "Le nom du fichier doit correspondre à %s",
+    "vtd.fileNameValidity.reservedWindows": "Ce nom de fichier est réservé sur Windows",
+    "vtd.packError.title": "Une erreur s'est produite lors de la récupération des packs.",
+    "vtd.packError.body": "Veuillez vérifier votre connexion internet et que le site %s fonctionne correctement.",
+    "vtd.resourcePack.button": "Télécharger le pack de ressources VT",
+    "vtd.resourcePack.nameField": "Nom du pack de ressources...",
+    "vtd.resourcePack.subtitle": "Sélectionner les packs de ressources",
+    "vtd.resourcePack.reload": "Recharger les packs de ressources",
+    "vtd.selectedPacks": "Packs sélectionnés",
+    "vtd.readPackDataFailed": "Échec de la lecture des données du pack VanillaTweaks :",
+    "vtd.unsavedPackWarning.header": "Avertissement : Pack non sauvegardé",
+    "vtd.unsavedPackWarning.text": "Toutes les modifications apportées à ce pack seront perdues !"
+}
