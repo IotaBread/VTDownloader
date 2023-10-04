@@ -334,37 +334,37 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
         // Left side
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.startX, this.bottom, 0.0)
+        bufferBuilder.vertex(this.startX, this.bottom, 0.1)
                 .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.left, this.bottom, 0.0)
+        bufferBuilder.vertex(this.left, this.bottom, 0.1)
                 .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.left, this.top, 0.0)
+        bufferBuilder.vertex(this.left, this.top, 0.1)
                 .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.startX, this.top, 0.0)
+        bufferBuilder.vertex(this.startX, this.top, 0.1)
                 .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
 
         // Right side
-        bufferBuilder.vertex(this.right, this.bottom, 0.0)
+        bufferBuilder.vertex(this.right, this.bottom, 0.1)
                 .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.endX, this.bottom, 0.0)
+        bufferBuilder.vertex(this.endX, this.bottom, 0.1)
                 .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.endX, this.top, 0.0)
+        bufferBuilder.vertex(this.endX, this.top, 0.1)
                 .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
-        bufferBuilder.vertex(this.right, this.top, 0.0)
+        bufferBuilder.vertex(this.right, this.top, 0.1)
                 .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
                 .color(64, 64, 64, 255)
                 .next();
