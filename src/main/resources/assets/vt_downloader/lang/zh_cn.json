@@ -1,5 +1,5 @@
 {
-    "vtd.error": "错误!",
+    "vtd.error": "错误！",
     "vtd.download": "下载",
     "vtd.download.failed": "意外错误！",
     "vtd.download.success": "包下载成功！",
@@ -9,7 +9,7 @@
     "vtd.fileNameValidity.fileExists": "该名称的文件已存在",
     "vtd.fileNameValidity.invalidWindows": "该文件名是无效的 Windows 名称",
     "vtd.fileNameValidity.regexDoesntMatch": "文件名必须匹配 %s",
-    "vtd.fileNameValidity.reservedWindows": "该文件名是保留窗口名称",
+    "vtd.fileNameValidity.reservedWindows": "该文件名是 Windows 保留名称",
     "vtd.packError.title": "尝试获取包时出错。",
     "vtd.packError.body": "请检查您的互联网连接，站点 %s 正常工作。",
     "vtd.resourcePack.button": "下载 VT 资源包",
