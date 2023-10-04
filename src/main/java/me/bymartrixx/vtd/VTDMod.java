@@ -58,7 +58,7 @@ import java.util.function.Consumer;
 
 public class VTDMod implements ClientModInitializer {
     // DEBUG
-    private static final boolean USE_LOCAL_CATEGORIES = false;
+    public static final boolean USE_LOCAL_CATEGORIES = false;
 
     private static final ThreadFactory DOWNLOAD_THREAD_FACTORY = new ThreadFactoryBuilder()
             .setNameFormat("VT Download %d").build();
@@ -122,11 +122,18 @@ public class VTDMod implements ClientModInitializer {
 
     public static void loadRpCategories() {
         try {
-            RpCategories categories;
+            RpCategories categories = null;
             String file = System.getProperty("vtd.debug.rpCategoriesFile");
             if (USE_LOCAL_CATEGORIES && file != null) {
-                categories = GSON.fromJson(Files.newBufferedReader(Path.of(file)), RpCategories.class);
-            } else {
+                try (BufferedReader reader = Files.newBufferedReader(Path.of(file))) {
+                    categories = GSON.fromJson(reader, RpCategories.class);
+                } catch (IOException e) {
+                    LOGGER.warn("Failed to load debug categories", e);
+                    categories = null;
+                }
+            }
+
+            if (categories == null) {
                 HttpResponse response = executeRequest(createHttpGet("/assets/resources/json/" + VT_VERSION + "/rpcategories.json"));
                 try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
                     categories = GSON.fromJson(new InputStreamReader(stream), RpCategories.class);
@@ -148,6 +155,8 @@ public class VTDMod implements ClientModInitializer {
     public static CompletableFuture<Boolean> executePackDownload(
             DownloadPackRequestData requestData, Consumer<Float> progressCallback,
             Path downloadPath, @Nullable String userFileName) {
+        LOGGER.debug("Downloading resource packs: {}", GSON.toJson(requestData));
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpPost request = createHttpPost("/assets/server/zipresourcepacks.php");

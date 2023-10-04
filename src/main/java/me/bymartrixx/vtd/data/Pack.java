@@ -76,4 +76,9 @@ public class Pack {
     public String getIcon() {
         return this.icon == null ? this.getId() : this.icon;
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

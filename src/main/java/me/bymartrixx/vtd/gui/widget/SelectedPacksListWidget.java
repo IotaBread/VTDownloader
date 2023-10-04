@@ -67,7 +67,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         if (selected) {
             CategoryEntry categoryEntry = this.getOrCreateCategoryEntry(category);
             PackEntry entry = this.getPackEntry(pack, category);
-            int i = this.getLastChildIndex(category);
+            int i = this.getLastChildEntryIndex(category);
             if (i == -1) {
                 i = this.children().indexOf(categoryEntry);
             }
@@ -103,6 +103,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     private int getCategoryEntryIndex(Category category) {
         for (int i = 0; i < this.children().size(); i++) {
+            //noinspection EqualsBetweenInconvertibleTypes - CategoryEntry overrides equals()
             if (this.children().get(i).equals(category)) {
                 return i;
             }
@@ -114,8 +115,20 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private CategoryEntry getOrCreateCategoryEntry(Category category) {
         int i = this.getCategoryEntryIndex(category);
         if (i == -1) {
-            CategoryEntry entry = new CategoryEntry(this, category);
-            this.addEntry(entry);
+            CategoryEntry entry;
+            if (category instanceof Category.SubCategory subCategory) {
+                entry = new SubCategoryEntry(this, subCategory);
+                CategoryEntry parentEntry = this.getOrCreateCategoryEntry(subCategory.getParent());
+                int index = this.getLastChildIndex(parentEntry.getCategory());
+                if (index != -1) {
+                    this.children().add(index + 1, entry);
+                } else {
+                    this.addEntry(entry);
+                }
+            } else {
+                entry = new CategoryEntry(this, category);
+                this.addEntry(entry);
+            }
             return entry;
         }
 
@@ -124,6 +137,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     private int getPackEntryIndex(Pack pack) {
         for (int i = 0; i < this.children().size(); i++) {
+            //noinspection EqualsBetweenInconvertibleTypes - PackEntry overrides equals()
             if (this.children().get(i).equals(pack)) {
                 return i;
             }
@@ -141,7 +155,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return (PackEntry) this.children().get(i);
     }
 
-    private int getLastChildIndex(Category category) {
+    private int getLastChildEntryIndex(Category category) {
         int index = -1;
         int i = this.getCategoryEntryIndex(category);
         if (i != -1) {
@@ -156,6 +170,44 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
                 break;
             }
+        }
+
+        return index;
+    }
+
+    private int getLastSubCategoryIndex(Category category) {
+        int index = -1;
+        int i = this.getCategoryEntryIndex(category);
+        if (i != -1 && !(category instanceof Category.SubCategory)) {
+            for (i++; i < this.children().size(); i++) {
+                AbstractEntry entry = this.children().get(i);
+                if (entry instanceof SubCategoryEntry subCategoryEntry) {
+                    if (subCategoryEntry.getParentCategory().equals(category)) {
+                        index = i;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+        }
+
+        return index;
+    }
+
+    private int getLastChildIndex(Category category) {
+        int subCat = this.getLastSubCategoryIndex(category);
+        if (subCat != -1) {
+            SubCategoryEntry entry = (SubCategoryEntry) this.children().get(subCat);
+            int subCatIndex = this.getLastChildEntryIndex(entry.getParentCategory());
+            if (subCatIndex != -1) {
+                return subCatIndex;
+            }
+        }
+
+        int index = this.getLastChildEntryIndex(category);
+        if (index == -1 && subCat != -1) {
+            return subCat;
         }
 
         return index;
@@ -307,7 +359,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     public static class CategoryEntry extends AbstractEntry {
-        private final Category category;
+        protected final Category category;
         private long lastClickTime = -1;
 
         public CategoryEntry(SelectedPacksListWidget widget, Category category) {
@@ -339,6 +391,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             this.widget.screen.selectCategory(this.category);
         }
 
+        public Category getCategory() {
+            return this.category;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == this) {
@@ -350,6 +406,26 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             } else {
                 return super.equals(obj);
             }
+        }
+    }
+
+    public static class SubCategoryEntry extends CategoryEntry {
+        public SubCategoryEntry(SelectedPacksListWidget widget, Category.SubCategory category) {
+            super(widget, category);
+        }
+
+        @Override
+        protected String getTextString() {
+            return "| " + super.getTextString();
+        }
+
+        @Override
+        public Category.SubCategory getCategory() {
+            return (Category.SubCategory) super.getCategory();
+        }
+
+        public Category getParentCategory() {
+            return this.getCategory().getParent();
         }
     }
 

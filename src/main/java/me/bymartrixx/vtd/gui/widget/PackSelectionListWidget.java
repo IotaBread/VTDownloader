@@ -13,7 +13,11 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundManager;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -76,8 +80,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public void setCategory(Category category) {
         this.category = category;
 
+        this.setFocusedChild(null);
         this.replaceEntries(this.getPackEntries(category));
-        this.setScrollAmount(this.getScrollAmount()); // Clamp scroll amount to the new max value
+        this.setScrollAmount(0.0);
     }
 
     public void updateCategories(List<Category> categories) {
@@ -100,6 +105,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             entries.add(new WarningEntry(this.client, this.screen, category.getWarning()));
         }
 
+        if (category instanceof Category.SubCategory subCategory) {
+            entries.add(new ParentCategoryButtonEntry(this.client, this.screen, subCategory));
+        }
+
         for (Pack pack : category.getPacks()) {
             // Experimental packs aren't shown in the web page, at least for now
             if (pack.isExperimental()) {
@@ -110,6 +119,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             entries.add(entry);
             if (this.selectionHelper.isSelected(pack)) {
                 entry.selectionData.toggleSelection();
+            }
+        }
+
+        if (category.getSubCategories() != null) {
+            for (Category.SubCategory subCategory : category.getSubCategories()) {
+                entries.add(new SubCategoryButtonEntry(this.client, this.screen, subCategory));
             }
         }
 
@@ -554,10 +569,74 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
         // endregion
 
-
         @Override
         public String toString() {
             return "Warning";
+        }
+    }
+
+    public static class SubCategoryButtonEntry extends CategoryButtonEntry {
+        protected SubCategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category.SubCategory category) {
+            super(client, screen, category);
+        }
+
+        @Override
+        public String toString() {
+            return "Sub category " + this.category.getName();
+        }
+    }
+
+    public static class ParentCategoryButtonEntry extends CategoryButtonEntry {
+        protected ParentCategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category.SubCategory subCategory) {
+            super(client, screen, subCategory.getParent());
+        }
+
+        @Override
+        public String toString() {
+            return "Parent category " + this.category.getName();
+        }
+    }
+
+    public abstract static class CategoryButtonEntry extends AbstractEntry {
+        protected static final int TEXTURE_V = 66;
+        protected static final int BUTTON_HEIGHT = 20;
+        protected static final int BUTTON_HORIZONTAL_PADDING = 32;
+
+        protected final Category category;
+        protected final Text name;
+
+        protected CategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category category) {
+            super(client, screen);
+            this.category = category;
+            this.name = Text.literal(category.getName()).formatted(Formatting.BOLD);
+        }
+
+        @Override
+        protected List<Text> getTooltipText(int width) {
+            return Collections.emptyList();
+        }
+
+        private void playDownSound(SoundManager soundManager) {
+            soundManager.play(PositionedSoundInstance.create(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                this.screen.selectCategory(this.category);
+                this.playDownSound(this.client.getSoundManager());
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            graphics.drawNineSlicedTexture(ClickableWidget.WIDGETS_TEXTURE,
+                    x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT,
+                    20, 4, 200, 20, 0, TEXTURE_V);
+            graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFF);
         }
     }
 

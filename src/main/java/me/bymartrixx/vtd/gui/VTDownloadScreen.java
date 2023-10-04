@@ -166,7 +166,7 @@ public class VTDownloadScreen extends Screen {
 
     private void download() {
         this.changed = false;
-        if (DOWNLOAD_DISABLED) return;
+        if (DOWNLOAD_DISABLED || VTDMod.USE_LOCAL_CATEGORIES) return;
 
         this.downloadProgress = 0.0F;
         this.progressBar.show(PROGRESS_BAR_MAX_TIME, () -> this.downloadProgress, () -> this.downloadProgress = -1.0F);
@@ -266,9 +266,14 @@ public class VTDownloadScreen extends Screen {
     }
 
     public boolean selectCategory(Category category) {
+        Category selectorCategory = category;
+        if (category instanceof Category.SubCategory subCategory) {
+            selectorCategory = subCategory.getParent();
+        }
+
         if (this.currentCategory != category) {
             this.currentCategory = category;
-            this.categorySelector.setSelectedCategory(category);
+            this.categorySelector.setSelectedCategory(selectorCategory);
             this.packSelector.setCategory(category);
             return true;
         }

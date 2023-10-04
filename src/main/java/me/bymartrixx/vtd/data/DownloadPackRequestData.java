@@ -20,7 +20,7 @@ public class DownloadPackRequestData {
     @Contract("_ -> new")
     public static DownloadPackRequestData create(Map<Category, List<Pack>> selectedPacks) {
         Map<String, List<String>> packs = selectedPacks.entrySet().stream().collect(Collectors.toMap(
-                entry -> entry.getKey().getName(),
+                entry -> entry.getKey().getId(),
                 entry -> entry.getValue().stream().map(Pack::getId).toList()
         ));
         return new DownloadPackRequestData(packs);
