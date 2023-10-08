@@ -238,7 +238,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     // Only called if isMouseOver is true; from Screen#mouseScrolled
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        double amount = Math.abs(horizontalAmount) > Math.abs(verticalAmount) ? horizontalAmount : verticalAmount;
         this.setScrollAmount(this.getScrollAmount() - amount * BUTTON_WIDTH / 2);
         return true;
     }

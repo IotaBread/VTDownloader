@@ -23,8 +23,8 @@ import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.resource.pack.ResourcePackProfile;
+import net.minecraft.client.gui.widget.button.ButtonWidget;
+import net.minecraft.resource.pack.PackProfile;
 import net.minecraft.text.CommonTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -244,7 +244,7 @@ public class VTDownloadScreen extends Screen {
     private void readResourcePack() {
         // #AbstractPack and its inheritors are private
         if (this.pack != null && this.pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) {
-            ResourcePackProfile profile = ((AbstractPackAccess) this.pack).vtdownloader$getProfile();
+            PackProfile profile = ((AbstractPackAccess) this.pack).vtdownloader$getProfile();
 
             VTDMod.readResourcePackData(profile).whenCompleteAsync((selection, throwable) -> {
                 if (throwable != null) {
@@ -314,15 +314,15 @@ public class VTDownloadScreen extends Screen {
                 this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
 
         // Reload button
-        this.addDrawableChild(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
+        this.addDrawableSelectableElement(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
 
-        if (DEBUG_BUTTON) this.addDrawableChild(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
+        if (DEBUG_BUTTON) this.addDrawableSelectableElement(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
                 WIDGET_MARGIN, PLACEHOLDER_TEXT, button -> {
             if (this.debugPopup != null) this.debugPopup.show(DEBUG_MESSAGE_TIME, PLACEHOLDER_TEXT);
         }));
 
-        this.categorySelector = this.addDrawableChild(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
+        this.categorySelector = this.addDrawableSelectableElement(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
         this.categorySelector.init(this.categories, this.currentCategory);
 
         ExpandDrawerButtonWidget expandButton = this.addDrawable(new ExpandDrawerButtonWidget(this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
@@ -330,28 +330,28 @@ public class VTDownloadScreen extends Screen {
                 SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
 
         // Handle clicks before the pack selector
-        this.sharePopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+        this.sharePopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), SHARE_TEXT));
-        this.errorPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+        this.errorPopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
-        if (DEBUG_BUTTON) this.debugPopup = this.addSelectableChild(new MessageScreenPopup(this.client, this,
+        if (DEBUG_BUTTON) this.debugPopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), PLACEHOLDER_TEXT));
 
-        this.addSelectableChild(expandButton);
-        this.addSelectableChild(this.packSelector);
-        this.addSelectableChild(this.selectedPacksList);
+        this.addSelectableElement(expandButton);
+        this.addSelectableElement(this.packSelector);
+        this.addSelectableElement(this.selectedPacksList);
 
-        this.shareButton = this.addDrawableChild(ButtonWidget.builder(SHARE_TEXT, button -> this.share())
+        this.shareButton = this.addDrawableSelectableElement(ButtonWidget.builder(SHARE_TEXT, button -> this.share())
                 .position(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
                         this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN)
                 .size(SHARE_BUTTON_WIDTH, WIDGET_HEIGHT)
                 .build());
 
         // noinspection ConstantConditions
-        this.packNameField = this.addDrawableChild(new PackNameTextFieldWidget(this.textRenderer,
+        this.packNameField = this.addDrawableSelectableElement(new PackNameTextFieldWidget(this.textRenderer,
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - WIDGET_MARGIN - PACK_NAME_FIELD_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
                 WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
@@ -359,12 +359,12 @@ public class VTDownloadScreen extends Screen {
         this.packNameField.setChangedListener(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
 
-        this.downloadButton = this.addDrawableChild(new MutableMessageButtonWidget(
+        this.downloadButton = this.addDrawableSelectableElement(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
 
-        this.doneButton = this.addDrawableChild(ButtonWidget.builder(CommonTexts.DONE, button -> this.closeScreen())
+        this.doneButton = this.addDrawableSelectableElement(ButtonWidget.builder(CommonTexts.DONE, button -> this.closeScreen())
                 .position(this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN)
                 .size(DONE_BUTTON_WIDTH, WIDGET_HEIGHT)
                 .build());

@@ -8,7 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -21,13 +21,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private static final Text HEADER = Text.translatable("vtd.selectedPacks")
             .formatted(Formatting.BOLD, Formatting.UNDERLINE);
 
-    private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final int ITEM_HEIGHT = 16;
     private static final int HEADER_HEIGHT = 16;
     private static final int ROW_LEFT_RIGHT_MARGIN = 2;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
 
-    private static final int HORIZONTAL_SHADOWS_BACKGROUND_Z = -100;
     private static final int HORIZONTAL_SHADOWS_SIZE = 4;
 
     private final VTDownloadScreen screen;
@@ -41,7 +39,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         this.selectionHelper = selectionHelper;
 
         this.setLeftPos(left);
-        this.setRenderHorizontalShadows(false); // Rendered at #renderHorizontalShadows
+        this.setRenderBackground(false); // Rendered at #renderBackground
         this.setRenderHeader(true, HEADER_HEIGHT);
 
         selectionHelper.addCallback(this::updateSelection);
@@ -305,20 +303,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     protected void renderList(GuiGraphics graphics, int x, int y, float delta) {
         super.renderList(graphics, x, y, delta);
 
-        this.renderHorizontalShadows(graphics);
+        this.renderBackground(graphics);
     }
 
-    private void renderHorizontalShadows(GuiGraphics graphics) {
-        // @see EntryListWidget#render -> if (this.renderHorizontalShadows)
-        graphics.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-
-        // Background
-        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, 0, this.left, 0.0F, this.width, this.top, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
-        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, this.bottom, this.left, this.bottom, this.width, this.height - this.bottom, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
-
-        // Shadows
+    private void renderBackground(GuiGraphics graphics) {
+        // @see EntryListWidget#render -> if (this.renderBackground)
         int size = HORIZONTAL_SHADOWS_SIZE;
-        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.top, this.right, this.top + size, 0xFF000000, 0x00000000, 0);
         graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.bottom - size, this.right, this.bottom, 0x00000000, 0xFF000000, 0);
     }

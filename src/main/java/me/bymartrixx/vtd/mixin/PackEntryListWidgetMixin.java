@@ -1,15 +1,15 @@
 package me.bymartrixx.vtd.mixin;
 
-import me.bymartrixx.vtd.access.PackListWidgetAccess;
+import me.bymartrixx.vtd.access.PackEntryListWidgetAccess;
 import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.list.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.list.pack.PackEntryListWidget;
 import net.minecraft.text.Text;
 import net.minecraft.text.component.TranslatableComponent;
 import org.spongepowered.asm.mixin.Final;
@@ -22,16 +22,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(PackListWidget.class)
-public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<PackListWidget.ResourcePackEntry>
-        implements PackListWidgetAccess {
+@Mixin(PackEntryListWidget.class)
+public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWidget<PackEntryListWidget.PackEntry>
+        implements PackEntryListWidgetAccess {
     @Shadow @Final
     private Text title;
 
     @Shadow @Final
     PackScreen screen;
 
-    private PackListWidgetMixin(MinecraftClient minecraftClient, int i, int j, int k, int l, int m) {
+    private PackEntryListWidgetMixin(MinecraftClient minecraftClient, int i, int j, int k, int l, int m) {
         super(minecraftClient, i, j, k, l, m);
     }
 
@@ -56,15 +56,19 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         return this.screen;
     }
 
-    @Mixin(PackListWidget.ResourcePackEntry.class)
-    public static abstract class ResourcePackEntryMixin {
+    @Mixin(PackEntryListWidget.PackEntry.class)
+    public static abstract class PackEntryMixin {
+        @Unique
         private static final int PENCIL_TEXTURE_SIZE = 32;
+        @Unique
         private static final int PENCIL_SIZE = 16;
+        @Unique
         private static final int PENCIL_RIGHT_MARGIN = 9;
+        @Unique
         private static final int PENCIL_BOTTOM_MARGIN = 1;
 
         @Shadow @Final
-        private PackListWidget widget;
+        private PackEntryListWidget widget;
         @Shadow @Final
         protected MinecraftClient client;
         @Shadow @Final
@@ -76,10 +80,10 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
         private boolean vtdownloader$editable;
 
         @Inject(at = @At("TAIL"), method = "<init>")
-        private void vtdownloader$init(MinecraftClient client, PackListWidget widget, ResourcePackOrganizer.Pack pack, CallbackInfo ci) {
-            if (((PackListWidgetAccess) widget).vtdownloader$isResourcePackList()) {
+        private void vtdownloader$init(MinecraftClient client, PackEntryListWidget widget, ResourcePackOrganizer.Pack pack, CallbackInfo ci) {
+            if (((PackEntryListWidgetAccess) widget).vtdownloader$isResourcePackList()) {
                 this.vtdownloader$vtPack = pack.getDescription().getString().contains(Constants.VT_DESCRIPTION_MARKER);
-                this.vtdownloader$editable = this.vtdownloader$vtPack && ((PackListWidgetAccess) this.widget).vtdownloader$isAvailablePackList();
+                this.vtdownloader$editable = this.vtdownloader$vtPack && ((PackEntryListWidgetAccess) this.widget).vtdownloader$isAvailablePackList();
             }
         }
 
@@ -105,21 +109,21 @@ public abstract class PackListWidgetMixin extends AlwaysSelectedEntryListWidget<
             }
         }
 
-        // @version 1.19.2
+        // @version 1.19.2 - 1.20.2
         @SuppressWarnings("InvalidInjectorMethodSignature") // Plugin gives invalid params
         @Inject(at = @At(
                 value = "INVOKE",
-                target = "Lnet/minecraft/client/gui/screen/pack/PackListWidget$ResourcePackEntry;isSelectable()Z"
+                target = "Lnet/minecraft/client/gui/widget/list/pack/PackEntryListWidget$PackEntry;isSelectable()Z"
         ), method = "mouseClicked", locals = LocalCapture.CAPTURE_FAILHARD)
         private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir,
                                     double clickedX, double clickedY) {
             if (this.vtdownloader$editable) {
                 double pencilX = this.widget.getRowWidth() - PENCIL_SIZE - PENCIL_RIGHT_MARGIN;
-                double pencilY = ((PackListWidgetAccess) this.widget).vtdownloader$getItemHeight() - 4 - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
+                double pencilY = ((PackEntryListWidgetAccess) this.widget).vtdownloader$getItemHeight() - 4 - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
 
                 if (clickedX >= pencilX && clickedX < pencilX + PENCIL_SIZE
                         && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
-                    this.client.setScreen(new VTDownloadScreen(((PackListWidgetAccess) this.widget).vtdownloader$getScreen(),
+                    this.client.setScreen(new VTDownloadScreen(((PackEntryListWidgetAccess) this.widget).vtdownloader$getScreen(),
                             Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
                 }
             }

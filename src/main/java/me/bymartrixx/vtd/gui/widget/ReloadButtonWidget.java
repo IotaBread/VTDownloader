@@ -2,7 +2,7 @@ package me.bymartrixx.vtd.gui.widget;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.text.Text;
 
 public class ReloadButtonWidget extends ButtonWidget {

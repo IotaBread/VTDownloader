@@ -18,8 +18,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.ResourceIoSupplier;
+import net.minecraft.resource.pack.PackProfile;
 import net.minecraft.resource.pack.ResourcePack;
-import net.minecraft.resource.pack.ResourcePackProfile;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.http.HttpResponse;
@@ -277,9 +277,9 @@ public class VTDMod implements ClientModInitializer {
         return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
     }
 
-    public static CompletableFuture<List<String>> readResourcePackData(ResourcePackProfile profile) {
+    public static CompletableFuture<List<String>> readResourcePackData(PackProfile profile) {
         return CompletableFuture.supplyAsync(() -> {
-            try (ResourcePack resourcePack = profile.createResourcePack()) {
+            try (ResourcePack resourcePack = profile.createPack()) {
                 ResourceIoSupplier<InputStream> fileStream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE);
                 try (InputStream stream = fileStream != null ? fileStream.get() : null){
                     if (stream != null) {

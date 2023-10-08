@@ -14,7 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.sound.SoundEvents;
@@ -598,9 +598,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public abstract static class CategoryButtonEntry extends AbstractEntry {
-        protected static final int TEXTURE_V = 66;
         protected static final int BUTTON_HEIGHT = 20;
         protected static final int BUTTON_HORIZONTAL_PADDING = 32;
+        protected static final Identifier TEXTURE = new Identifier("widget/button");
 
         protected final Category category;
         protected final Text name;
@@ -633,9 +633,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.drawNineSlicedTexture(ClickableWidget.WIDGETS_TEXTURE,
-                    x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT,
-                    20, 4, 200, 20, 0, TEXTURE_V);
+            graphics.drawGuiTexture(TEXTURE,
+                    x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFF);
         }
     }

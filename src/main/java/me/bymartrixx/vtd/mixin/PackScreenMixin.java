@@ -6,7 +6,7 @@ import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,7 +40,7 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
                 this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
             }).position(this.width / 2 - Util.VTD_BUTTON_CENTER_X, this.height - Util.VTD_BUTTON_BOTTOM_MARGIN)
                     .size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT);
-            this.addDrawableChild(button.build());
+            this.addDrawableSelectableElement(button.build());
         }
     }
 

@@ -4,8 +4,8 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
   "client": [
-    "PackListWidgetMixin",
-    "PackListWidgetMixin$ResourcePackEntryMixin",
+    "PackEntryListWidgetMixin",
+    "PackEntryListWidgetMixin$PackEntryMixin",
     "PackScreenMixin",
     "ResourcePackOrganizerMixin",
     "ResourcePackOrganizerMixin$AbstractPackMixin"

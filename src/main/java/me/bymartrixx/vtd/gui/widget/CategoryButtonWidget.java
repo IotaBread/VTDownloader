@@ -10,16 +10,21 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.ClickableWidgetStateTextures;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 // Doesn't extend ButtonWidget to allow dynamic positioning
 public class CategoryButtonWidget implements Element, Selectable {
     private static final int TEXTURE_HEIGHT = 20;
     private static final int TEXTURE_V_OFFSET = 46;
+    private static final ClickableWidgetStateTextures TEXTURES = new ClickableWidgetStateTextures(
+            new Identifier("widget/button"), new Identifier("widget/button_disabled"), new Identifier("widget/button_highlighted")
+    );
 
     private final Category category;
     private final int width;
@@ -49,15 +54,10 @@ public class CategoryButtonWidget implements Element, Selectable {
 
         graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int buttonCenter = this.width / 2;
-
-        int yImage = getYImage(this.isHoveredOrFocused());
-        int v = TEXTURE_V_OFFSET + yImage * TEXTURE_HEIGHT;
-        graphics.drawTexture(ClickableWidget.WIDGETS_TEXTURE, x, y, 0, v, buttonCenter, this.height);
-        graphics.drawTexture(ClickableWidget.WIDGETS_TEXTURE, x + buttonCenter, y, 200 - buttonCenter, v, buttonCenter, this.height);
+        graphics.drawGuiTexture(TEXTURES.getTexture(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
 
         int textColor = this.selected ? 0xA0A0A0 : 0xFFFFFF;
-        graphics.drawCenteredShadowedText(textRenderer, this.text, x + buttonCenter, y + (this.height - 8) / 2, textColor);
+        graphics.drawCenteredShadowedText(textRenderer, this.text, x + this.width / 2, y + (this.height - 8) / 2, textColor);
     }
 
     @Override
@@ -129,17 +129,6 @@ public class CategoryButtonWidget implements Element, Selectable {
 
     private boolean isHoveredOrFocused() {
         return this.hovered || this.focused;
-    }
-
-    private int getYImage(boolean hovered) {
-        int y = 1;
-        if (selected) {
-            y = 0;
-        } else if (hovered) {
-            y = 2;
-        }
-
-        return y;
     }
 
     public boolean isSelected() {

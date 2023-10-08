@@ -1,7 +1,7 @@
 package me.bymartrixx.vtd.access;
 
-import net.minecraft.resource.pack.ResourcePackProfile;
+import net.minecraft.resource.pack.PackProfile;
 
 public interface AbstractPackAccess {
-    ResourcePackProfile vtdownloader$getProfile();
+    PackProfile vtdownloader$getProfile();
 }
