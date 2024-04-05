@@ -1,12 +1,12 @@
 [versions]
-minecraft = "1.20.2"
-quilt_mappings = "1.20.2+build.3"
-fabric_loader = "0.14.22"
+minecraft = "1.20.4"
+quilt_mappings = "1.20.4+build.3"
+fabric_loader = "0.15.1"
 
-fabric_api = "0.89.3+1.20.2"
+fabric_api = "0.96.11+1.20.4"
 
 # Other mods
-recursive_resources = "2.5.2+1.20"
+recursive_resources = "2.5.2+1.20.4"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }

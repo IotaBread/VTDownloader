@@ -31,8 +31,8 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
     @Shadow @Final
     PackScreen screen;
 
-    private PackEntryListWidgetMixin(MinecraftClient minecraftClient, int i, int j, int k, int l, int m) {
-        super(minecraftClient, i, j, k, l, m);
+    private PackEntryListWidgetMixin(MinecraftClient client, int width, int height, int y, int itemHeight) {
+        super(client, width, height, y, itemHeight);
     }
 
     @Override

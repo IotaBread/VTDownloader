@@ -5,7 +5,6 @@ import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
@@ -32,13 +31,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private final PackSelectionHelper selectionHelper;
     private boolean extended = false;
 
-    public SelectedPacksListWidget(VTDownloadScreen screen, MinecraftClient client, int width, int top,
-                                   int bottom, int left, PackSelectionHelper selectionHelper) {
-        super(client, width, screen.height, top, bottom, ITEM_HEIGHT);
+    public SelectedPacksListWidget(VTDownloadScreen screen, MinecraftClient client, int width, int height, int x, int y,
+                                   PackSelectionHelper selectionHelper) {
+        super(client, width, height, y, ITEM_HEIGHT);
         this.screen = screen;
         this.selectionHelper = selectionHelper;
 
-        this.setLeftPos(left);
+        this.setX(x);
         this.setRenderBackground(false); // Rendered at #renderBackground
         this.setRenderHeader(true, HEADER_HEIGHT);
 
@@ -223,7 +222,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     @Override
     protected int getScrollbarPositionX() {
-        return this.left + this.getRowWidth() + SCROLLBAR_LEFT_MARGIN;
+        return this.getX() + this.getRowWidth() + SCROLLBAR_LEFT_MARGIN;
     }
 
     // private void moveFocus(MoveDirection direction) {
@@ -286,12 +285,12 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     // region render
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void drawWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         if (!this.extended) {
             return;
         }
 
-        super.render(graphics, mouseX, mouseY, delta);
+        super.drawWidget(graphics, mouseX, mouseY, delta);
     }
 
     @Override
@@ -307,15 +306,15 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     private void renderBackground(GuiGraphics graphics) {
-        // @see EntryListWidget#render -> if (this.renderBackground)
+        // @see EntryListWidget#drawWidget -> if (this.renderBackground)[1]
         int size = HORIZONTAL_SHADOWS_SIZE;
-        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.top, this.right, this.top + size, 0xFF000000, 0x00000000, 0);
-        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.bottom - size, this.right, this.bottom, 0x00000000, 0xFF000000, 0);
+        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getXEnd(), this.getY() + size, 0xFF000000, 0x00000000, 0);
+        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getYEnd() - size, this.getXEnd(), this.getYEnd(), 0x00000000, 0xFF000000, 0);
     }
     // endregion
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationMessageBuilder builder) {
         builder.put(NarrationPart.TITLE, HEADER);
     }
 

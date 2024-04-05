@@ -13,7 +13,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
@@ -64,15 +63,15 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     private final PackSelectionHelper selectionHelper;
 
-    public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int top, int bottom,
+    public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int y,
                                    Category category, PackSelectionHelper selectionHelper) {
-        super(client, width, height, top, bottom, ITEM_HEIGHT);
+        super(client, width, height, y, ITEM_HEIGHT);
         this.screen = screen;
         this.category = category;
         this.selectionHelper = selectionHelper;
 
-        this.errorLines = Util.getMultilineTextLines(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
-        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
+        this.errorLines = Util.getMultilineTextLines(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
+        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
 
         this.children().addAll(getPackEntries(category));
     }
@@ -164,7 +163,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private int getCenterX() {
-        return this.left + this.width / 2;
+        return this.getX() + this.width / 2;
     }
 
     private int getCenterY() {
@@ -176,7 +175,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public void updateScreenWidth() {
-        this.updateSize(this.screen.getLeftWidth(), this.height, this.top, this.bottom);
+        this.setWidth(this.screen.getLeftWidth());
     }
 
     public void focusPack(Pack pack) {
@@ -200,7 +199,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     @Override
     protected int getScrollbarPositionX() {
-        return this.left + getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
+        return this.getX() + getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
     }
 
     @Override
@@ -311,8 +310,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     // region render
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.render(graphics, mouseX, mouseY, delta);
+    public void drawWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.drawWidget(graphics, mouseX, mouseY, delta);
 
         if (this.children().isEmpty()) {
             this.renderError(graphics);
@@ -363,12 +362,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
-        RenderUtil.renderDebugInfo(graphics, textRenderer, this.left, this.height, debugInfo);
+        RenderUtil.renderDebugInfo(graphics, textRenderer, this.getX(), this.getYEnd(), debugInfo);
     }
 
     public void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
-        if (mouseY >= this.top && mouseY < this.bottom
-                && mouseX >= this.left && mouseX < this.right
+        if (mouseY >= this.getY() && mouseY < this.getYEnd()
+                && mouseX >= this.getX() && mouseX < this.getXEnd()
                 && !this.screen.isCoveredByPopup(mouseX, mouseY)) {
             int width = this.getTooltipWidth();
             for (AbstractEntry entry : this.children()) {
@@ -381,7 +380,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     // endregion
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationMessageBuilder builder) {
         builder.put(NarrationPart.TITLE, Constants.RESOURCE_PACK_SCREEN_SUBTITLE);
     }
 

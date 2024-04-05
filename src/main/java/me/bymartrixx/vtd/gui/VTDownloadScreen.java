@@ -123,7 +123,7 @@ public class VTDownloadScreen extends Screen {
         this.subtitle = subtitle;
 
         this.categories = VTDMod.rpCategories.getCategories();
-        this.currentCategory = this.categories.size() > 0 ? this.categories.get(0) : null;
+        this.currentCategory = !this.categories.isEmpty() ? this.categories.get(0) : null;
 
         this.selectionHelper.addCallback((pack, category, selected) -> {
             this.changed = true;
@@ -154,7 +154,7 @@ public class VTDownloadScreen extends Screen {
         this.selectionHelper.cleanUpSelection();
         this.selectedPacksList.update();
 
-        this.currentCategory = this.categories.size() > 0 ? this.categories.get(0) : null;
+        this.currentCategory = !this.categories.isEmpty() ? this.categories.get(0) : null;
         this.categorySelector.setSelectedCategory(this.currentCategory);
         this.packSelector.setCategory(this.currentCategory);
     }
@@ -304,14 +304,15 @@ public class VTDownloadScreen extends Screen {
 
         // Draw before everything else
         this.packSelector = this.addDrawable(new PackSelectionListWidget(this.client, this, this.width,
-                this.height, PACK_SELECTOR_TOP_HEIGHT, this.height - PACK_SELECTOR_BOTTOM_HEIGHT,
+                this.height - PACK_SELECTOR_TOP_HEIGHT - PACK_SELECTOR_BOTTOM_HEIGHT,
+                PACK_SELECTOR_TOP_HEIGHT,
                 this.currentCategory, this.selectionHelper));
         this.packSelector.updateCategories(this.categories);
 
         this.selectedPacksList = this.addDrawable(new SelectedPacksListWidget(this, this.client,
-                SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
-                this.height - SELECTED_PACKS_BOTTOM_HEIGHT,
-                this.width - SELECTED_PACKS_WIDTH, this.selectionHelper));
+                SELECTED_PACKS_WIDTH, this.height - SELECTED_PACKS_TOP_HEIGHT - SELECTED_PACKS_BOTTOM_HEIGHT,
+                this.width - SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
+                this.selectionHelper));
 
         // Reload button
         this.addDrawableSelectableElement(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
