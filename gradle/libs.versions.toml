@@ -18,6 +18,6 @@ fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fab
 recursive_resources = { module = "nl.enjarai:recursive-resources", version.ref = "recursive_resources" }
 
 [plugins]
-fabric_loom = { id = "fabric-loom", version = "1.4-SNAPSHOT" }
+fabric_loom = { id = "fabric-loom", version = "1.6-SNAPSHOT" }
 minotaur = { id = "com.modrinth.minotaur", version = "2.8.4" }
 cursegradle = { id = "com.matthewprenger.cursegradle", version = "1.4.0" }
