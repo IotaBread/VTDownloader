@@ -1,10 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tessellator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormats;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.RenderUtil;
@@ -17,8 +13,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Axis;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -31,7 +29,9 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
 
-    private static final float BACKGROUND_TEXTURE_SIZE = 32.0F;
+    private static final Identifier BACKGROUND_TEXTURE = new Identifier("textures/gui/menu_list_background.png");
+    private static final Identifier INWORLD_BACKGROUND_TEXTURE = new Identifier("textures/gui/inworld_menu_list_background.png");
+    private static final int BACKGROUND_TEXTURE_SIZE = 32;
 
     private static final int LEFT_RIGHT_PADDING = 2;
     private static final int TOP_BOTTOM_PADDING = 2;
@@ -57,9 +57,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     private int top;
     private int right;
     private int bottom;
-
-    private int startX;
-    private int endX;
 
     private double scrollAmount;
     private boolean scrolling;
@@ -142,11 +139,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.top = this.y;
         this.right = this.left + this.width;
         this.bottom = this.top + this.height;
-
-        this.startX = 0;
-        this.endX = this.right + LEFT_RIGHT_MARGIN
-                // Extend right margin to hide buttons if the right margin doesn't reach the screen border
-                + (this.screen.width != this.screen.getLeftWidth() ? BUTTON_WIDTH : 0);
     }
 
     private void scroll(int amount) {
@@ -255,38 +247,24 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // region render
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.renderBackground();
+        this.renderListBackground(graphics);
+        graphics.enableScissor(this.left, this.top, this.right, this.bottom);
         this.renderCategories(graphics, mouseX, mouseY, delta);
+        graphics.disableScissor();
+        this.renderSeparators(graphics);
         this.renderScrollbar(graphics);
-        this.renderMargin();
     }
 
-    private void renderBackground() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
+    // @see EntryListWidget#method_57715 (renderListBackground)
+    private void renderListBackground(GuiGraphics graphics) {
+        RenderSystem.enableBlend();
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        Identifier texture = MinecraftClient.getInstance().world == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
+        graphics.drawTexture(texture,
+                this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
+                this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.left, this.bottom, 0.0)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
-                .next();
-        bufferBuilder.vertex(this.right, this.bottom, 0.0)
-                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
-                .next();
-        bufferBuilder.vertex(this.right, this.top, 0.0)
-                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
-                .next();
-        bufferBuilder.vertex(this.left, this.top, 0.0)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(32, 32, 32, 255)
-                .next();
-        tessellator.draw();
+        RenderSystem.disableBlend();
     }
 
     private void renderCategories(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
@@ -300,6 +278,23 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 button.render(graphics, left, this.top + TOP_BOTTOM_PADDING, mouseX, mouseY, delta);
             }
         }
+    }
+
+    private void renderSeparators(GuiGraphics graphics) {
+        RenderSystem.enableBlend();
+        MatrixStack matrices = graphics.getMatrices();
+        matrices.push();
+        matrices.rotate(Axis.Z_POSITIVE.rotationDegrees(90.0f));
+
+        Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
+        Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
+        //noinspection SuspiciousNameCombination
+        graphics.drawTexture(leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
+        //noinspection SuspiciousNameCombination
+        graphics.drawTexture(rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
+
+        matrices.pop();
+        RenderSystem.disableBlend();
     }
 
     private void renderScrollbar(GuiGraphics graphics) {
@@ -322,54 +317,6 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
             graphics.fill(x, startY, x + size, endY, 0xFF808080); // Scroll bar
             graphics.fill(x, startY, x + size - 1, endY - 1, 0xFFC0C0C0); // Scroll bar highlight
         }
-    }
-
-    // Render a margin over the category buttons to make them look as if they were partially under the background
-    private void renderMargin() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBufferBuilder();
-
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-        // Left side
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(this.startX, this.bottom, 0.1)
-                .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.left, this.bottom, 0.1)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.left, this.top, 0.1)
-                .uv(this.left / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.startX, this.top, 0.1)
-                .uv(this.startX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-
-        // Right side
-        bufferBuilder.vertex(this.right, this.bottom, 0.1)
-                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.endX, this.bottom, 0.1)
-                .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.bottom / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.endX, this.top, 0.1)
-                .uv(this.endX / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        bufferBuilder.vertex(this.right, this.top, 0.1)
-                .uv(this.right / BACKGROUND_TEXTURE_SIZE, this.top / BACKGROUND_TEXTURE_SIZE)
-                .color(64, 64, 64, 255)
-                .next();
-        tessellator.draw();
     }
 
     public void renderDebugInfo(GuiGraphics graphics) {
