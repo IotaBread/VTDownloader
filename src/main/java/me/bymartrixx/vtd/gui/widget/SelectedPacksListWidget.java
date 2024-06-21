@@ -38,7 +38,6 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         this.selectionHelper = selectionHelper;
 
         this.setX(x);
-        this.setRenderBackground(false); // Rendered at #renderBackground
         this.setRenderHeader(true, HEADER_HEIGHT);
 
         selectionHelper.addCallback(this::updateSelection);
@@ -298,18 +297,19 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
     }
 
-    @Override
-    protected void renderList(GuiGraphics graphics, int x, int y, float delta) {
-        super.renderList(graphics, x, y, delta);
+    @Override // renderList
+    protected void method_25311(GuiGraphics graphics, int x, int y, float delta) {
+        super.method_25311(graphics, x, y, delta);
 
         this.renderBackground(graphics);
     }
 
     private void renderBackground(GuiGraphics graphics) {
-        // @see EntryListWidget#drawWidget -> if (this.renderBackground)[1]
-        int size = HORIZONTAL_SHADOWS_SIZE;
-        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getXEnd(), this.getY() + size, 0xFF000000, 0x00000000, 0);
-        graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getYEnd() - size, this.getXEnd(), this.getYEnd(), 0x00000000, 0xFF000000, 0);
+        // TODO
+        // // @see EntryListWidget#drawWidget -> if (this.renderBackground)[1]
+        // int size = HORIZONTAL_SHADOWS_SIZE;
+        // graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getXEnd(), this.getY() + size, 0xFF000000, 0x00000000, 0);
+        // graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getYEnd() - size, this.getXEnd(), this.getYEnd(), 0x00000000, 0xFF000000, 0);
     }
     // endregion
 

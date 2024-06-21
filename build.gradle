@@ -5,10 +5,10 @@ plugins {
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+base {
+	archivesName = project.archives_base_name
+}
 
-archivesBaseName = project.archives_base_name
 group = project.maven_group
 
 version = "${project.mod_version}+${libs.versions.minecraft.get()}"
@@ -61,11 +61,13 @@ tasks.withType(JavaCompile).configureEach {
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
 
-	// Minecraft 1.18 upwards uses Java 17.
-	it.options.release = 17
+	// Minecraft 1.20.5 upwards uses Java 21.
+	it.options.release = 21
 }
 
 java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
 	// If you remove this line, sources will not be generated.
@@ -82,10 +84,10 @@ modrinth {
 	token = project.hasProperty('modrinth_token') ? project.property('modrinth_token') : System.getenv('MODRINTH_TOKEN')
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
-	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.20.2"
+	versionName = "VTDownloader ${project.mod_version} for Minecraft 1.20.6"
 	uploadFile = remapJar
 	changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
-	gameVersions = ['1.20.2']
+	gameVersions = ['1.20.6']
 	loaders = ['fabric', 'quilt']
 }
 
@@ -97,11 +99,11 @@ curseforge {
 		id = '432425'
 		changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
 		releaseType = 'release'
-		addGameVersion '1.20.2'
+		addGameVersion '1.20.6'
 		addGameVersion 'Fabric'
 		addGameVersion 'Quilt'
 		mainArtifact(remapJar) {
-			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.20.2"
+			displayName = "VTDownloader ${project.mod_version} for Minecraft 1.20.6"
 		}
 		afterEvaluate {
 			uploadTask.dependsOn('remapJar')

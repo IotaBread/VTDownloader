@@ -7,13 +7,17 @@ import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
+import net.minecraft.client.gui.widget.layout.LinearLayoutWidget;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.nio.file.Path;
 
@@ -27,21 +31,31 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
         super(title);
     }
 
-    @Inject(at = @At(value = "HEAD"), method = "init")
-    private void addVTDButton(CallbackInfo info) {
-        // Checks if it is the resource pack screen and not the data pack screen
-        if (this.vtdownloader$isResourcePackScreen()) {
-            // Only create the button if it's not a modded one like the one Recursive Resources has
-            //noinspection ConstantValue
-            if ((Class<?>) getClass() != PackScreen.class) return;
+    /**
+     * Add the VT button between the "Open pack folder" and "Done" buttons
+     */
+    @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/layout/LinearLayoutWidget;add(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;",
+            ordinal = 3), locals = LocalCapture.CAPTURE_FAILHARD)
+    private void addVTDButton(CallbackInfo ci, LinearLayoutWidget headerLayout, LinearLayoutWidget footerLayout) {
+        footerLayout.add(ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
+            // noinspection ConstantConditions
+            this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
+        }).size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT).build());
+    }
 
-            ButtonWidget.Builder button = ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
-                // noinspection ConstantConditions
-                this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
-            }).position(this.width / 2 - Util.VTD_BUTTON_CENTER_X, this.height - Util.VTD_BUTTON_BOTTOM_MARGIN)
-                    .size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT);
-            this.addDrawableSelectableElement(button.build());
-        }
+    /**
+     * Reduce the size of the vanilla buttons to make room for the vtd button
+     */
+    /* At a bytecode level, this would be enough
+     *  ...
+     * +LDC [width]
+     * +INVOKEVIRTUAL L../ButtonWidget$Builder;width(I)L../ButtonWidget$Builder;
+     * INVOKEVIRTUAL L../ButtonWidget$Builder;build()L../ButtonWidget;
+     */
+    @Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/button/ButtonWidget$Builder;build()Lnet/minecraft/client/gui/widget/button/ButtonWidget;"),
+            slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/layout/HeaderFooterLayoutWidget;addToFooter(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;")))
+    private ButtonWidget shrinkVanillaButton(ButtonWidget.Builder builder) {
+        return builder.width(ButtonWidget.SMALL_WIDTH).build();
     }
 
     @Override

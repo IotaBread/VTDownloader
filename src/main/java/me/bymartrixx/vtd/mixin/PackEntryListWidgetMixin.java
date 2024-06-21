@@ -109,7 +109,7 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
             }
         }
 
-        // @version 1.19.2 - 1.20.2
+        // @version 1.19.2 - 1.20.6
         @SuppressWarnings("InvalidInjectorMethodSignature") // Plugin gives invalid params
         @Inject(at = @At(
                 value = "INVOKE",

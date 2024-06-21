@@ -121,7 +121,7 @@ public abstract class AbstractScreenPopup implements Drawable {
         graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, RENDER_Z, alpha << 24);
 
         graphics.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
-        graphics.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.getLeft(), this.getTop(), RENDER_Z, 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        graphics.drawTexture(Screen.MENU_BACKGROUND, this.getLeft(), this.getTop(), RENDER_Z, 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
     protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);

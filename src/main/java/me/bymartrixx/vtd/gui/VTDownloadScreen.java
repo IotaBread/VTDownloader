@@ -414,7 +414,7 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, delta);
         super.render(graphics, mouseX, mouseY, delta);
         graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
         graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);

@@ -18,11 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Util {
-    public static final int VTD_BUTTON_WIDTH = 160;
+    public static final int VTD_BUTTON_WIDTH = 120;
     public static final int VTD_BUTTON_CENTER_X = VTD_BUTTON_WIDTH / 2;
     public static final int VTD_BUTTON_HEIGHT = 20;
     public static final int VTD_BUTTON_BOTTOM_MARGIN = 24;
-
 
     /**
      * Parse an 0xAARRGGBB color from `rgba(red, green, blue, alpha)`
@@ -40,12 +39,12 @@ public class Util {
                     int blue = Integer.parseInt(components.get(2));
                     float alpha = Float.parseFloat(components.get(3));
 
-                    return ColorUtil.ARGB32.getArgb((int) (alpha * 255), red, green, blue);
+                    return ColorUtil.Argb32.method_59554((int) (alpha * 255), red, green, blue);
                 }
             }
         }
 
-        VTDMod.LOGGER.warn("Unknown color format: " + color);
+        VTDMod.LOGGER.warn("Unknown color format: {}", color);
         return 0x00000000;
     }
 

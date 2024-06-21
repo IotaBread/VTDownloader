@@ -3,6 +3,8 @@ package me.bymartrixx.vtd.gui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.WarningScreen;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
+import net.minecraft.client.gui.widget.layout.LayoutWidget;
+import net.minecraft.client.gui.widget.layout.LinearLayoutWidget;
 import net.minecraft.text.CommonTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -22,10 +24,16 @@ public class UnsavedPackWarningScreen extends WarningScreen {
     }
 
     @Override
-    protected void initButtons(int textHeight) {
-        this.addDrawableSelectableElement(ButtonWidget.builder(CommonTexts.PROCEED, button -> this.client.setScreen(this.next))
-                .positionAndSize(this.width / 2 - 155, 100 + textHeight, 150, 20).build());
-        this.addDrawableSelectableElement(ButtonWidget.builder(CommonTexts.BACK, button -> this.client.setScreen(this.parent))
-                .positionAndSize(this.width / 2 - 155 + 160, 100 + textHeight, 150, 20).build());
+    protected LayoutWidget method_57750() {
+        LinearLayoutWidget layout = LinearLayoutWidget.createHorizontal().setSpacing(8);
+        layout.add(ButtonWidget.builder(CommonTexts.PROCEED, button -> this.client.setScreen(this.next)).build());
+        layout.add(ButtonWidget.builder(CommonTexts.BACK, button -> this.closeScreen()).build());
+
+        return layout;
+    }
+
+    @Override
+    public void closeScreen() {
+        this.client.setScreen(this.parent);
     }
 }

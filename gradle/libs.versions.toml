@@ -1,9 +1,9 @@
 [versions]
-minecraft = "1.20.4"
-quilt_mappings = "1.20.4+build.3"
-fabric_loader = "0.15.1"
+minecraft = "1.20.6"
+quilt_mappings = "1.20.6+build.6"
+fabric_loader = "0.15.6"
 
-fabric_api = "0.96.11+1.20.4"
+fabric_api = "0.100.0+1.20.6"
 
 # Other mods
 recursive_resources = "2.5.2+1.20.4"
