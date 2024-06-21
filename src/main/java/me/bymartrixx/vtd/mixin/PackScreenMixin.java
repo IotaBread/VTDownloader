@@ -6,6 +6,7 @@ import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.PackScreen;
+import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.client.gui.widget.layout.LinearLayoutWidget;
 import net.minecraft.text.Text;
@@ -27,6 +28,10 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     @Final
     private Path file;
 
+    @Shadow
+    @Final
+    private ResourcePackOrganizer organizer;
+
     protected PackScreenMixin(Text title) {
         super(title);
     }
@@ -38,6 +43,7 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
             ordinal = 3), locals = LocalCapture.CAPTURE_FAILHARD)
     private void addVTDButton(CallbackInfo ci, LinearLayoutWidget headerLayout, LinearLayoutWidget footerLayout) {
         footerLayout.add(ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
+            this.vtdownloader$applyChanges();
             // noinspection ConstantConditions
             this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
         }).size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT).build());
@@ -62,5 +68,10 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     public boolean vtdownloader$isResourcePackScreen() {
         // noinspection ConstantConditions
         return this.file == this.client.getResourcePackDir();
+    }
+
+    @Override
+    public void vtdownloader$applyChanges() {
+        this.organizer.apply();
     }
 }

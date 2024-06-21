@@ -123,7 +123,9 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
 
                 if (clickedX >= pencilX && clickedX < pencilX + PENCIL_SIZE
                         && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
-                    this.client.setScreen(new VTDownloadScreen(((PackEntryListWidgetAccess) this.widget).vtdownloader$getScreen(),
+                    PackScreen screen = ((PackEntryListWidgetAccess) this.widget).vtdownloader$getScreen();
+                    ((PackScreenAccess) screen).vtdownloader$applyChanges();
+                    this.client.setScreen(new VTDownloadScreen(screen,
                             Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
                 }
             }
