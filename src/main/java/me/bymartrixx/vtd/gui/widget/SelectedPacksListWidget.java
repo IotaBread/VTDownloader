@@ -4,13 +4,15 @@ import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -22,10 +24,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     private static final int ITEM_HEIGHT = 16;
     private static final int HEADER_HEIGHT = 16;
-    private static final int ROW_LEFT_RIGHT_MARGIN = 2;
+    private static final int ROW_LEFT_RIGHT_MARGIN = 4;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
-
-    private static final int HORIZONTAL_SHADOWS_SIZE = 4;
 
     private final VTDownloadScreen screen;
     private final PackSelectionHelper selectionHelper;
@@ -216,12 +216,17 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     @Override
     public int getRowWidth() {
-        return this.width - ROW_LEFT_RIGHT_MARGIN * 2;
+        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - SCROLLBAR_WIDTH - SCROLLBAR_LEFT_MARGIN;
+    }
+
+    @Override
+    public int getRowLeft() {
+        return super.getRowLeft() - ROW_LEFT_RIGHT_MARGIN;
     }
 
     @Override
     protected int getScrollbarPositionX() {
-        return this.getX() + this.getRowWidth() + SCROLLBAR_LEFT_MARGIN;
+        return this.getRowRight() + SCROLLBAR_LEFT_MARGIN;
     }
 
     // private void moveFocus(MoveDirection direction) {
@@ -294,22 +299,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     @Override
     protected void renderHeader(GuiGraphics graphics, int x, int y) {
-        graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.width / 2, y, 0xFFFFFFFF);
-    }
-
-    @Override // renderList
-    protected void method_25311(GuiGraphics graphics, int x, int y, float delta) {
-        super.method_25311(graphics, x, y, delta);
-
-        this.renderBackground(graphics);
-    }
-
-    private void renderBackground(GuiGraphics graphics) {
-        // TODO
-        // // @see EntryListWidget#drawWidget -> if (this.renderBackground)[1]
-        // int size = HORIZONTAL_SHADOWS_SIZE;
-        // graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getXEnd(), this.getY() + size, 0xFF000000, 0x00000000, 0);
-        // graphics.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getYEnd() - size, this.getXEnd(), this.getYEnd(), 0x00000000, 0xFF000000, 0);
+        graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.getRowWidth() / 2, y, 0xFFFFFFFF);
     }
     // endregion
 
@@ -322,6 +312,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         protected final MinecraftClient client;
         protected final SelectedPacksListWidget widget;
         private Text text;
+        protected String textPrefix = null;
 
         protected AbstractEntry(SelectedPacksListWidget widget) {
             this.client = widget.client;
@@ -341,9 +332,40 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             return this.text;
         }
 
+        protected int getColor() {
+            return 0xFFFFFF;
+        }
+
+        // @see ClickableWidget#drawScrollingText
+        protected void drawScrollingText(GuiGraphics graphics, int x, int y, int maxWidth, int height, int color) {
+            TextRenderer textRenderer = this.client.textRenderer;
+            Text text = this.getText();
+            int textWidth = textRenderer.getWidth(text);
+
+            if (textWidth > maxWidth) {
+                int extraWidth = textWidth - maxWidth;
+                double seconds = (double) Util.getMeasuringTimeMs() / 1000.0;
+                double scrollWidth = Math.max((double) extraWidth * 0.5, 3.0);
+                double delta = Math.sin((Math.PI / 2) * Math.cos((Math.PI * 2) * seconds / scrollWidth)) / 2.0 + 0.5;
+                double scrollOffset = MathHelper.lerp(delta, 0.0, extraWidth);
+
+                graphics.enableScissor(x, y, x + maxWidth, y + height);
+                graphics.drawShadowedText(textRenderer, text, x - (int) scrollOffset, y, color);
+                graphics.disableScissor();
+            } else {
+                graphics.drawShadowedText(textRenderer, text, x, y, color);
+            }
+        }
+
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.drawShadowedText(this.client.textRenderer, this.getText(), x, y, 0xFFFFFF);
+            int color = this.getColor();
+            int offsetX = graphics.drawShadowedText(this.client.textRenderer, this.textPrefix, x, y, color);
+            if (offsetX > 0) {
+                this.drawScrollingText(graphics, offsetX, y, entryWidth - (offsetX - x), entryHeight, color);
+            } else {
+                this.drawScrollingText(graphics, x, y, entryWidth, entryHeight, color);
+            }
         }
     }
 
@@ -399,13 +421,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     public static class SubCategoryEntry extends CategoryEntry {
+        private static final String PREFIX_STRING = "| ";
+
         public SubCategoryEntry(SelectedPacksListWidget widget, Category.SubCategory category) {
             super(widget, category);
-        }
-
-        @Override
-        protected String getTextString() {
-            return "| " + super.getTextString();
+            this.textPrefix = PREFIX_STRING;
         }
 
         @Override
@@ -419,6 +439,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     public static class PackEntry extends AbstractEntry {
+        private static final String PREFIX_STRING = "> ";
         private final Category category;
         private final Pack pack;
 
@@ -430,6 +451,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             super(widget);
             this.category = category;
             this.pack = pack;
+
+            this.textPrefix = PREFIX_STRING;
         }
 
         private int calculateColor() {
@@ -438,7 +461,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             return color != PackSelectionHelper.DEFAULT_SELECTION_COLOR ? color : 0xFFFFFFFF;
         }
 
-        private int getColor() {
+        @Override
+        protected int getColor() {
             if (this.color != -1 && this.widget.children().size() == this.lastChildrenCount) {
                 return this.color;
             }
@@ -450,7 +474,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         protected String getTextString() {
-            return "> " + this.pack.getName();
+            return this.pack.getName();
         }
 
         @Override
@@ -470,11 +494,6 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             }
 
             return super.mouseClicked(mouseX, mouseY, button);
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.drawShadowedText(this.client.textRenderer, this.getText(), x, y, this.getColor());
         }
 
         @Override
