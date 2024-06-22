@@ -80,8 +80,8 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.2.1";
-        String vtVersion = "1.20";
+        String version = "2.3.0";
+        String vtVersion = "1.21";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (container.isPresent()) {
@@ -274,7 +274,7 @@ public class VTDMod implements ClientModInitializer {
 
     @Contract("_ -> new")
     public static Identifier getIconId(Pack pack) {
-        return new Identifier(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
+        return Identifier.of(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
     }
 
     public static CompletableFuture<List<String>> readResourcePackData(PackProfile profile) {

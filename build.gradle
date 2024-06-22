@@ -41,9 +41,9 @@ dependencies {
 	modImplementation libs.fabric.api
 
 	// With modImplementation it breaks on runtime
-	modCompileOnly(libs.recursive.resources) {
-		exclude group: "com.terraformersmc", module: "modmenu"
-	}
+//	modCompileOnly(libs.recursive.resources) {
+//		exclude group: "com.terraformersmc", module: "modmenu"
+//	}
 }
 
 processResources {

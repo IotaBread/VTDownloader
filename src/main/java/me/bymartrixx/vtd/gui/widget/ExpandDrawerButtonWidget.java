@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.Consumer;
 
 public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
-    private static final Identifier TEXTURE = new Identifier("vt_downloader", "textures/drawer_tab.png");
+    private static final Identifier TEXTURE = Identifier.of("vt_downloader", "textures/drawer_tab.png");
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 64;
     public static final int TAB_WIDTH = 16;

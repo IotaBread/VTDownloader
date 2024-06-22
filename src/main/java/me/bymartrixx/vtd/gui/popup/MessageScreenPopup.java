@@ -63,7 +63,8 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
-        this.message.render(graphics,
+        // drawCenteredWithShadow
+        this.message.method_30889(graphics,
                 this.centerX, this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight, textRenderer.fontHeight, color);
     }
 

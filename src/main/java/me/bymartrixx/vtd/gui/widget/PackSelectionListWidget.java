@@ -342,7 +342,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
-        this.errorText.render(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
+        // drawCenteredWithShadow
+        this.errorText.method_30889(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -488,7 +489,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
-            getShortDescription(width - TEXT_MARGIN).render(graphics, x, y);
+            // drawCenteredWithShadow
+            getShortDescription(width - TEXT_MARGIN).method_30888(graphics, x, y);
         }
 
         private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
@@ -564,7 +566,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderText(GuiGraphics graphics, int x, int y, int width) {
-            this.getText(width).render(graphics, x, y);
+            // drawCenteredWithShadow
+            this.getText(width).method_30888(graphics, x, y);
         }
         // endregion
 
@@ -599,7 +602,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public abstract static class CategoryButtonEntry extends AbstractEntry {
         protected static final int BUTTON_HEIGHT = 20;
         protected static final int BUTTON_HORIZONTAL_PADDING = 32;
-        protected static final Identifier TEXTURE = new Identifier("widget/button");
+        protected static final Identifier TEXTURE = Identifier.ofDefault("widget/button");
 
         protected final Category category;
         protected final Text name;

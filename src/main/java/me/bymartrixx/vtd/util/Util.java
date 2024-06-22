@@ -87,7 +87,7 @@ public class Util {
     }
 
     public static MultilineText createMultilineText(TextRenderer textRenderer, Text text, int maxLines, int width) {
-        return MultilineText.create(textRenderer, text, width, maxLines);
+        return MultilineText.method_61132(textRenderer, width, maxLines, text);
     }
 
     public static MultilineText createMultilineText(TextRenderer textRenderer, List<Text> lines, int maxLines) {
@@ -95,7 +95,7 @@ public class Util {
             lines = lines.subList(0, maxLines);
         }
 
-        return MultilineText.create(textRenderer, lines);
+        return MultilineText.create(textRenderer, lines.toArray(new Text[0]));
     }
 
     public static List<Text> wrapText(TextRenderer textRenderer, String text, int maxWidth) {

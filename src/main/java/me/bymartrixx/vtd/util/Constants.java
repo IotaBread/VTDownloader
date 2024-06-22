@@ -11,7 +11,7 @@ public class Constants {
     public static final Text RESOURCE_PACK_BUTTON_TEXT = Text.translatable("vtd.resourcePack.button");
     public static final Text RESOURCE_PACK_RELOAD_TEXT = Text.translatable("vtd.resourcePack.reload");
 
-    public static final Identifier PENCIL_TEXTURE = new Identifier("vt_downloader", "textures/pencil.png");
+    public static final Identifier PENCIL_TEXTURE = Identifier.of("vt_downloader", "textures/pencil.png");
 
     public static final String VT_DESCRIPTION_MARKER = "vanillatweaks.net";
     public static final String SELECTED_PACKS_FILE = "Selected Packs.txt";

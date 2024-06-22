@@ -29,8 +29,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
 
-    private static final Identifier BACKGROUND_TEXTURE = new Identifier("textures/gui/menu_list_background.png");
-    private static final Identifier INWORLD_BACKGROUND_TEXTURE = new Identifier("textures/gui/inworld_menu_list_background.png");
+    private static final Identifier BACKGROUND_TEXTURE = Identifier.ofDefault("textures/gui/menu_list_background.png");
+    private static final Identifier INWORLD_BACKGROUND_TEXTURE = Identifier.ofDefault("textures/gui/inworld_menu_list_background.png");
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
 
     private static final int LEFT_RIGHT_PADDING = 2;

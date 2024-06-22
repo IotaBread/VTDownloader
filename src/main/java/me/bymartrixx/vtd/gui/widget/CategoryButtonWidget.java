@@ -23,7 +23,7 @@ public class CategoryButtonWidget implements Element, Selectable {
     private static final int TEXTURE_HEIGHT = 20;
     private static final int TEXTURE_V_OFFSET = 46;
     private static final ClickableWidgetStateTextures TEXTURES = new ClickableWidgetStateTextures(
-            new Identifier("widget/button"), new Identifier("widget/button_disabled"), new Identifier("widget/button_highlighted")
+            Identifier.ofDefault("widget/button"), Identifier.ofDefault("widget/button_disabled"), Identifier.ofDefault("widget/button_highlighted")
     );
 
     private final Category category;

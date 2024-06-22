@@ -1,12 +1,12 @@
 [versions]
-minecraft = "1.20.6"
-quilt_mappings = "1.20.6+build.6"
-fabric_loader = "0.15.6"
+minecraft = "1.21"
+quilt_mappings = "1.21+build.2"
+fabric_loader = "0.15.11"
 
-fabric_api = "0.100.0+1.20.6"
+fabric_api = "0.100.3+1.21"
 
 # Other mods
-recursive_resources = "2.5.2+1.20.4"
+recursive_resources = "2.5.2+1.20.4"  # TODO: add compatibility back once it's updated
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
