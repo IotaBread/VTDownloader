@@ -39,24 +39,8 @@ public class PackSelectionHelper {
 
         // Create all incompatibility groups
         List<Pack> packs = new ArrayList<>();
-        for (Category c : categories) {
-            if (c.getSubCategories() != null) {
-                for (Category.SubCategory subCategory : c.getSubCategories()) {
-                    if (subCategory.isHardIncompatible()) {
-                        this.allIncompatibilityGroups.add(new CategoryIncompatibilityGroup(subCategory));
-                        continue;
-                    }
-
-                    packs.addAll(subCategory.getPacks());
-                }
-            }
-
-            if (c.isHardIncompatible()) {
-                this.allIncompatibilityGroups.add(new CategoryIncompatibilityGroup(c));
-                continue;
-            }
-
-            packs.addAll(c.getPacks());
+        for (Category category : categories) {
+            this.collectCategoryPacks(packs, category);
         }
 
         for (Pack pack : packs) {
@@ -75,6 +59,21 @@ public class PackSelectionHelper {
                 this.incompatibilityGroups.put(id, group);
             }
         }
+    }
+
+    private void collectCategoryPacks(List<Pack> packs, Category category) {
+        if (category.getSubCategories() != null && !category.getSubCategories().isEmpty()) {
+            for (Category subCategory : category.getSubCategories()) {
+                collectCategoryPacks(packs, subCategory);
+            }
+        }
+
+        if (category.isHardIncompatible()) {
+            this.allIncompatibilityGroups.add(new CategoryIncompatibilityGroup(category));
+            return;
+        }
+
+        packs.addAll(category.getPacks());
     }
 
     public void toggleSelection(PackSelectionListWidget.PackEntry entry) {

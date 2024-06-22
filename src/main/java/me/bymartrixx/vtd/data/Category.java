@@ -18,7 +18,10 @@ import java.util.Map;
 
 @JsonAdapter(Category.CustomTypeAdapterFactory.class)
 public class Category {
-    public static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of("Menu Panoramas", "Options Backgrounds", "Colorful Slime");
+    public static final List<String> HARD_INCOMPATIBLE_CATEGORIES = List.of(
+            "Crosshairs", "Hearts", "Hunger Bars", "Menu Panoramas", "Options Backgrounds", // GUI
+            "Slimes", "Elytra", "Enchantment Glints" // World of Color
+    );
 
     @SerializedName("category")
     private final String name;
@@ -163,12 +166,6 @@ public class Category {
         }
 
         @Override
-        @Nullable
-        public List<SubCategory> getSubCategories() {
-            return null;
-        }
-
-        @Override
         public String getId() {
             return this.getParent().getId() + "." + super.getId();
         }
@@ -191,17 +188,22 @@ public class Category {
                     defaultAdapter.write(out, value);
                 }
 
+                private void linkSubCategories(Category category) {
+                    if (category.getSubCategories() != null && !category.getSubCategories().isEmpty()) {
+                        for (SubCategory subCategory : category.getSubCategories()) {
+                            subCategory.parent = category;
+                            linkSubCategories(subCategory);
+                        }
+                    }
+                }
+
                 @Override
                 public T read(JsonReader in) throws IOException {
                     T result = defaultAdapter.read(in);
 
                     if (result instanceof Category category) {
                         // Link sub categories to their parents post-deserialization
-                        if (category.getSubCategories() != null) {
-                            for (SubCategory subCategory : category.getSubCategories()) {
-                                subCategory.parent = category;
-                            }
-                        }
+                        linkSubCategories(category);
                     }
 
                     return result;
