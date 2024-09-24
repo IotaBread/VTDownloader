@@ -24,7 +24,7 @@ public class UnsavedPackWarningScreen extends WarningScreen {
     }
 
     @Override
-    protected LayoutWidget method_57750() {
+    protected LayoutWidget initContent() {
         LinearLayoutWidget layout = LinearLayoutWidget.createHorizontal().setSpacing(8);
         layout.add(ButtonWidget.builder(CommonTexts.PROCEED, button -> this.client.setScreen(this.next)).build());
         layout.add(ButtonWidget.builder(CommonTexts.BACK, button -> this.closeScreen()).build());

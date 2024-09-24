@@ -342,8 +342,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
-        // drawCenteredWithShadow
-        this.errorText.method_30889(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
+        this.errorText.drawCenteredWithShadow(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -489,8 +488,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
-            // drawCenteredWithShadow
-            getShortDescription(width - TEXT_MARGIN).method_30888(graphics, x, y);
+            getShortDescription(width - TEXT_MARGIN).drawCenteredWithShadow(graphics, x, y);
         }
 
         private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
@@ -566,8 +564,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderText(GuiGraphics graphics, int x, int y, int width) {
-            // drawCenteredWithShadow
-            this.getText(width).method_30888(graphics, x, y);
+            this.getText(width).drawCenteredWithShadow(graphics, x, y);
         }
         // endregion
 

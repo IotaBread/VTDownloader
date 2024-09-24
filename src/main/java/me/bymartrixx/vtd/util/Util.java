@@ -39,7 +39,7 @@ public class Util {
                     int blue = Integer.parseInt(components.get(2));
                     float alpha = Float.parseFloat(components.get(3));
 
-                    return ColorUtil.Argb32.method_59554((int) (alpha * 255), red, green, blue);
+                    return ColorUtil.Argb32.argb((int) (alpha * 255), red, green, blue);
                 }
             }
         }
@@ -87,7 +87,7 @@ public class Util {
     }
 
     public static MultilineText createMultilineText(TextRenderer textRenderer, Text text, int maxLines, int width) {
-        return MultilineText.method_61132(textRenderer, width, maxLines, text);
+        return MultilineText.create(textRenderer, width, maxLines, text);
     }
 
     public static MultilineText createMultilineText(TextRenderer textRenderer, List<Text> lines, int maxLines) {
