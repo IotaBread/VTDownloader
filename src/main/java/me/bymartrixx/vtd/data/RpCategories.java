@@ -2,6 +2,8 @@ package me.bymartrixx.vtd.data;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 public class RpCategories {
@@ -25,8 +27,15 @@ public class RpCategories {
 
         this.allCategories = this.categories.stream().<Category>mapMulti((category, consumer) -> {
             consumer.accept(category);
-            if (category.getSubCategories() != null) {
-                category.getSubCategories().forEach(consumer);
+
+            Deque<Category> categories = new ArrayDeque<>();
+            categories.add(category);
+            while (!categories.isEmpty()) {
+                Category cat = categories.pop();
+                if (cat.getSubCategories() != null) {
+                    cat.getSubCategories().forEach(consumer);
+                    categories.addAll(cat.getSubCategories());
+                }
             }
         }).toList();
 

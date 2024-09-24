@@ -115,7 +115,7 @@ public class Category {
     }
 
     public String getId() {
-        return this.name.toLowerCase(Locale.ROOT).replaceAll("\\s", "-");
+        return this.name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-");
     }
 
     @Override
