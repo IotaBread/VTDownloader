@@ -4,12 +4,12 @@ import me.bymartrixx.vtd.VTDMod;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextHandler;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.util.ColorUtil;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.ArgbHelper;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +39,7 @@ public class Util {
                     int blue = Integer.parseInt(components.get(2));
                     float alpha = Float.parseFloat(components.get(3));
 
-                    return ColorUtil.Argb32.argb((int) (alpha * 255), red, green, blue);
+                    return ArgbHelper.color((int) (alpha * 255), red, green, blue);
                 }
             }
         }

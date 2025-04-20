@@ -60,7 +60,6 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = this.client.textRenderer;
         int color = 0xFFFFFF | this.getFadeAlpha() << 24;
-        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
         this.message.drawCenteredWithShadow(graphics,

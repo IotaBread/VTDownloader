@@ -62,7 +62,6 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
         int y = this.centerY - BAR_HEIGHT / 2;
         int color = this.color | this.getFadeAlpha() << 24;
 
-        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderUtil.drawOutline(graphics, x, y, barWidth, BAR_HEIGHT, BAR_OUTLINE_SIZE, color);
 
         // Progress line

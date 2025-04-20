@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ClickableWidgetStateTextures;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.sound.SoundEvents;
@@ -52,9 +53,7 @@ public class CategoryButtonWidget implements Element, Selectable {
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
 
-        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-        graphics.drawGuiTexture(TEXTURES.getTexture(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
+        graphics.method_52706(RenderLayer::getGuiTextured, TEXTURES.getTexture(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
 
         int textColor = this.selected ? 0xA0A0A0 : 0xFFFFFF;
         graphics.drawCenteredShadowedText(textRenderer, this.text, x + this.width / 2, y + (this.height - 8) / 2, textColor);

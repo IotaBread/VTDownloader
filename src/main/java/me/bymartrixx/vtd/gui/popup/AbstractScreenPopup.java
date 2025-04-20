@@ -4,6 +4,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.util.ArgbHelper;
 
 public abstract class AbstractScreenPopup implements Drawable {
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
@@ -117,11 +119,11 @@ public abstract class AbstractScreenPopup implements Drawable {
 
     protected void renderBackground(GuiGraphics graphics) {
         int alpha = this.getFadeAlpha();
-        graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, RENDER_Z, alpha << 24);
 
-        graphics.setShaderColor(0.25F, 0.25F, 0.25F, alpha / 255.0F);
-        graphics.drawTexture(Screen.MENU_BACKGROUND, this.getLeft(), this.getTop(), RENDER_Z, 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+        int color = ArgbHelper.color(alpha, 64, 64, 64);
+        graphics.method_25291(RenderLayer::getGuiTextured, Screen.MENU_BACKGROUND,
+                this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE, color);
     }
 
     protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);

@@ -264,7 +264,6 @@ public class VTDMod implements ClientModInitializer {
                 NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(stream));
 
                 textureManager.registerTexture(id, icon);
-                textureManager.bindTexture(id);
                 return true;
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read icon download response", e);

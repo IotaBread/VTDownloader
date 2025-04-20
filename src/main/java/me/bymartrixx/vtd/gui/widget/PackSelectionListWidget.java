@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.sound.SoundEvents;
@@ -495,12 +496,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             downloadIcon();
             if (!this.iconExists) return;
 
-            graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-            graphics.drawTexture(this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
+            graphics.method_25290(RenderLayer::getGuiTextured, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
-
 
         @Override
         public String toString() {
@@ -559,7 +557,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderBackground(GuiGraphics graphics, int x, int y, int width, int height) {
-            graphics.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             graphics.fill(x, y, x + width, y + height, this.color);
         }
 
@@ -632,7 +629,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.drawGuiTexture(TEXTURE,
+            graphics.method_52706(RenderLayer::getGuiTextured, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFF);
         }
@@ -660,7 +657,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         // region baseEntryRender
         protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
-                graphics.drawTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
+                // method_51434 -> drawTooltip
+                graphics.method_51434(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
                 return true;
             }
 

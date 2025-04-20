@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -255,16 +256,12 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         this.renderScrollbar(graphics);
     }
 
-    // @see EntryListWidget#method_57715 (renderListBackground)
+    // @see EntryListWidget#drawBackground
     private void renderListBackground(GuiGraphics graphics) {
-        RenderSystem.enableBlend();
-
         Identifier texture = MinecraftClient.getInstance().world == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
-        graphics.drawTexture(texture,
+        graphics.method_25290(RenderLayer::getGuiTextured, texture,
                 this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
                 this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
-
-        RenderSystem.disableBlend();
     }
 
     private void renderCategories(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
@@ -281,20 +278,16 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private void renderSeparators(GuiGraphics graphics) {
-        RenderSystem.enableBlend();
         MatrixStack matrices = graphics.getMatrices();
         matrices.push();
         matrices.rotate(Axis.Z_POSITIVE.rotationDegrees(90.0f));
 
         Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
         Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-        //noinspection SuspiciousNameCombination
-        graphics.drawTexture(leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
-        //noinspection SuspiciousNameCombination
-        graphics.drawTexture(rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.method_25290(RenderLayer::getGuiTextured, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.method_25290(RenderLayer::getGuiTextured, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
 
         matrices.pop();
-        RenderSystem.disableBlend();
     }
 
     private void renderScrollbar(GuiGraphics graphics) {
