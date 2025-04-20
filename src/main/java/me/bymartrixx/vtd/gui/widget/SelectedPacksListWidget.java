@@ -33,12 +33,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     public SelectedPacksListWidget(VTDownloadScreen screen, MinecraftClient client, int width, int height, int x, int y,
                                    PackSelectionHelper selectionHelper) {
-        super(client, width, height, y, ITEM_HEIGHT);
+        super(client, width, height, y, ITEM_HEIGHT, HEADER_HEIGHT);
         this.screen = screen;
         this.selectionHelper = selectionHelper;
 
         this.setX(x);
-        this.setRenderHeader(true, HEADER_HEIGHT);
 
         selectionHelper.addCallback(this::updateSelection);
         this.addPacks(selectionHelper.getSelectedPacks());
@@ -88,7 +87,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         // Update scrollbar
-        this.setScrollAmount(this.getScrollAmount());
+        this.method_65506();
     }
 
     private void addPacks(Map<Category, List<Pack>> packs) {
@@ -216,7 +215,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     @Override
     public int getRowWidth() {
-        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - SCROLLBAR_WIDTH - SCROLLBAR_LEFT_MARGIN;
+        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - field_55258 - SCROLLBAR_LEFT_MARGIN;
     }
 
     @Override
@@ -225,7 +224,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     }
 
     @Override
-    protected int getScrollbarPositionX() {
+    protected int method_65507() {
         return this.getRowRight() + SCROLLBAR_LEFT_MARGIN;
     }
 

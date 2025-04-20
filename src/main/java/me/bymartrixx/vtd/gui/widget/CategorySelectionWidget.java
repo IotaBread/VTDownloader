@@ -259,7 +259,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // @see EntryListWidget#drawBackground
     private void renderListBackground(GuiGraphics graphics) {
         Identifier texture = MinecraftClient.getInstance().world == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
-        graphics.method_25290(RenderLayer::getGuiTextured, texture,
+        graphics.drawTexture(RenderLayer::getGuiTextured, texture,
                 this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
                 this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
@@ -284,8 +284,8 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
         Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
         Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-        graphics.method_25290(RenderLayer::getGuiTextured, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
-        graphics.method_25290(RenderLayer::getGuiTextured, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.drawTexture(RenderLayer::getGuiTextured, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.drawTexture(RenderLayer::getGuiTextured, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
 
         matrices.pop();
     }

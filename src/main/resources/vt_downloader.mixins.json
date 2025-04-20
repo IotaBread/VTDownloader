@@ -8,7 +8,8 @@
     "PackEntryListWidgetMixin$PackEntryMixin",
     "PackScreenMixin",
     "ResourcePackOrganizerMixin",
-    "ResourcePackOrganizerMixin$AbstractPackMixin"
+    "ResourcePackOrganizerMixin$AbstractPackMixin",
+    "TextureManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

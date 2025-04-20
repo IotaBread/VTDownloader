@@ -42,9 +42,7 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX >= this.getLeft() && mouseX < this.getRight()
-                && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT
-                && button == GLFW.GLFW_MOUSE_BUTTON_1) {
+        if (this.isMouseOver(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_1) {
             this.extended = !this.extended;
             this.callback.accept(this.extended);
             return true;
@@ -64,12 +62,18 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
     }
 
     @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return mouseX >= this.getLeft() && mouseX < this.getRight()
+                && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         boolean hovered = mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
         float u = hovered ? TAB_WIDTH : 0.0F;
         float v = this.extended ? TAB_HEIGHT : 0.0F;
-        graphics.method_25290(RenderLayer::getGuiTextured, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        graphics.drawTexture(RenderLayer::getGuiTextured, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override

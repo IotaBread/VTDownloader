@@ -53,7 +53,7 @@ public class CategoryButtonWidget implements Element, Selectable {
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
 
-        graphics.method_52706(RenderLayer::getGuiTextured, TEXTURES.getTexture(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
+        graphics.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURES.getTexture(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
 
         int textColor = this.selected ? 0xA0A0A0 : 0xFFFFFF;
         graphics.drawCenteredShadowedText(textRenderer, this.text, x + this.width / 2, y + (this.height - 8) / 2, textColor);
@@ -91,6 +91,11 @@ public class CategoryButtonWidget implements Element, Selectable {
     @Override
     public boolean isFocused() {
         return false;
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.hovered;
     }
 
     private void playDownSound(SoundManager soundManager) {

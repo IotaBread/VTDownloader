@@ -1,6 +1,7 @@
 package me.bymartrixx.vtd.gui.widget;
 
 import me.bymartrixx.vtd.VTDMod;
+import me.bymartrixx.vtd.access.TextureManagerAccess;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.data.Pack;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
@@ -82,7 +83,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         this.setFocusedChild(null);
         this.replaceEntries(this.getPackEntries(category));
-        this.setScrollAmount(0.0);
+        this.method_44382(0.0);
     }
 
     public void updateCategories(List<Category> categories) {
@@ -199,7 +200,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     @Override
-    protected int getScrollbarPositionX() {
+    protected int method_65507() {
         return this.getX() + getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
     }
 
@@ -408,7 +409,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
             this.icon = VTDMod.getIconId(pack);
 
-            this.iconExists = this.client.getTextureManager().getOrDefault(this.icon, null) != null;
+            this.iconExists = ((TextureManagerAccess) this.client.getTextureManager()).vtdownloader$hasTexture(this.icon);
 
             this.selectionData = new PackSelectionData(this.pack, widget.category);
         }
@@ -454,7 +455,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 }
 
                 if (success) {
-                    this.iconExists = this.client.getTextureManager().getOrDefault(this.icon, null) != null;
+                    this.iconExists = ((TextureManagerAccess) this.client.getTextureManager()).vtdownloader$hasTexture(this.icon);
                 } else {
                     VTDMod.LOGGER.error("Failed to download icon for pack {}", this.pack.getName());
                 }
@@ -496,7 +497,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             downloadIcon();
             if (!this.iconExists) return;
 
-            graphics.method_25290(RenderLayer::getGuiTextured, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
+            graphics.drawTexture(RenderLayer::getGuiTextured, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
 
@@ -629,7 +630,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.method_52706(RenderLayer::getGuiTextured, TEXTURE,
+            graphics.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFF);
         }
@@ -657,8 +658,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         // region baseEntryRender
         protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
-                // method_51434 -> drawTooltip
-                graphics.method_51434(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
+                graphics.drawTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
                 return true;
             }
 

@@ -103,7 +103,7 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
                     u = PENCIL_SIZE;
                 }
 
-                graphics.method_25290(RenderLayer::getGuiTextured, Constants.PENCIL_TEXTURE, pencilX, pencilY,
+                graphics.drawTexture(RenderLayer::getGuiTextured, Constants.PENCIL_TEXTURE, pencilX, pencilY,
                         u, v, PENCIL_SIZE, PENCIL_SIZE, PENCIL_TEXTURE_SIZE, PENCIL_TEXTURE_SIZE);
             }
         }
