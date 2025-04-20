@@ -64,9 +64,9 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
         @Unique
         private static final int PENCIL_SIZE = 16;
         @Unique
-        private static final int PENCIL_RIGHT_MARGIN = 9;
+        private static final int PENCIL_RIGHT_MARGIN = 12;
         @Unique
-        private static final int PENCIL_BOTTOM_MARGIN = 1;
+        private static final int PENCIL_BOTTOM_MARGIN = 0;
 
         @Shadow @Final
         private PackEntryListWidget widget;
