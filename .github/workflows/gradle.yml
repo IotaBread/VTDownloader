@@ -16,7 +16,7 @@ jobs:
         java: [
             21  # Minimum supported by Minecraft
         ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
