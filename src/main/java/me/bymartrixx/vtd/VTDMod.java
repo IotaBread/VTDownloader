@@ -244,7 +244,7 @@ public class VTDMod implements ClientModInitializer {
         });
     }
 
-    public static CompletableFuture<Boolean> downloadIcon(Pack pack) {
+    public static CompletableFuture<NativeImage> downloadIcon(Pack pack) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return executeRequest(createHttpPost(
@@ -259,12 +259,7 @@ public class VTDMod implements ClientModInitializer {
             }
 
             try (InputStream stream = response.getEntity().getContent()) {
-                TextureManager textureManager = MinecraftClient.getInstance().getTextureManager();
-                Identifier id = getIconId(pack);
-                NativeImageBackedTexture icon = new NativeImageBackedTexture(NativeImage.read(stream));
-
-                textureManager.method_4616(id, icon);
-                return true;
+                return NativeImage.read(stream);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read icon download response", e);
             }

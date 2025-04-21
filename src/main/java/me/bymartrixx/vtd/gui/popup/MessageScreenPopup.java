@@ -85,7 +85,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
             }
 
             if (style != null && style.getClickEvent() != null
-                    && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                    && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
                 this.screen.handleTextClick(style);
                 return true;
             }

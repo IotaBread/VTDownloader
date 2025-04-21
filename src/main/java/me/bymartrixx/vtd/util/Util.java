@@ -5,6 +5,7 @@ import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextHandler;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Style;
@@ -14,6 +15,8 @@ import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,9 +58,15 @@ public class Util {
     }
 
     public static Text urlText(String url) {
-        return Text.literal(url)
-                .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE)
-                .styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+        MutableText t = Text.literal(url)
+                .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE);
+        try {
+            URI uri = net.minecraft.util.Util.method_60931(url);
+            t.styled(s -> s.withClickEvent(new ClickEvent.C_ltosntct(uri)));
+        } catch (URISyntaxException ignored) {
+        }
+
+        return t;
     }
 
     @Nullable

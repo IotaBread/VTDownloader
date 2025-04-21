@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
+import com.mojang.blaze3d.texture.NativeImage;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.access.TextureManagerAccess;
 import me.bymartrixx.vtd.data.Category;
@@ -18,6 +19,8 @@ import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.texture.TextureManager;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
@@ -271,7 +274,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 Style style = Util.getStyleAt(textRenderer, x, mouseX, line);
 
                 if (style != null && style.getClickEvent() != null
-                        && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                        && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
                     this.screen.handleTextClick(style);
                     return true;
                 }
@@ -395,6 +398,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private boolean downloadedIcon = false;
         private boolean iconExists;
 
+        private NativeImage downloadedIconImage;
+
         private List<Text> description;
         private MultilineText shortDescription;
         private int lastDescriptionWidth;
@@ -444,18 +449,26 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void downloadIcon() {
+            if (this.downloadedIconImage != null) {
+                TextureManager textureManager = this.client.getTextureManager();
+                NativeImageBackedTexture iconTexture = new NativeImageBackedTexture(this.pack::getId, this.downloadedIconImage);
+                textureManager.method_4616(this.icon, iconTexture);
+                this.iconExists = true;
+                this.downloadedIconImage = null;
+            }
+
             if (this.downloadedIcon || this.iconExists) return;
 
             this.downloadedIcon = true;
 
-            VTDMod.downloadIcon(this.pack).whenCompleteAsync((success, throwable) -> {
+            VTDMod.downloadIcon(this.pack).whenCompleteAsync((icon, throwable) -> {
                 if (throwable != null) {
                     VTDMod.LOGGER.error("Failed to download icon for pack {}", this.pack.getName(), throwable);
                     return;
                 }
 
-                if (success) {
-                    this.iconExists = ((TextureManagerAccess) this.client.getTextureManager()).vtdownloader$hasTexture(this.icon);
+                if (icon != null) {
+                    this.downloadedIconImage = icon;
                 } else {
                     VTDMod.LOGGER.error("Failed to download icon for pack {}", this.pack.getName());
                 }

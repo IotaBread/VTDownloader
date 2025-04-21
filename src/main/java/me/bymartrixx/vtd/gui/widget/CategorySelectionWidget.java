@@ -280,7 +280,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     private void renderSeparators(GuiGraphics graphics) {
         MatrixStack matrices = graphics.getMatrices();
         matrices.push();
-        matrices.rotate(Axis.Z_POSITIVE.rotationDegrees(90.0f));
+        matrices.method_22907(Axis.Z_POSITIVE.rotationDegrees(90.0f));
 
         Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
         Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
