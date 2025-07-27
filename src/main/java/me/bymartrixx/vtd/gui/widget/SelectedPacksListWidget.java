@@ -332,7 +332,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         protected int getColor() {
-            return 0xFFFFFF;
+            return 0xFFFFFFFF;
         }
 
         // @see ClickableWidget#drawScrollingText
@@ -359,9 +359,10 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int color = this.getColor();
-            int offsetX = graphics.drawShadowedText(this.client.textRenderer, this.textPrefix, x, y, color);
+            graphics.drawShadowedString(this.client.textRenderer, this.textPrefix, x, y, color);
+            int offsetX = this.client.textRenderer.getWidth(this.textPrefix);
             if (offsetX > 0) {
-                this.drawScrollingText(graphics, offsetX, y, entryWidth - (offsetX - x), entryHeight, color);
+                this.drawScrollingText(graphics, x + offsetX, y, entryWidth - (offsetX - x), entryHeight, color);
             } else {
                 this.drawScrollingText(graphics, x, y, entryWidth, entryHeight, color);
             }
@@ -442,7 +443,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         private final Category category;
         private final Pack pack;
 
-        private int color = -1;
+        private int color = 0;
         private int lastChildrenCount = -1;
         private long lastClickTime = -1;
 
@@ -462,7 +463,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         protected int getColor() {
-            if (this.color != -1 && this.widget.children().size() == this.lastChildrenCount) {
+            if (this.color != 0 && this.widget.children().size() == this.lastChildrenCount) {
                 return this.color;
             }
 

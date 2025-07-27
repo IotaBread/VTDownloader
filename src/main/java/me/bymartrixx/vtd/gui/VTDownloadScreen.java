@@ -414,10 +414,9 @@ public class VTDownloadScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.renderBackground(graphics, mouseX, mouseY, delta);
         super.render(graphics, mouseX, mouseY, delta);
-        graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFF);
-        graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFF);
+        graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
+        graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
 
         this.renderDebugInfo(graphics, mouseX, mouseY);
         this.packSelector.renderTooltips(graphics, mouseX, mouseY);
@@ -435,7 +434,7 @@ public class VTDownloadScreen extends Screen {
         if (this.packNameField.isMouseOver(mouseX, mouseY)) {
             Text text = this.packNameField.getTooltipText();
             if (text != null) {
-                graphics.drawTooltip(this.textRenderer, text, mouseX, mouseY);
+                graphics.deferDrawingTooltip(this.textRenderer, text, mouseX, mouseY);
             }
         }
     }

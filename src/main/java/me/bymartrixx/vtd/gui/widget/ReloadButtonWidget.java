@@ -25,9 +25,9 @@ public class ReloadButtonWidget extends ButtonWidget {
         int left = (this.getX() + xOffset) / scale;
         int right = (this.getX() + this.getWidth() - xOffset) / scale;
 
-        graphics.getMatrices().push();
-        graphics.getMatrices().scale(scale, scale, scale);
+        graphics.getMatrices().pushMatrix();
+        graphics.getMatrices().scale(scale, scale);
         drawScrollingText(graphics, textRenderer, this.getIconText(), left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
-        graphics.getMatrices().pop();
+        graphics.getMatrices().popMatrix();
     }
 }

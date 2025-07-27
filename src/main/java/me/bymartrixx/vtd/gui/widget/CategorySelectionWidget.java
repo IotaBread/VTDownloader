@@ -1,6 +1,5 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.RenderUtil;
@@ -13,12 +12,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Axis;
 import net.minecraft.util.math.MathHelper;
+import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -259,7 +257,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // @see EntryListWidget#drawBackground
     private void renderListBackground(GuiGraphics graphics) {
         Identifier texture = MinecraftClient.getInstance().world == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
-        graphics.drawTexture(RenderLayer::getGuiTextured, texture,
+        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, texture,
                 this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
                 this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
@@ -278,16 +276,16 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private void renderSeparators(GuiGraphics graphics) {
-        MatrixStack matrices = graphics.getMatrices();
-        matrices.push();
-        matrices.method_22907(Axis.Z_POSITIVE.rotationDegrees(90.0f));
+        Matrix3x2fStack matrices = graphics.getMatrices();
+        matrices.pushMatrix();
+        matrices.rotate((float) Math.PI / 2.0f); // 90 degrees
 
         Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
         Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-        graphics.drawTexture(RenderLayer::getGuiTextured, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
-        graphics.drawTexture(RenderLayer::getGuiTextured, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
 
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     private void renderScrollbar(GuiGraphics graphics) {

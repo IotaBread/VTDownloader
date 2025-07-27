@@ -10,7 +10,7 @@ import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.list.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.list.pack.PackEntryListWidget;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.text.Text;
 import net.minecraft.text.component.TranslatableComponent;
 import org.spongepowered.asm.mixin.Final;
@@ -103,7 +103,7 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
                     u = PENCIL_SIZE;
                 }
 
-                graphics.drawTexture(RenderLayer::getGuiTextured, Constants.PENCIL_TEXTURE, pencilX, pencilY,
+                graphics.drawTexture(RenderPipelines.GUI_TEXTURED, Constants.PENCIL_TEXTURE, pencilX, pencilY,
                         u, v, PENCIL_SIZE, PENCIL_SIZE, PENCIL_TEXTURE_SIZE, PENCIL_TEXTURE_SIZE);
             }
         }

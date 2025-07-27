@@ -4,13 +4,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.util.ArgbHelper;
 
 public abstract class AbstractScreenPopup implements Drawable {
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final float FADE_TIME = 20.0F;
-    protected static final int RENDER_Z = 1;
 
     protected final MinecraftClient client;
     protected final int centerX;
@@ -106,23 +105,17 @@ public abstract class AbstractScreenPopup implements Drawable {
     public final void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         if (this.show) {
             this.renderBackground(graphics);
-
-            // Render the content on top of everything else
-            graphics.getMatrices().push();
-            graphics.getMatrices().translate(0, 0, RENDER_Z);
             this.renderContent(graphics, mouseX, mouseY, delta);
-            graphics.getMatrices().pop();
-
             this.updateShownTime(delta);
         }
     }
 
     protected void renderBackground(GuiGraphics graphics) {
         int alpha = this.getFadeAlpha();
-        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, RENDER_Z, alpha << 24);
+        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24, alpha << 24);
 
         int color = ArgbHelper.color(alpha, 64, 64, 64);
-        graphics.drawTexture(RenderLayer::getGuiTextured, Screen.MENU_BACKGROUND,
+        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE, color);
     }
 

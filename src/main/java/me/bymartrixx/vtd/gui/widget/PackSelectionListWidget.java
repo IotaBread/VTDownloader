@@ -16,7 +16,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -347,7 +347,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
-        this.errorText.drawCenteredWithShadow(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFF);
+        this.errorText.drawCenteredWithShadow(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFFFF);
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -496,7 +496,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             TextRenderer textRenderer = this.client.textRenderer;
             int iconSize = entryHeight - ICON_MARGIN * 2;
             int centerX = x + (iconSize + entryWidth) / 2; // center over area left to the icon
-            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, y, 0xFFFFFF);
+            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, y, 0xFFFFFFFF);
 
             this.renderDescription(graphics, centerX, y + getLineHeight(textRenderer), entryWidth - iconSize);
             if (!DISABLE_ICONS) this.renderIcon(graphics, x + ICON_MARGIN, y + ICON_MARGIN, iconSize);
@@ -510,7 +510,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             downloadIcon();
             if (!this.iconExists) return;
 
-            graphics.drawTexture(RenderLayer::getGuiTextured, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
+            graphics.drawTexture(RenderPipelines.GUI_TEXTURED, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
 
@@ -643,9 +643,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         @Override
         public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE,
+            graphics.drawSprite(RenderPipelines.GUI_TEXTURED, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
-            graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFF);
+            graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFFFF);
         }
     }
 
@@ -671,7 +671,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         // region baseEntryRender
         protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
-                graphics.drawTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
+                graphics.deferDrawingTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
                 return true;
             }
 

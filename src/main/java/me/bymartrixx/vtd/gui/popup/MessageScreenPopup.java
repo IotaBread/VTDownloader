@@ -7,6 +7,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
@@ -16,6 +17,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
+import java.net.URI;
 import java.util.List;
 
 public class MessageScreenPopup extends AbstractScreenPopup implements Element, Selectable {
@@ -86,7 +88,19 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
 
             if (style != null && style.getClickEvent() != null
                     && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
-                this.screen.handleTextClick(style);
+                URI uri = ((ClickEvent.C_ltosntct) style.getClickEvent()).uri();
+                if (this.client.options.getChatLinksPrompt().get()) {
+                    this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
+                        if (confirmed) {
+                            net.minecraft.util.Util.getOperatingSystem().open(uri);
+                        }
+
+                        client.setScreen(this.screen);
+                    }, uri.toString(), false));
+                } else {
+                    net.minecraft.util.Util.getOperatingSystem().open(uri);
+                }
+
                 return true;
             }
         }
