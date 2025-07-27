@@ -13,6 +13,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
@@ -30,6 +31,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -275,7 +277,19 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
                 if (style != null && style.getClickEvent() != null
                         && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
-                    this.screen.handleTextClick(style);
+                    URI uri = ((ClickEvent.C_ltosntct) style.getClickEvent()).uri();
+                    if (this.client.options.getChatLinksPrompt().get()) {
+                        this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
+                            if (confirmed) {
+                                net.minecraft.util.Util.getOperatingSystem().open(uri);
+                            }
+
+                            client.setScreen(this.screen);
+                        }, uri.toString(), false));
+                    } else {
+                        net.minecraft.util.Util.getOperatingSystem().open(uri);
+                    }
+
                     return true;
                 }
             }
