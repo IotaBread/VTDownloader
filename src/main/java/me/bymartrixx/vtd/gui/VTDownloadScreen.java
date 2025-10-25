@@ -19,8 +19,12 @@ import me.bymartrixx.vtd.gui.widget.PackSelectionListWidget;
 import me.bymartrixx.vtd.gui.widget.ReloadButtonWidget;
 import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
+import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
@@ -30,14 +34,19 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
+    private static final boolean SHOW_DEBUG_INFO = true;
     private static final boolean DOWNLOAD_DISABLED = false;
     private static final boolean DEBUG_BUTTON = false;
+    private static final boolean DEBUG_SHARE = true;
+    private static final String DEBUG_SHARE_CODE = "abcdef";
 
     private static final Text TITLE = Text.literal("VTDownloader");
     private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
@@ -216,6 +225,11 @@ public class VTDownloadScreen extends Screen {
                 this.selectionHelper.getSelectedPacksPrimitive());
         if (data.equals(this.lastShareData)) {
             this.showSharePopup(this.lastShareCode);
+            return;
+        }
+
+        if (DEBUG_SHARE) {
+            this.showSharePopup(DEBUG_SHARE_CODE);
             return;
         }
 
@@ -428,6 +442,18 @@ public class VTDownloadScreen extends Screen {
     private void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
         this.packSelector.renderDebugInfo(graphics, mouseX, mouseY);
         this.categorySelector.renderDebugInfo(graphics);
+
+        if (!SHOW_DEBUG_INFO) return;
+        TextRenderer textRenderer = this.client.textRenderer;
+        List<String> debugInfo = List.of(
+                "Ch = " + this.children().stream().map(e -> e.getClass().getSimpleName())
+                        .collect(Collectors.joining(", ")),
+                "H = " + this.hoveredElement(mouseX, mouseY),
+                "Sm = " + this.sharePopup.isMouseOver(mouseX, mouseY),
+                "MX/MY = " + mouseX + "/" + mouseY
+        );
+
+        RenderUtil.renderDebugInfo(graphics, textRenderer, 0, this.height, debugInfo);
     }
 
     private void renderPackNameFieldTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -446,5 +472,19 @@ public class VTDownloadScreen extends Screen {
         } else {
             this.downloadMessageTime += delta;
         }
+    }
+
+    // for some reason the share popup is never reported as the hovered element
+    @Override
+    public Optional<Element> hoveredElement(double mouseX, double mouseY) {
+        if (this.sharePopup.isMouseOver(mouseX, mouseY)) {
+            return Optional.of(this.sharePopup);
+        } else if (this.errorPopup.isMouseOver(mouseX, mouseY)) {
+            return Optional.of(this.errorPopup);
+        } else if (this.debugPopup != null && this.debugPopup.isMouseOver(mouseX, mouseY)) {
+            return Optional.of(this.debugPopup);
+        }
+
+        return super.hoveredElement(mouseX, mouseY);
     }
 }
