@@ -42,6 +42,11 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/layout/LinearLayoutWidget;add(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;",
             ordinal = 3), locals = LocalCapture.CAPTURE_FAILHARD)
     private void addVTDButton(CallbackInfo ci, LinearLayoutWidget headerLayout, LinearLayoutWidget footerLayout) {
+        //noinspection ConstantValue
+        if (!this.vtdownloader$isResourcePackScreen() || (Class<?>) this.getClass() != PackScreen.class) {
+            return;
+        }
+
         footerLayout.add(ButtonWidget.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
             this.vtdownloader$applyChanges();
             // noinspection ConstantConditions
@@ -61,6 +66,11 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
     @Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/button/ButtonWidget$Builder;build()Lnet/minecraft/client/gui/widget/button/ButtonWidget;"),
             slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/layout/HeaderFooterLayoutWidget;addToFooter(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;")))
     private ButtonWidget shrinkVanillaButton(ButtonWidget.Builder builder) {
+        //noinspection ConstantValue
+        if (!this.vtdownloader$isResourcePackScreen() || (Class<?>) this.getClass() != PackScreen.class) {
+            return builder.build();
+        }
+
         return builder.width(ButtonWidget.SMALL_WIDTH).build();
     }
 
