@@ -42,7 +42,7 @@ public class Util {
                     int blue = Integer.parseInt(components.get(2));
                     float alpha = Float.parseFloat(components.get(3));
 
-                    return ArgbHelper.pack((int) (alpha * 255), red, green, blue);
+                    return ArgbHelper.color((int) (alpha * 255), red, green, blue);
                 }
             }
         }
@@ -61,8 +61,8 @@ public class Util {
         MutableText t = Text.literal(url)
                 .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE);
         try {
-            URI uri = net.minecraft.util.Util.createUri(url);
-            t.styled(s -> s.withClickEvent(new ClickEvent.OpenUrl(uri)));
+            URI uri = net.minecraft.util.Util.method_60931(url);
+            t.styled(s -> s.withClickEvent(new ClickEvent.C_ltosntct(uri)));
         } catch (URISyntaxException ignored) {
         }
 

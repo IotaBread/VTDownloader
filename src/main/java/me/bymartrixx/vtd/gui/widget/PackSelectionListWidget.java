@@ -46,7 +46,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
     private static final Text ERROR_HEADER = Text.translatable("vtd.packError.title")
-            .formatted(Formatting.BOLD, Formatting.ITALIC);
+            .formatted(Formatting.BOLD, Formatting.ITALIC);;
     private static final Text ERROR_BODY = Text.translatable("vtd.packError.body", ERROR_URL);
     private static final Text ERROR_TEXT = Text.empty().append(ERROR_HEADER).append("\n").append(ERROR_BODY);
 
@@ -276,8 +276,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 Style style = Util.getStyleAt(textRenderer, x, mouseX, line);
 
                 if (style != null && style.getClickEvent() != null
-                        && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
-                    URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
+                        && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
+                    URI uri = ((ClickEvent.C_ltosntct) style.getClickEvent()).uri();
                     if (this.client.options.getChatLinksPrompt().get()) {
                         this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
                             if (confirmed) {
