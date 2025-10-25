@@ -14,9 +14,6 @@ import me.bymartrixx.vtd.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.ResourceIoSupplier;
 import net.minecraft.resource.pack.PackProfile;
 import net.minecraft.resource.pack.ResourcePack;
@@ -147,7 +144,7 @@ public class VTDMod implements ClientModInitializer {
 
             rpCategories = categories;
             LOGGER.info("Loaded {} resource pack categories", rpCategories.getCategories().size());
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("Failed to load resource pack categories", e);
         }
     }
