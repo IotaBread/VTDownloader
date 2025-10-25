@@ -54,7 +54,10 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackScreen imple
             button.setX(this.width / 2 + LIST_X_OFFSET + BUTTON_MARGIN);
             button.setWidth(LIST_WIDTH / 2 - BUTTON_MARGIN * 2);
         });
-        this.addDrawableSelectableElement(ButtonWidget.builder(VTD_TEXT, button -> this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE)))
+        this.addDrawableSelectableElement(ButtonWidget.builder(VTD_TEXT, button -> {
+            this.vtdownloader$applyChanges();
+            this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
+        })
                 .position((this.width + LIST_WIDTH) / 2 + LIST_X_OFFSET + BUTTON_MARGIN, this.height - BUTTON_Y_OFFSET)
                 .size(LIST_WIDTH / 2 - BUTTON_MARGIN * 2, Util.VTD_BUTTON_HEIGHT)
                 .build());
