@@ -42,10 +42,10 @@ import java.util.stream.Collectors;
 
 public class VTDownloadScreen extends Screen {
     // DEBUG
-    private static final boolean SHOW_DEBUG_INFO = true;
+    private static final boolean SHOW_DEBUG_INFO = false;
     private static final boolean DOWNLOAD_DISABLED = false;
     private static final boolean DEBUG_BUTTON = false;
-    private static final boolean DEBUG_SHARE = true;
+    private static final boolean DEBUG_SHARE = false;
     private static final String DEBUG_SHARE_CODE = "abcdef";
 
     private static final Text TITLE = Text.literal("VTDownloader");
