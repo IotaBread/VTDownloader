@@ -87,8 +87,8 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
             }
 
             if (style != null && style.getClickEvent() != null
-                    && style.getClickEvent().method_10845() == ClickEvent.Action.OPEN_URL) {
-                URI uri = ((ClickEvent.C_ltosntct) style.getClickEvent()).uri();
+                    && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
                 if (this.client.options.getChatLinksPrompt().get()) {
                     this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
                         if (confirmed) {
