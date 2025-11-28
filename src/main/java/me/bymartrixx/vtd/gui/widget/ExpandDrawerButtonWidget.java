@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -41,14 +42,17 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.isMouseOver(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_1) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
+        double mouseX = client.mouse.getX() * client.getWindow().getScaledWidth() / client.getWindow().getWidth();
+        double mouseY = client.mouse.getY() * client.getWindow().getScaledHeight() / client.getWindow().getHeight();
+        if (this.isMouseOver(mouseX, mouseY)) {
             this.extended = !this.extended;
             this.callback.accept(this.extended);
             return true;
         }
 
-        return Element.super.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
     // TODO

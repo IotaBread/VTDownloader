@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -54,7 +55,8 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         this.messageLines = Util.getMultilineTextLines(this.client.textRenderer, message, maxLines, this.maxWidth);
         this.message = Util.createMultilineText(this.client.textRenderer, message, maxLines, this.maxWidth);
 
-        this.updateSize(this.maxWidth, this.getHeight(this.message.count()));
+        int height = this.getHeight(this.message.count());
+        this.updateSize(this.maxWidth, height);
         this.show(time);
     }
 
@@ -64,13 +66,19 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         int color = 0xFFFFFF | this.getFadeAlpha() << 24;
         graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
-        this.message.drawCenteredWithShadow(graphics,
-                this.centerX, this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight, textRenderer.fontHeight, color);
+        int y = this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight;
+        for (OrderedText line : this.messageLines) {
+            int lineWidth = textRenderer.getWidth(line);
+            graphics.drawShadowedText(textRenderer, line, this.centerX - lineWidth / 2, y, color);
+            y += textRenderer.fontHeight;
+        }
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.shouldShow() && button == GLFW.GLFW_MOUSE_BUTTON_1
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
+        double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
+        if (this.shouldShow()
                 && mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.getTop() && mouseY < this.getBottom()) {
             double clickedY = mouseY - this.getTop();
@@ -105,7 +113,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
             }
         }
 
-        return Element.super.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
     // TODO

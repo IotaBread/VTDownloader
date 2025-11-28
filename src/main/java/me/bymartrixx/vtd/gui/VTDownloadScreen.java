@@ -221,9 +221,12 @@ public class VTDownloadScreen extends Screen {
     }
 
     private void share() {
+        if (!this.selectionHelper.hasSelection()) {
+            return;
+        }
         SharePackRequestData data = new SharePackRequestData("resourcepacks", VTDMod.VT_VERSION,
                 this.selectionHelper.getSelectedPacksPrimitive());
-        if (data.equals(this.lastShareData)) {
+        if (data.equals(this.lastShareData) && this.lastShareCode != null) {
             this.showSharePopup(this.lastShareCode);
             return;
         }
@@ -233,25 +236,29 @@ public class VTDownloadScreen extends Screen {
             return;
         }
 
-        VTDMod.executeShare(data).whenCompleteAsync((code, throwable) -> {
-            if (throwable != null) {
-                VTDMod.LOGGER.error("Failed to get resource pack share code", throwable);
-                this.errorPopup.show(ERROR_MESSAGE_TIME, SHARE_FAILED_TEXT.copy()
-                        .append("\n").append(throwable.getLocalizedMessage()));
-                return;
-            }
+        VTDMod.executeShare(data).whenComplete((code, throwable) -> {
+            // Execute on render thread since showSharePopup needs to access render system
+            this.client.execute(() -> {
+                if (throwable != null) {
+                    VTDMod.LOGGER.error("Failed to get resource pack share code", throwable);
+                    this.errorPopup.show(ERROR_MESSAGE_TIME, SHARE_FAILED_TEXT.copy()
+                            .append("\n").append(throwable.getLocalizedMessage()));
+                    return;
+                }
 
-            this.lastShareData = data;
-            this.lastShareCode = code;
+                this.lastShareData = data;
+                this.lastShareCode = code;
 
-            this.showSharePopup(code);
+                this.showSharePopup(code);
+            });
         });
     }
 
     private void showSharePopup(String code) {
         if (code != null && this.sharePopup != null) {
             String url = VTDMod.BASE_URL + "/share#" + code;
-            this.sharePopup.show(SHARE_MESSAGE_TIME, SHARE_CODE_TEXT.apply(Util.urlText(url)));
+            Text message = SHARE_CODE_TEXT.apply(Util.urlText(url));
+            this.sharePopup.show(SHARE_MESSAGE_TIME, message);
         }
     }
 
@@ -387,9 +394,10 @@ public class VTDownloadScreen extends Screen {
         // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
-        this.addDrawable(this.sharePopup);
-        this.addDrawable(this.errorPopup);
-        if (this.debugPopup != null) this.addDrawable(this.debugPopup);
+        // Don't add popups as drawables - we render them explicitly in render() method
+        // this.addDrawable(this.sharePopup);
+        // this.addDrawable(this.errorPopup);
+        // if (this.debugPopup != null) this.addDrawable(this.debugPopup);
 
         this.updateButtons();
         this.readResourcePack();
@@ -397,7 +405,8 @@ public class VTDownloadScreen extends Screen {
 
     private void updateButtons() {
         if (this.shareButton != null) {
-            this.shareButton.active = this.selectionHelper.hasSelection();
+            boolean hasSelection = this.selectionHelper.hasSelection();
+            this.shareButton.active = hasSelection;
         }
         if (this.downloadButton != null) {
             this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
@@ -411,8 +420,13 @@ public class VTDownloadScreen extends Screen {
         this.categorySelector.updateScreenWidth();
         this.packSelector.updateScreenWidth();
 
-        this.shareButton.visible = extended;
-        this.shareButton.setX(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X);
+        if (this.shareButton != null) {
+            this.shareButton.visible = extended;
+            this.shareButton.setX(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X);
+            if (extended) {
+                this.updateButtons();
+            }
+        }
     }
 
     public boolean isCoveredByPopup(int mouseX, int mouseY) {
@@ -431,6 +445,16 @@ public class VTDownloadScreen extends Screen {
         super.render(graphics, mouseX, mouseY, delta);
         graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
         graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
+        // Render popups explicitly after everything else to ensure they're on top
+        if (this.sharePopup != null && this.sharePopup.shouldShow()) {
+            this.sharePopup.render(graphics, mouseX, mouseY, delta);
+        }
+        if (this.errorPopup != null && this.errorPopup.shouldShow()) {
+            this.errorPopup.render(graphics, mouseX, mouseY, delta);
+        }
+        if (this.debugPopup != null && this.debugPopup.shouldShow()) {
+            this.debugPopup.render(graphics, mouseX, mouseY, delta);
+        }
 
         this.renderDebugInfo(graphics, mouseX, mouseY);
         this.packSelector.renderTooltips(graphics, mouseX, mouseY);

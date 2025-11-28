@@ -32,6 +32,7 @@ public abstract class AbstractScreenPopup implements Drawable {
     protected void show(float time) {
         this.show = true;
         this.shownTime = time;
+        this.fadeTime = 0.0F;
     }
 
     public boolean shouldShow() {

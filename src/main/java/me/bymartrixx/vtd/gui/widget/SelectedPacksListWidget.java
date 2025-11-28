@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -26,6 +27,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     private static final int HEADER_HEIGHT = 16;
     private static final int ROW_LEFT_RIGHT_MARGIN = 4;
     private static final int SCROLLBAR_LEFT_MARGIN = 4;
+    private static final long DOUBLE_CLICK_THRESHOLD = 250L;
 
     private final VTDownloadScreen screen;
     private final PackSelectionHelper selectionHelper;
@@ -33,7 +35,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
     public SelectedPacksListWidget(VTDownloadScreen screen, MinecraftClient client, int width, int height, int x, int y,
                                    PackSelectionHelper selectionHelper) {
-        super(client, width, height, y, ITEM_HEIGHT, HEADER_HEIGHT);
+        super(client, width, height, y, ITEM_HEIGHT);
         this.screen = screen;
         this.selectionHelper = selectionHelper;
 
@@ -67,7 +69,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 i = this.children().indexOf(categoryEntry);
             }
 
-            this.children().add(i + 1, entry);
+            // In 1.21.10+, children() returns unmodifiable list, use insertEntry helper
+            this.insertEntryAt(i + 1, entry);
             return;
         }
 
@@ -76,13 +79,14 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             return;
         }
 
-        this.children().remove(i);
+        // In 1.21.10+, use removeEntry instead of children().remove()
+        this.removeEntry(this.children().get(i));
 
         int categoryIndex = this.getCategoryEntryIndex(category);
         if (categoryIndex != -1) {
             int lastChildIndex = this.getLastChildIndex(category);
             if (lastChildIndex == -1) {
-                this.children().remove(categoryIndex);
+                this.removeEntry(this.children().get(categoryIndex));
             }
         }
 
@@ -116,18 +120,27 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                 CategoryEntry parentEntry = this.getOrCreateCategoryEntry(subCategory.getParent());
                 int index = this.getLastChildIndex(parentEntry.getCategory());
                 if (index != -1) {
-                    this.children().add(index + 1, entry);
+                    // In 1.21.10+, use insertEntryAt instead of children().add(index, entry)
+                    this.insertEntryAt(index + 1, entry);
                 } else {
-                    this.addEntry(entry);
+                    // Add to end
+                    this.insertEntryAt(this.children().size(), entry);
                 }
             } else {
                 entry = new CategoryEntry(this, category);
-                this.addEntry(entry);
+                // Add to end
+                this.insertEntryAt(this.children().size(), entry);
             }
             return entry;
         }
 
         return (CategoryEntry) this.children().get(i);
+    }
+    // Since children() is unmodifiable in 1.21.10+ the only solution is to rebuild the list
+    private void insertEntryAt(int index, AbstractEntry entry) {
+        java.util.List<AbstractEntry> entries = new java.util.ArrayList<>(this.children());
+        entries.add(index, entry);
+        this.replaceEntries(entries);
     }
 
     private int getPackEntryIndex(Pack pack) {
@@ -208,14 +221,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return index;
     }
 
-    @Override
     protected boolean isSelectedEntry(int index) {
-        return this.getFocused() == this.getEntry(index);
+        return this.getFocused() == this.children().get(index);
     }
 
     @Override
     public int getRowWidth() {
-        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - field_55258 - SCROLLBAR_LEFT_MARGIN;
+        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - 6 - SCROLLBAR_LEFT_MARGIN;
     }
 
     @Override
@@ -253,8 +265,35 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     public boolean isMouseOver(double mouseX, double mouseY) {
         return this.extended && super.isMouseOver(mouseX, mouseY);
     }
-
+    
     @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        if (!this.extended) {
+            return false;
+        }
+        double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
+        double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
+
+        if (!this.isMouseOver(mouseX, mouseY)) {
+            return false;
+        }
+        int rowLeft = this.getRowLeft();
+        int rowRight = this.getRowRight();
+        
+        if (mouseX >= rowLeft && mouseX < rowRight) {
+            for (int i = 0; i < this.children().size(); i++) {
+                int entryTop = this.getRowTop(i);
+                int entryBottom = entryTop + ITEM_HEIGHT;
+                
+                if (mouseY >= entryTop && mouseY < entryBottom) {
+                    AbstractEntry entry = this.children().get(i);
+                    return entry.mouseClicked(event, bl);
+                }
+            }
+        }
+        return super.mouseClicked(event, bl);
+    }
+
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.isFocused()) {
             // if (keyCode == GLFW.GLFW_KEY_DOWN) {
@@ -293,10 +332,16 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             return;
         }
 
+        int headerY = this.getY();
+        this.renderHeader(graphics, this.getRowLeft(), headerY);
         super.drawWidget(graphics, mouseX, mouseY, delta);
     }
-
+    
     @Override
+    public int getRowTop(int index) {
+        return super.getRowTop(index) + 20;
+    }
+
     protected void renderHeader(GuiGraphics graphics, int x, int y) {
         graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.getRowWidth() / 2, y, 0xFFFFFFFF);
     }
@@ -356,8 +401,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             }
         }
 
-        @Override
-        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int color = this.getColor();
             graphics.drawShadowedString(this.client.textRenderer, this.textPrefix, x, y, color);
             int offsetX = this.client.textRenderer.getWidth(this.textPrefix);
@@ -366,6 +410,22 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             } else {
                 this.drawScrollingText(graphics, x, y, entryWidth, entryHeight, color);
             }
+        }
+
+        // Required method for Minecraft 1.21.10+ API method_25343 receives mouse coordinates, not entry position
+        @Override
+        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            // Calculate entry position from widget
+            int entryIndex = this.widget.children().indexOf(this);
+            if (entryIndex < 0) return;
+            
+            int x = this.widget.getRowLeft();
+            int y = this.widget.getRowTop(entryIndex);
+            int entryWidth = this.widget.getRowWidth();
+            int entryHeight = ITEM_HEIGHT;
+            
+            // Call renderEntry with the calculated position
+            this.renderEntry(graphics, entryIndex, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
     }
 
@@ -379,17 +439,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-                long time = System.currentTimeMillis();
-                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                    this.selectEntry();
-                }
-
-                this.lastClickTime = time;
+        public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+            long time = System.currentTimeMillis();
+            if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                this.selectEntry();
             }
-
-            return super.mouseClicked(mouseX, mouseY, button);
+            this.lastClickTime = time;
+            return false;
         }
 
         @Override
@@ -483,17 +539,13 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-                long time = System.currentTimeMillis();
-                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                    this.selectEntry();
-                }
-
-                this.lastClickTime = time;
+        public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+            long time = System.currentTimeMillis();
+            if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                this.selectEntry();
             }
-
-            return super.mouseClicked(mouseX, mouseY, button);
+            this.lastClickTime = time;
+            return false;
         }
 
         @Override

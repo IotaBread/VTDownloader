@@ -16,6 +16,15 @@ public class RenderUtil {
         graphics.fill(x + width, y, x + width + size, y + height, color); // Right line
     }
 
+    public static void drawEntrySelectionHighlight(GuiGraphics graphics, int x, int y, int width, int height, int outlineColor, int fillColor) {
+        int outlineSize = 1;
+        graphics.fill(x, y, x + width, y + height, fillColor);
+        graphics.fill(x, y, x + width, y + outlineSize, outlineColor); // Top
+        graphics.fill(x, y + height - outlineSize, x + width, y + height, outlineColor); // Bottom
+        graphics.fill(x, y, x + outlineSize, y + height, outlineColor); // Left
+        graphics.fill(x + width - outlineSize, y, x + width, y + height, outlineColor); // Right
+    }
+
     public static void renderDebugInfo(GuiGraphics graphics, TextRenderer textRenderer, int x, int endY, List<String> info) {
         // Make text half its size
         graphics.getMatrices().pushMatrix();

@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.text.Text;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix3x2fStack;
@@ -187,22 +188,25 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     // region input callbacks
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.updateScrollingState(mouseX, mouseY, button);
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        double mouseX = client.mouse.getX() * client.getWindow().getScaledWidth() / client.getWindow().getWidth();
+        double mouseY = client.mouse.getY() * client.getWindow().getScaledHeight() / client.getWindow().getHeight();
+        // Assume left button for scrolling state
+        this.updateScrollingState(mouseX, mouseY, GLFW.GLFW_MOUSE_BUTTON_1);
 
         if (!this.isMouseOver(mouseX, mouseY)) {
             return false;
         } else {
-            return super.mouseClicked(mouseX, mouseY, button) || this.scrolling;
+            return super.mouseClicked(event, bl) || this.scrolling;
         }
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        return super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(MouseButtonEvent event) {
+        return super.mouseReleased(event);
     }
 
-    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
             // Dragging scrollbar

@@ -11,6 +11,8 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ClickableWidgetStateTextures;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
@@ -60,7 +62,7 @@ public class CategoryButtonWidget implements Element, Selectable {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
         if (this.hovered && !this.selected) {
             this.playDownSound(MinecraftClient.getInstance().getSoundManager());
             return this.screen.selectCategory(this.category);
@@ -70,7 +72,8 @@ public class CategoryButtonWidget implements Element, Selectable {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if (this.selected) {
             return false;
         }
@@ -80,7 +83,7 @@ public class CategoryButtonWidget implements Element, Selectable {
             return this.screen.selectCategory(this.category);
         }
 
-        return Element.super.keyPressed(keyCode, scanCode, modifiers);
+        return false;
     }
 
     // TODO
