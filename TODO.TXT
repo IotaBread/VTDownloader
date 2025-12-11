@@ -1,5 +1,1 @@
 Color should go back to transparent when unselected without needing to click elsewhere (check color updater)
-
-
-Recheck un coup comparé a 1.21.8
-Refactoriser le code pour que ce soit plus comme OLD

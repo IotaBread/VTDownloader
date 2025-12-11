@@ -30,7 +30,8 @@ public class PackSelectionHelper {
     private final Multimap<String, IncompatibilityGroup> incompatibilityGroups = LinkedHashMultimap.create();
     @VisibleForTesting
     protected final Map<IncompatibilityGroup, Integer> usedColors = new HashMap<>();
-    private SelectionChangeCallback selectionChangeCallback = (pack, category, selected) -> {};
+    private SelectionChangeCallback selectionChangeCallback = (pack, category, selected) -> {
+    };
 
     public void buildIncompatibilityGroups(List<Category> categories) {
         this.allIncompatibilityGroups.clear();
@@ -45,7 +46,8 @@ public class PackSelectionHelper {
 
         for (Pack pack : packs) {
             int i;
-            // noinspection SuspiciousMethodCalls DefaultIncompatibilityGroup#equals also works for packs
+            // noinspection SuspiciousMethodCalls DefaultIncompatibilityGroup#equals also
+            // works for packs
             if ((i = this.allIncompatibilityGroups.indexOf(pack)) == -1) {
                 this.allIncompatibilityGroups.add(new DefaultIncompatibilityGroup(pack));
             } else {
@@ -88,18 +90,18 @@ public class PackSelectionHelper {
             selected = true;
         }
 
-        this.selectionChangeCallback.onSelectionChanged(pack, data.getCategory(), selected);
-
-        if (selected != data.isSelected()) {
-            data.toggleSelection();
-        }
-
         // Remove color for empty incompatibility groups
         for (IncompatibilityGroup group : this.incompatibilityGroups.get(pack.getId())) {
             if (this.usedColors.containsKey(group) && !group.hasIncompatibility(this.selection)) {
                 this.usedColors.remove(group);
             }
         }
+
+        if (selected != data.isSelected()) {
+            data.toggleSelection();
+        }
+
+        this.selectionChangeCallback.onSelectionChanged(pack, data.getCategory(), selected);
     }
 
     public int getSelectionColor(Pack pack) {
