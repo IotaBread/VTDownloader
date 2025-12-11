@@ -801,7 +801,30 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             int entryHeight = ITEM_HEIGHT;
             
             // Draw background and outline for selected entries
-            if (this.parentWidget.isSelectedEntry(entryIndex)) {
+            // Draw background based on selection state for PackEntry
+            if (this instanceof PackEntry) {
+                int backgroundWidth = entryWidth;
+                int color;
+
+                if (this.parentWidget.isSelectedEntry(entryIndex)) {
+                    // Selected: Green background
+                    color = 0xFF006400; // Dark Green
+                } else {
+                    // Unselected: Dark Grey background
+                    color = 0xFF222222; // Dark Grey
+                }
+
+                // Draw the background
+                graphics.fill(x, y, x + backgroundWidth, y + entryHeight, color);
+
+                // Draw outline if selected or focused
+                if (this.parentWidget.isSelectedEntry(entryIndex)) {
+                    boolean isLastClicked = this.parentWidget.lastClickedEntry == this;
+                    int outlineColor = isLastClicked ? 0xFFFFFFFF : 0xFF808080;
+                    RenderUtil.drawEntrySelectionHighlight(graphics, x, y, backgroundWidth, entryHeight, outlineColor,
+                            color);
+                }
+            } else if (this.parentWidget.isSelectedEntry(entryIndex)) {
                 int backgroundWidth = entryWidth;
                 boolean isLastClicked = this instanceof PackEntry && this.parentWidget.lastClickedEntry == this;
                 
@@ -816,11 +839,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                     int color = 0xE0000000; // Black fill
                     RenderUtil.drawEntrySelectionHighlight(graphics, x, y, backgroundWidth, entryHeight, outlineColor, color);
                 }
-            } else if (this instanceof PackEntry && this.parentWidget.lastUnselectedEntry == this) {
-                // Red for now because if color alpha > 0,5 the it defaults to black which can be confusing with the selected pack 
-                int backgroundWidth = entryWidth;
-                int redBackground = 0x66FF0000; 
-                graphics.fill(x, y, x + backgroundWidth, y + entryHeight, redBackground);
             }
             this.renderEntry(graphics, entryIndex, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
