@@ -20,6 +20,7 @@ import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.sound.SoundEvents;
@@ -50,7 +51,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private static final Text ERROR_BODY = Text.translatable("vtd.packError.body", ERROR_URL);
     private static final Text ERROR_TEXT = Text.empty().append(ERROR_HEADER).append("\n").append(ERROR_BODY);
 
-    public static final int ITEM_HEIGHT = 32;
+    public static final int ITEM_HEIGHT = 48; // Made it Bigger
     private static final int WARNING_MARGIN = 6;
     private static final int WARNING_BG_MARGIN = 4;
     private static final int ROW_LEFT_RIGHT_MARGIN = 10;
@@ -69,6 +70,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private final MultilineText errorText;
 
     private final PackSelectionHelper selectionHelper;
+    private PackEntry lastClickedEntry = null;
+    private PackEntry lastUnselectedEntry = null;
 
     public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int y,
                                    Category category, PackSelectionHelper selectionHelper) {
@@ -80,7 +83,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.errorLines = Util.getMultilineTextLines(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
         this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
 
-        this.children().addAll(getPackEntries(category));
+        // In 1.21.10+, children() returns an unmodifiable collection
+        this.replaceEntries(getPackEntries(category));
     }
 
     public void setCategory(Category category) {
@@ -108,11 +112,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         if (category.hasWarning()) {
             //noinspection ConstantConditions
-            entries.add(new WarningEntry(this.client, this.screen, category.getWarning()));
+            entries.add(new WarningEntry(this, category.getWarning()));
         }
 
         if (category instanceof Category.SubCategory subCategory) {
-            entries.add(new ParentCategoryButtonEntry(this.client, this.screen, subCategory));
+            entries.add(new ParentCategoryButtonEntry(this, subCategory));
         }
 
         for (Pack pack : category.getPacks()) {
@@ -130,7 +134,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         if (category.getSubCategories() != null) {
             for (Category.SubCategory subCategory : category.getSubCategories()) {
-                entries.add(new SubCategoryButtonEntry(this.client, this.screen, subCategory));
+                entries.add(new SubCategoryButtonEntry(this, subCategory));
             }
         }
 
@@ -153,7 +157,19 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     private void toggleSelection(PackEntry entry) {
         if (this.editable) {
+            boolean wasSelected = entry.selectionData.isSelected();
             this.selectionHelper.toggleSelection(entry);
+            boolean isSelected = entry.selectionData.isSelected();
+            
+            if (wasSelected && !isSelected) {
+                this.lastUnselectedEntry = entry;
+                this.lastClickedEntry = null; 
+            } else if (!wasSelected && isSelected) {
+                this.lastClickedEntry = entry;
+                this.lastUnselectedEntry = null; 
+            } else {
+                this.lastClickedEntry = entry;
+            }
         }
     }
 
@@ -209,7 +225,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return this.getX() + getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
     }
 
-    @Override
     protected boolean isSelectedEntry(int index) {
         AbstractEntry entry = this.children().get(index);
         if (entry instanceof PackEntry packEntry) {
@@ -256,8 +271,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     // region input callbacks
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
+        double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
+        if (this.children().isEmpty()) {
             // Handle clicks when the error is shown
             int x = this.getCenterX();
             int textWidth = this.errorText.getMaxWidth();
@@ -295,10 +312,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, bl);
     }
 
-    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.isFocused()) {
             // if (keyCode == GLFW.GLFW_KEY_DOWN) {
@@ -337,20 +353,16 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
     }
 
-    @Override
     protected void renderEntry(GuiGraphics graphics, int mouseX, int mouseY, float delta, int index, int entryX, int entryY, int width, int height) {
-        AbstractEntry entry = this.getEntry(index);
+        AbstractEntry entry = this.children().get(index);
 
+        // Note: Selection highlighting is now handled in method_25343, so we don't draw it here to avoid conflicts with custom colors. Only draw focus outline for non-selected entries.
         boolean focused = this.isFocused() && this.getFocused() == entry;
-        if (this.isSelectedEntry(index)) {
-            int outlineColor = focused ? 0xFFFFFFFF : SELECTION_OUTLINE_COLOR;
-            int color = this.getEntrySelectionColor(entry);
-            this.drawEntrySelectionHighlight(graphics, entryY, width, height, outlineColor, color);
-        } else if (focused) {
-            RenderUtil.drawOutline(graphics, entryX - 1, entryY - 1, width - 2, height + 2, 1, 0xFFFFFFFF);
+        if (!this.isSelectedEntry(index) && focused) {
+            RenderUtil.drawOutline(graphics, entryX - 1, entryY - 1, width - 2, height - 2, 1, 0xFFFFFFFF);
         }
 
-        entry.render(graphics, index, entryY, entryX, width, height, mouseX, mouseY,
+        entry.renderEntry(graphics, index, entryY, entryX, width, height, mouseX, mouseY,
                 Objects.equals(this.getHoveredEntry(), entry), delta);
     }
 
@@ -361,7 +373,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
-        this.errorText.drawCenteredWithShadow(graphics, x, y - lineHeight * 2, lineHeight, 0xFFFFFFFF);
+        int textY = y - lineHeight * 2;
+        for (OrderedText line : this.errorLines) {
+            int lineWidth = this.client.textRenderer.getWidth(line);
+            graphics.drawShadowedText(this.client.textRenderer, line, x - lineWidth / 2, textY, 0xFFFFFFFF);
+            textY += lineHeight;
+        }
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -421,7 +438,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         protected PackSelectionData selectionData;
 
         public PackEntry(PackSelectionListWidget widget, Pack pack) {
-            super(widget.client, widget.screen);
+            super(widget);
             this.pack = pack;
             this.name = Text.of(pack.getName()).copy().formatted(Formatting.BOLD);
             this.widget = widget;
@@ -433,7 +450,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.selectionData = new PackSelectionData(this.pack, widget.category);
         }
 
-        private List<Text> getDescriptionLines(int maxWidth) {
+        protected List<Text> getDescriptionLines(int maxWidth) {
             return this.wrapEscapedText(this.pack.getDescription(), maxWidth);
         }
 
@@ -495,29 +512,112 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-                this.widget.toggleSelection(this);
-                return true;
-            }
-
-            return false;
+        public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+            this.widget.toggleSelection(this);
+            return true;
         }
 
         // region entryRender
         @Override
-        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             TextRenderer textRenderer = this.client.textRenderer;
-            int iconSize = entryHeight - ICON_MARGIN * 2;
-            int centerX = x + (iconSize + entryWidth) / 2; // center over area left to the icon
-            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, y, 0xFFFFFFFF);
+            // Keep icon size fixed based on ITEM_HEIGHT, not entryHeight (reduced to 75%)
+            int iconSize = (int) ((ITEM_HEIGHT - ICON_MARGIN * 2) * 0.75);
+            
+            // Calculate equal spacing: top, left, bottom between icon and border
+            // Border is at x, so we want equal spacing on all sides
+            int spacing = (entryHeight - iconSize) / 2; // Equal top and bottom spacing
+            int iconX = x + spacing; // Left spacing equals top/bottom spacing
+            int iconY = y + spacing; // Top spacing
+            
+            // Text area starts after icon with spacing
+            int textAreaX = iconX + iconSize + spacing;
+            int textAreaWidth = entryWidth - (textAreaX - x);
+            
+            // Calculate vertical centering (title + max 2 description lines)
+            int lineHeight = getLineHeight(textRenderer);
+            int totalTextHeight = lineHeight * 2; // title + description (max 2 lines)
+            int textStartY = y + (entryHeight - totalTextHeight) / 2;
+            int centerX = textAreaX + textAreaWidth / 2; // center in text area
+            
+            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, textStartY, 0xFFFFFFFF);
 
-            this.renderDescription(graphics, centerX, y + getLineHeight(textRenderer), entryWidth - iconSize);
-            if (!DISABLE_ICONS) this.renderIcon(graphics, x + ICON_MARGIN, y + ICON_MARGIN, iconSize);
+            // Use textAreaWidth for description to ensure proper wrapping when menu is open
+            this.renderDescription(graphics, centerX, textStartY + lineHeight, textAreaWidth);
+            
+            // Render icon with equal spacing
+            if (!DISABLE_ICONS) {
+                this.renderIcon(graphics, iconX, iconY, iconSize);
+            }
         }
 
         private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
-            getShortDescription(width - TEXT_MARGIN).drawCenteredWithShadow(graphics, x, y);
+            List<Text> descLines = this.getDescriptionLines(width - TEXT_MARGIN);
+            TextRenderer textRenderer = this.client.textRenderer;
+            int maxWidth = width - TEXT_MARGIN;
+            
+            // Limit to maximum 2 lines, truncating at last "." or "," if needed
+            int descY = y;
+            if (descLines.size() == 0) {
+                return;
+            }
+            
+            // first line
+            Text firstLine = descLines.get(0);
+            int firstLineWidth = textRenderer.getWidth(firstLine);
+            graphics.drawShadowedText(textRenderer, firstLine, x - firstLineWidth / 2, descY, 0xFFFFFFFF);
+            descY += textRenderer.fontHeight;
+            
+            // second line with truncation
+            if (descLines.size() >= 2) {
+                Text secondLine = descLines.get(1);
+                int secondLineWidth = textRenderer.getWidth(secondLine);
+                
+                // If there are more than 2 lines, or if the second line doesn't fit, truncate at last punctuation
+                if (descLines.size() > 2 || secondLineWidth > maxWidth) {
+                    Text truncatedLine = truncateAtLastPunctuation(secondLine, maxWidth, textRenderer);
+                    int truncatedWidth = textRenderer.getWidth(truncatedLine);
+                    graphics.drawShadowedText(textRenderer, truncatedLine, x - truncatedWidth / 2, descY, 0xFFFFFFFF);
+                } else {
+                    graphics.drawShadowedText(textRenderer, secondLine, x - secondLineWidth / 2, descY, 0xFFFFFFFF);
+                }
+            }
+        }
+        
+        private Text truncateAtLastPunctuation(Text originalText, int maxWidth, TextRenderer textRenderer) {
+            String text = originalText.getString();
+            int lastPunctIndex = -1;
+            
+            // Find the last "." or "," that fits within maxWidth
+            for (int i = text.length() - 1; i >= 0; i--) {
+                char c = text.charAt(i);
+                if (c == '.' || c == ',') {
+                    String candidate = text.substring(0, i + 1);
+                    Text candidateText = Text.of(candidate).copy().setStyle(originalText.getStyle());
+                    if (textRenderer.getWidth(candidateText) <= maxWidth) {
+                        lastPunctIndex = i + 1;
+                        break;
+                    }
+                }
+            }
+            
+            // If we found a punctuation mark, truncate there
+            if (lastPunctIndex > 0) {
+                String truncated = text.substring(0, lastPunctIndex);
+                return Text.of(truncated).copy().setStyle(originalText.getStyle());
+            }
+            
+            // If no punctuation found, truncate to fit maxWidth
+            for (int i = text.length(); i > 0; i--) {
+                String candidate = text.substring(0, i);
+                Text candidateText = Text.of(candidate).copy().setStyle(originalText.getStyle());
+                if (textRenderer.getWidth(candidateText) <= maxWidth) {
+                    return candidateText;
+                }
+            }
+            
+            // Fallback: return empty or first character
+            return Text.empty();
         }
 
         private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
@@ -541,8 +641,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private List<Text> textLines;
         private MultilineText text;
 
-        public WarningEntry(MinecraftClient client, VTDownloadScreen screen, Category.Warning warning) {
-            super(client, screen);
+        public WarningEntry(PackSelectionListWidget widget, Category.Warning warning) {
+            super(widget);
             this.warning = warning;
 
             this.color = Util.parseColor(warning.getColor());
@@ -577,7 +677,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         // region warningRender
         @Override
-        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             this.renderBackground(graphics, x + WARNING_BG_MARGIN, y + WARNING_BG_MARGIN, entryWidth - WARNING_BG_MARGIN * 2, entryHeight - WARNING_BG_MARGIN * 2);
 
             int width = entryWidth - WARNING_MARGIN * 2;
@@ -589,7 +689,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         private void renderText(GuiGraphics graphics, int x, int y, int width) {
-            this.getText(width).drawCenteredWithShadow(graphics, x, y);
+            List<Text> lines = this.getTextLines(width);
+            int textY = y;
+            for (Text line : lines) {
+                int lineWidth = this.client.textRenderer.getWidth(line);
+                graphics.drawShadowedText(this.client.textRenderer, line, x - lineWidth / 2, textY, 0xFFFFFFFF);
+                textY += this.client.textRenderer.fontHeight;
+            }
         }
         // endregion
 
@@ -600,8 +706,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public static class SubCategoryButtonEntry extends CategoryButtonEntry {
-        protected SubCategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category.SubCategory category) {
-            super(client, screen, category);
+        protected SubCategoryButtonEntry(PackSelectionListWidget widget, Category.SubCategory category) {
+            super(widget, category);
         }
 
         @Override
@@ -611,8 +717,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     public static class ParentCategoryButtonEntry extends CategoryButtonEntry {
-        protected ParentCategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category.SubCategory subCategory) {
-            super(client, screen, subCategory.getParent());
+        protected ParentCategoryButtonEntry(PackSelectionListWidget widget, Category.SubCategory subCategory) {
+            super(widget, subCategory.getParent());
         }
 
         @Override
@@ -629,8 +735,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         protected final Category category;
         protected final Text name;
 
-        protected CategoryButtonEntry(MinecraftClient client, VTDownloadScreen screen, Category category) {
-            super(client, screen);
+        protected CategoryButtonEntry(PackSelectionListWidget widget, Category category) {
+            super(widget);
             this.category = category;
             this.name = Text.literal(category.getName()).formatted(Formatting.BOLD);
         }
@@ -645,18 +751,14 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-                this.screen.selectCategory(this.category);
-                this.playDownSound(this.client.getSoundManager());
-                return true;
-            }
-
-            return false;
+        public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+            this.screen.selectCategory(this.category);
+            this.playDownSound(this.client.getSoundManager());
+            return true;
         }
 
         @Override
-        public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             graphics.drawSprite(RenderPipelines.GUI_TEXTURED, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (entryHeight - BUTTON_HEIGHT) / 2, entryWidth - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + entryWidth / 2, y + (entryHeight - this.client.textRenderer.fontHeight) / 2, 0xFFFFFFFF);
@@ -666,10 +768,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public static abstract class AbstractEntry extends EntryListWidget.Entry<AbstractEntry> {
         protected final MinecraftClient client;
         protected final VTDownloadScreen screen;
+        protected final PackSelectionListWidget parentWidget;
 
-        protected AbstractEntry(MinecraftClient client, VTDownloadScreen screen) {
-            this.client = client;
-            this.screen = screen;
+        protected AbstractEntry(PackSelectionListWidget widget) {
+            this.client = widget.client;
+            this.screen = widget.screen;
+            this.parentWidget = widget;
         }
 
         protected final List<Text> wrapEscapedText(String text, int maxWidth) {
@@ -681,6 +785,63 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         protected abstract List<Text> getTooltipText(int width);
+
+        public abstract void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta);
+
+        // Required method for Minecraft 1.21.10+ API method_25343 receives mouse coordinates, not entry position
+        @Override
+        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            // Calculate entry position from widget
+            int entryIndex = this.parentWidget.children().indexOf(this);
+            if (entryIndex < 0) return;
+            
+            int x = this.parentWidget.getRowLeft();
+            int y = this.parentWidget.getRowTop(entryIndex);
+            int entryWidth = this.parentWidget.getRowWidth();
+            int entryHeight = ITEM_HEIGHT;
+            
+            // Draw background and outline for selected entries
+            // Draw background based on selection state for PackEntry
+            if (this instanceof PackEntry) {
+                int backgroundWidth = entryWidth;
+                int color;
+
+                if (this.parentWidget.isSelectedEntry(entryIndex)) {
+                    // Selected: Green background
+                    color = 0xFF006400; // Dark Green
+                } else {
+                    // Unselected: Dark Grey background
+                    color = 0xFF222222; // Dark Grey
+                }
+
+                // Draw the background
+                graphics.fill(x, y, x + backgroundWidth, y + entryHeight, color);
+
+                // Draw outline if selected or focused
+                if (this.parentWidget.isSelectedEntry(entryIndex)) {
+                    boolean isLastClicked = this.parentWidget.lastClickedEntry == this;
+                    int outlineColor = isLastClicked ? 0xFFFFFFFF : 0xFF808080;
+                    RenderUtil.drawEntrySelectionHighlight(graphics, x, y, backgroundWidth, entryHeight, outlineColor,
+                            color);
+                }
+            } else if (this.parentWidget.isSelectedEntry(entryIndex)) {
+                int backgroundWidth = entryWidth;
+                boolean isLastClicked = this instanceof PackEntry && this.parentWidget.lastClickedEntry == this;
+                
+                if (isLastClicked) {
+                    // White outline for last clicked entry
+                    int outlineColor = 0xFFFFFFFF; // White outline
+                    int color = 0xE0000000; // Black fill
+                    RenderUtil.drawEntrySelectionHighlight(graphics, x, y, backgroundWidth, entryHeight, outlineColor, color);
+                } else {
+                    // Grey outline for selected entries (not last clicked)
+                    int outlineColor = 0xFF808080; // Grey outline
+                    int color = 0xE0000000; // Black fill
+                    RenderUtil.drawEntrySelectionHighlight(graphics, x, y, backgroundWidth, entryHeight, outlineColor, color);
+                }
+            }
+            this.renderEntry(graphics, entryIndex, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+        }
 
         // region baseEntryRender
         protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
