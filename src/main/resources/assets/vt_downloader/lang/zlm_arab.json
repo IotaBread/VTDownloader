@@ -1,0 +1,23 @@
+{
+    "vtd.error": "رالت!",
+    "vtd.download": "موات تورون",
+    "vtd.download.failed": "رالت يڠ تيدق دجڠک!",
+    "vtd.download.success": "ڤيک دموات تورون!",
+    "vtd.share": "کوڠسي",
+    "vtd.share.failed": "ݢاݢل منداڤتکن کود کوڠسي اونتوق ڤيک سومبر",
+    "vtd.share.code": "کود کوڠسي اندا اياله %s. مڠکليک ڤد ڤاٴوتن اکن ممبوکڽ اتاو مڽلينڽ کڤاڤن کرتن اندا",
+    "vtd.fileNameValidity.fileExists": "فاٴيل دڠن نام ايت سوده ڤون وجود",
+    "vtd.fileNameValidity.invalidWindows": "نام فاٴيل ايت اياله نام يڠ تيدق صح اونتوق Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "نام فاٴيل مستي سڤادن دڠن %s",
+    "vtd.fileNameValidity.reservedWindows": "نام فاٴيل ايت اياله نام يڠ دخاصکن ددالم Windows",
+    "vtd.packError.title": "ترداڤت رالت سماس چوبا منداڤتکن ڤيک ترسبوت.",
+    "vtd.packError.body": "سيلا ڤريقسا سامبوڠن اينترنيت اندا دان ڤستيکن لامن %s برفوڠسي دڠن بتول.",
+    "vtd.resourcePack.button": "موات تورون ڤيک سومبر VT",
+    "vtd.resourcePack.nameField": "نام ڤيک سومبر...",
+    "vtd.resourcePack.subtitle": "ڤيليه ڤيک سومبر",
+    "vtd.resourcePack.reload": "موات سمولا ڤيک سومبر",
+    "vtd.selectedPacks": "ڤيک يڠ دڤيليه",
+    "vtd.readPackDataFailed": "ݢاݢل ممباچ داتا ڤيک VanillaTweaks:",
+    "vtd.unsavedPackWarning.header": "امرن: ڤيک تيدق دسيمڤن",
+    "vtd.unsavedPackWarning.text": "سموا ڤروبهن يڠ دبوات ڤد ڤيک اين اکن هيلڠ!"
+}

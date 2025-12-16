@@ -1,0 +1,23 @@
+{
+    "vtd.error": "Ralat!",
+    "vtd.download": "Muat Turun",
+    "vtd.download.failed": "Ralat yang tidak dijangka!",
+    "vtd.download.success": "Pek dimuat turun!",
+    "vtd.share": "Kongsi",
+    "vtd.share.failed": "Gagal mendapatkan kod kongsi untuk pek sumber",
+    "vtd.share.code": "Kod kongsi anda ialah %s. Mengklik pada pautan akan membukanya atau menyalinnya ke papan keratan anda",
+    "vtd.fileNameValidity.fileExists": "Fail dengan nama itu sudah pun wujud",
+    "vtd.fileNameValidity.invalidWindows": "Nama fail itu ialah nama yang tidak sah untuk Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "Nama fail mesti sepadan dengan %s",
+    "vtd.fileNameValidity.reservedWindows": "Nama fail itu ialah nama yang dikhaskan di dalam Windows",
+    "vtd.packError.title": "Terdapat ralat semasa cuba mendapatkan pek tersebut.",
+    "vtd.packError.body": "Sila periksa sambungan internet anda dan pastikan laman %s berfungsi dengan betul.",
+    "vtd.resourcePack.button": "Muat Turun Pek Sumber VT",
+    "vtd.resourcePack.nameField": "Nama pek sumber...",
+    "vtd.resourcePack.subtitle": "Pilih Pek Sumber",
+    "vtd.resourcePack.reload": "Muat Semula Pek Sumber",
+    "vtd.selectedPacks": "Pek yang dipilih",
+    "vtd.readPackDataFailed": "Gagal membaca data pek VanillaTweaks:",
+    "vtd.unsavedPackWarning.header": "Amaran: Pek Tidak Disimpan",
+    "vtd.unsavedPackWarning.text": "Semua perubahan yang dibuat pada pek ini akan hilang!"
+}
