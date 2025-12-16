@@ -1,0 +1,23 @@
+{
+    "vtd.error": "Fel!",
+    "vtd.download": "Ladda ner",
+    "vtd.download.failed": "Oväntat fel!",
+    "vtd.download.success": "Packet nedladdat!",
+    "vtd.share": "Dela",
+    "vtd.share.failed": "Misslyckades att få resurspacket dela kod",
+    "vtd.share.code": "Din delningskod är %s. Klicka på länken för att öppna den eller kopiera den till ditt urklipp",
+    "vtd.fileNameValidity.fileExists": "En fil med det namnet finns redan",
+    "vtd.fileNameValidity.invalidWindows": "Filnamnet är ett ogiltigt Windows-namn",
+    "vtd.fileNameValidity.regexDoesntMatch": "Filnamnet måste matcha %s",
+    "vtd.fileNameValidity.reservedWindows": "Det filnamnet är ett reserverat Windows-namn",
+    "vtd.packError.title": "Det uppstod ett fel när paketen skulle hämtas.",
+    "vtd.packError.body": "Kontrollera din internetanslutning och att sidan %s fungerar korrekt.",
+    "vtd.resourcePack.button": "Ladda ner VT Resurspaket",
+    "vtd.resourcePack.nameField": "Resurspaketsnamn...",
+    "vtd.resourcePack.subtitle": "Välj Resurspaket",
+    "vtd.resourcePack.reload": "Ladda om Resurspaket",
+    "vtd.selectedPacks": "Valda paket",
+    "vtd.readPackDataFailed": "Misslyckades att läsa VanillaTweaks paketdata:",
+    "vtd.unsavedPackWarning.header": "Varning: Osparat paket",
+    "vtd.unsavedPackWarning.text": "Alla ändringar som gjorts i detta paket kommer att gå förlorade!"
+}
