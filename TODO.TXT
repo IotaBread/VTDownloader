@@ -1,1 +1,0 @@
-Color should go back to transparent when unselected without needing to click elsewhere (check color updater)

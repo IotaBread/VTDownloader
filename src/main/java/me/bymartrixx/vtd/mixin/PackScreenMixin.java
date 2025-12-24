@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
@@ -40,8 +41,8 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
      * Add the VT button between the "Open pack folder" and "Done" buttons
      */
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/layout/LinearLayoutWidget;add(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;",
-            ordinal = 3), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void addVTDButton(CallbackInfo ci, LinearLayoutWidget headerLayout, LinearLayoutWidget footerLayout) {
+            ordinal = 4)) // last invoke
+    private void addVTDButton(CallbackInfo ci, @Local(ordinal = 1) LinearLayoutWidget footerLayout) {
         //noinspection ConstantValue
         if (!this.vtdownloader$isResourcePackScreen() || (Class<?>) this.getClass() != PackScreen.class) {
             return;

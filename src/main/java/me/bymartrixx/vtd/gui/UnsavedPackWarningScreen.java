@@ -1,15 +1,13 @@
 package me.bymartrixx.vtd.gui;
 
+import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.text.CommonTexts;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import me.bymartrixx.vtd.util.Util;
-
-import java.util.List;
 
 public class UnsavedPackWarningScreen extends Screen {
     private static final Text HEADER = Text.translatable("vtd.unsavedPackWarning.header").formatted(Formatting.BOLD);
@@ -17,7 +15,7 @@ public class UnsavedPackWarningScreen extends Screen {
 
     private final VTDownloadScreen parent;
     private final Screen next;
-    private List<OrderedText> messageLines;
+    private MultilineText message;
 
     protected UnsavedPackWarningScreen(VTDownloadScreen parent, Screen next) {
         super(HEADER);
@@ -27,7 +25,7 @@ public class UnsavedPackWarningScreen extends Screen {
 
     @Override
     protected void init() {
-        this.messageLines = Util.getMultilineTextLines(this.textRenderer, MESSAGE, 10, 300);
+        this.message = Util.createMultilineText(this.textRenderer, MESSAGE, 10, 300);
 
         int buttonWidth = 150;
         int buttonHeight = 20;
@@ -59,12 +57,8 @@ public class UnsavedPackWarningScreen extends Screen {
 
         graphics.drawCenteredShadowedText(this.textRenderer, HEADER, this.width / 2, this.height / 2 - 50, 0xFFFFFFFF);
 
-        if (this.messageLines != null) {
-            int y = this.height / 2 - 20;
-            for (OrderedText line : this.messageLines) {
-                graphics.drawCenteredShadowedText(this.textRenderer, line, this.width / 2, y, 0xFFFFFFFF);
-                y += this.textRenderer.fontHeight + 2;
-            }
-        }
+        int y = this.height / 2 - 20;
+        MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
+        this.message.method_73212(graphics, alignment, this.width / 2, y, this.textRenderer.fontHeight, false, 0xFFFFFFFF);
     }
 }

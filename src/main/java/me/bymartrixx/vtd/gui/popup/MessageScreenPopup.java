@@ -67,18 +67,15 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
         int y = this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight;
-        for (OrderedText line : this.messageLines) {
-            int lineWidth = textRenderer.getWidth(line);
-            graphics.drawShadowedText(textRenderer, line, this.centerX - lineWidth / 2, y, color);
-            y += textRenderer.fontHeight;
-        }
+        MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
+        this.message.method_73212(graphics, alignment, this.centerX, y, textRenderer.fontHeight, false, color);
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
-        double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
-        if (this.shouldShow()
+        double mouseX = event.x();
+        double mouseY = event.y();
+        if (this.shouldShow() && event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1
                 && mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.getTop() && mouseY < this.getBottom()) {
             double clickedY = mouseY - this.getTop();
@@ -113,7 +110,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
             }
         }
 
-        return false;
+        return Element.super.mouseClicked(event, bl);
     }
 
     // TODO

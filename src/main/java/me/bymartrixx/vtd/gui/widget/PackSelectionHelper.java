@@ -46,8 +46,8 @@ public class PackSelectionHelper {
 
         for (Pack pack : packs) {
             int i;
-            // noinspection SuspiciousMethodCalls DefaultIncompatibilityGroup#equals also
-            // works for packs
+            // DefaultIncompatibilityGroup#equals also works for packs
+            // noinspection SuspiciousMethodCalls
             if ((i = this.allIncompatibilityGroups.indexOf(pack)) == -1) {
                 this.allIncompatibilityGroups.add(new DefaultIncompatibilityGroup(pack));
             } else {
@@ -90,18 +90,18 @@ public class PackSelectionHelper {
             selected = true;
         }
 
+        this.selectionChangeCallback.onSelectionChanged(pack, data.getCategory(), selected);
+
+        if (selected != data.isSelected()) {
+            data.toggleSelection();
+        }
+
         // Remove color for empty incompatibility groups
         for (IncompatibilityGroup group : this.incompatibilityGroups.get(pack.getId())) {
             if (this.usedColors.containsKey(group) && !group.hasIncompatibility(this.selection)) {
                 this.usedColors.remove(group);
             }
         }
-
-        if (selected != data.isSelected()) {
-            data.toggleSelection();
-        }
-
-        this.selectionChangeCallback.onSelectionChanged(pack, data.getCategory(), selected);
     }
 
     public int getSelectionColor(Pack pack) {

@@ -43,16 +43,13 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
-        double mouseX = client.mouse.getX() * client.getWindow().getScaledWidth() / client.getWindow().getWidth();
-        double mouseY = client.mouse.getY() * client.getWindow().getScaledHeight() / client.getWindow().getHeight();
-        if (this.isMouseOver(mouseX, mouseY)) {
+        if (this.isMouseOver(event.x(), event.y()) && event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
             this.extended = !this.extended;
             this.callback.accept(this.extended);
             return true;
         }
 
-        return false;
+        return Element.super.mouseClicked(event, bl);
     }
 
     // TODO

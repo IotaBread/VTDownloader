@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import me.bymartrixx.vtd.access.PackEntryListWidgetAccess;
 import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
 import net.minecraft.client.gui.widget.list.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.list.EntryListWidget;
 import net.minecraft.client.gui.widget.list.pack.PackEntryListWidget;
 import net.minecraft.client.render.RenderPipelines;
 import net.minecraft.text.Text;
@@ -22,15 +24,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.client.input.MouseButtonEvent;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PackEntryListWidget.class)
-public abstract class PackEntryListWidgetMixin
+public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWidget<PackEntryListWidget.C_rndhezet>
         implements PackEntryListWidgetAccess {
     @Shadow @Final
     private Text title;
 
     @Shadow @Final
     PackScreen screen;
+
+    public PackEntryListWidgetMixin(MinecraftClient client, int width, int height, int y, int itemHeight) {
+        super(client, width, height, y, itemHeight);
+    }
 
     @Override
     public boolean vtdownloader$isAvailablePackList() {
@@ -40,7 +47,7 @@ public abstract class PackEntryListWidgetMixin
 
     @Override
     public int vtdownloader$getItemHeight() {
-        return 36;
+        return this.field_62109;
     }
 
     @Override
@@ -54,13 +61,13 @@ public abstract class PackEntryListWidgetMixin
     }
 
     @Mixin(PackEntryListWidget.PackEntry.class)
-    public static abstract class PackEntryMixin {
+    public static abstract class PackEntryMixin extends EntryListWidget.Entry<PackEntryListWidget.C_rndhezet> {
         @Unique
         private static final int PENCIL_TEXTURE_SIZE = 32;
         @Unique
         private static final int PENCIL_SIZE = 16;
         @Unique
-        private static final int PENCIL_RIGHT_MARGIN = 12;
+        private static final int PENCIL_RIGHT_MARGIN = 4;
         @Unique
         private static final int PENCIL_BOTTOM_MARGIN = 0;
 
@@ -75,12 +82,17 @@ public abstract class PackEntryListWidgetMixin
         private boolean vtdownloader$vtPack;
         @Unique
         private boolean vtdownloader$editable;
-        @Unique
-        private int vtdownloader$lastRenderX;
-        @Unique
-        private int vtdownloader$lastRenderY;
 
-        // In 1.21.10+, inner class constructor injection needs the outer class as first parameter
+        @Unique
+        private int vtdownloader$getPencilXOffset() {
+            return this.getWidth() - PENCIL_SIZE - PENCIL_RIGHT_MARGIN;
+        }
+
+        @Unique
+        private int vtdownloader$getPencilYOffset() {
+            return this.getHeight() - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
+        }
+
         @Inject(at = @At("TAIL"), method = "<init>")
         private void vtdownloader$init(PackEntryListWidget outer, MinecraftClient client, PackEntryListWidget widget, ResourcePackOrganizer.Pack pack, CallbackInfo ci) {
             if (((PackEntryListWidgetAccess) widget).vtdownloader$isResourcePackList()) {
@@ -89,67 +101,50 @@ public abstract class PackEntryListWidgetMixin
             }
         }
 
-        // In Minecraft 1.21.10+, the render method is method_25343 with different signature
-        @Inject(at = @At("TAIL"), method = "method_25343", remap = false)
+        @Inject(at = @At("TAIL"), method = "method_25343")
         private void renderEditButton(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
             if (this.vtdownloader$vtPack) {
-                // Calculate entry position from widget
-                int entryIndex = this.widget.children().indexOf(this);
-                if (entryIndex < 0) return;
-                
-                int itemHeight = ((PackEntryListWidgetAccess) this.widget).vtdownloader$getItemHeight();
-                int entryWidth = this.widget.getRowWidth();
-                
-                // Get entry position from widget's row calculations
-                int x = this.widget.getRowLeft();
-                int y = this.widget.getRowTop(entryIndex);
-                
-                int pencilX = x + entryWidth - PENCIL_SIZE - PENCIL_RIGHT_MARGIN;
-                int pencilY = y + itemHeight - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
-                
+                int pencilX = this.getX() + this.vtdownloader$getPencilXOffset();
+                int pencilY = this.getY() + this.vtdownloader$getPencilYOffset();
+
                 // Check if mouse is directly over the pencil icon (not just the entry)
                 boolean mouseOverPencil = mouseX >= pencilX && mouseX < pencilX + PENCIL_SIZE
                         && mouseY >= pencilY && mouseY < pencilY + PENCIL_SIZE;
-                
-                float u = 0.0F;
+
+                // textures (two columns, two rows) are arranged, left to right, top to bottom, as:
+                // regular, grayed out, highlighted
+                float u = 0.0F; // regular pencil
                 float v = 0.0F;
                 if (!this.vtdownloader$editable) {
+                    // grayed out pencil
                     v = PENCIL_SIZE;
                 } else if (mouseOverPencil) {
-                    // Show white overlay only when cursor is directly over the pencil
+                    // highlighted pencil
                     u = PENCIL_SIZE;
                 }
 
-                // Store position for click detection
-                this.vtdownloader$lastRenderX = x;
-                this.vtdownloader$lastRenderY = y;
-                
                 graphics.drawTexture(RenderPipelines.GUI_TEXTURED, Constants.PENCIL_TEXTURE, pencilX, pencilY,
                         u, v, PENCIL_SIZE, PENCIL_SIZE, PENCIL_TEXTURE_SIZE, PENCIL_TEXTURE_SIZE);
             }
         }
 
-        // Handle click on pencil icon
-        @Inject(at = @At("HEAD"), method = "mouseClicked", cancellable = true)
-        private void onMouseClicked(MouseButtonEvent event, boolean hovered, CallbackInfoReturnable<Boolean> cir) {
-            if (this.vtdownloader$editable && this.vtdownloader$lastRenderX > 0) {
-                // Get mouse position from client
-                double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
-                double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
-                
-                int itemHeight = ((PackEntryListWidgetAccess) this.widget).vtdownloader$getItemHeight();
-                int entryWidth = this.widget.getRowWidth();
-                
-                int pencilX = this.vtdownloader$lastRenderX + entryWidth - PENCIL_SIZE - PENCIL_RIGHT_MARGIN;
-                int pencilY = this.vtdownloader$lastRenderY + itemHeight - PENCIL_SIZE - PENCIL_BOTTOM_MARGIN;
-                
-                if (mouseX >= pencilX && mouseX < pencilX + PENCIL_SIZE
-                        && mouseY >= pencilY && mouseY < pencilY + PENCIL_SIZE) {
+        // @version 1.21.10
+        @Inject(at = @At(
+                value = "INVOKE",
+                target = "Lnet/minecraft/client/gui/widget/list/pack/PackEntryListWidget$PackEntry;isSelectable()Z"
+        ), method = "mouseClicked")
+        private void onMouseClicked(MouseButtonEvent event, boolean bl, CallbackInfoReturnable<Boolean> cir,
+                                    @Local(ordinal = 0) double clickedX, @Local(ordinal = 1) double clickedY) {
+            if (this.vtdownloader$editable) {
+                int pencilX = this.vtdownloader$getPencilXOffset();
+                int pencilY = this.vtdownloader$getPencilYOffset();
+
+                if (clickedX >= pencilX && clickedX < pencilX + PENCIL_SIZE
+                        && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
                     PackScreen screen = ((PackEntryListWidgetAccess) this.widget).vtdownloader$getScreen();
                     ((PackScreenAccess) screen).vtdownloader$applyChanges();
                     this.client.setScreen(new VTDownloadScreen(screen,
                             Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
-                    cir.setReturnValue(true);
                 }
             }
         }

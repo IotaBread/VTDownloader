@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -16,6 +17,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +42,8 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         this.selectionHelper = selectionHelper;
 
         this.setX(x);
+        // add the header entry
+        this.method_73370(new HeaderEntry(this), HEADER_HEIGHT);
 
         selectionHelper.addCallback(this::updateSelection);
         this.addPacks(selectionHelper.getSelectedPacks());
@@ -124,21 +128,22 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
                     this.insertEntryAt(index + 1, entry);
                 } else {
                     // Add to end
-                    this.insertEntryAt(this.children().size(), entry);
+                    this.method_25321(entry);
                 }
             } else {
                 entry = new CategoryEntry(this, category);
                 // Add to end
-                this.insertEntryAt(this.children().size(), entry);
+                this.method_25321(entry);
             }
             return entry;
         }
 
         return (CategoryEntry) this.children().get(i);
     }
+
     // Since children() is unmodifiable in 1.21.10+ the only solution is to rebuild the list
     private void insertEntryAt(int index, AbstractEntry entry) {
-        java.util.List<AbstractEntry> entries = new java.util.ArrayList<>(this.children());
+        List<AbstractEntry> entries = new ArrayList<>(this.children());
         entries.add(index, entry);
         this.replaceEntries(entries);
     }
@@ -221,13 +226,9 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
         return index;
     }
 
-    protected boolean isSelectedEntry(int index) {
-        return this.getFocused() == this.children().get(index);
-    }
-
     @Override
     public int getRowWidth() {
-        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - 6 - SCROLLBAR_LEFT_MARGIN;
+        return this.width - ROW_LEFT_RIGHT_MARGIN * 2 - field_55258 - SCROLLBAR_LEFT_MARGIN;
     }
 
     @Override
@@ -265,37 +266,11 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
     public boolean isMouseOver(double mouseX, double mouseY) {
         return this.extended && super.isMouseOver(mouseX, mouseY);
     }
-    
+
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (!this.extended) {
-            return false;
-        }
-        double mouseX = this.client.mouse.getX() * this.client.getWindow().getScaledWidth() / this.client.getWindow().getWidth();
-        double mouseY = this.client.mouse.getY() * this.client.getWindow().getScaledHeight() / this.client.getWindow().getHeight();
-
-        if (!this.isMouseOver(mouseX, mouseY)) {
-            return false;
-        }
-        int rowLeft = this.getRowLeft();
-        int rowRight = this.getRowRight();
-        
-        if (mouseX >= rowLeft && mouseX < rowRight) {
-            for (int i = 0; i < this.children().size(); i++) {
-                int entryTop = this.getRowTop(i);
-                int entryBottom = entryTop + ITEM_HEIGHT;
-                
-                if (mouseY >= entryTop && mouseY < entryBottom) {
-                    AbstractEntry entry = this.children().get(i);
-                    return entry.mouseClicked(event, bl);
-                }
-            }
-        }
-        return super.mouseClicked(event, bl);
-    }
-
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
         if (this.isFocused()) {
+            int keyCode = event.key();
             // if (keyCode == GLFW.GLFW_KEY_DOWN) {
             //     this.moveFocus(MoveDirection.DOWN);
             //     return true;
@@ -332,18 +307,7 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             return;
         }
 
-        int headerY = this.getY();
-        this.renderHeader(graphics, this.getRowLeft(), headerY);
         super.drawWidget(graphics, mouseX, mouseY, delta);
-    }
-    
-    @Override
-    public int getRowTop(int index) {
-        return super.getRowTop(index) + 20;
-    }
-
-    protected void renderHeader(GuiGraphics graphics, int x, int y) {
-        graphics.drawCenteredShadowedText(this.client.textRenderer, HEADER, this.getRowLeft() + this.getRowWidth() / 2, y, 0xFFFFFFFF);
     }
     // endregion
 
@@ -401,31 +365,49 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
             }
         }
 
-        public void renderEntry(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            int color = this.getColor();
-            graphics.drawShadowedString(this.client.textRenderer, this.textPrefix, x, y, color);
-            int offsetX = this.client.textRenderer.getWidth(this.textPrefix);
-            if (offsetX > 0) {
-                this.drawScrollingText(graphics, x + offsetX, y, entryWidth - (offsetX - x), entryHeight, color);
-            } else {
-                this.drawScrollingText(graphics, x, y, entryWidth, entryHeight, color);
-            }
-        }
-
-        // Required method for Minecraft 1.21.10+ API method_25343 receives mouse coordinates, not entry position
         @Override
         public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            // Calculate entry position from widget
-            int entryIndex = this.widget.children().indexOf(this);
-            if (entryIndex < 0) return;
-            
-            int x = this.widget.getRowLeft();
-            int y = this.widget.getRowTop(entryIndex);
-            int entryWidth = this.widget.getRowWidth();
-            int entryHeight = ITEM_HEIGHT;
-            
-            // Call renderEntry with the calculated position
-            this.renderEntry(graphics, entryIndex, y, x, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+            TextRenderer textRenderer = this.client.textRenderer;
+            int x = this.getX();
+            int y = this.getY();
+            int width = this.getWidth();
+            int height = this.getHeight();
+            int color = this.getColor();
+            graphics.drawShadowedString(textRenderer, this.textPrefix, x, y, color);
+            int offsetX = textRenderer.getWidth(this.textPrefix);
+            if (offsetX > 0) {
+                this.drawScrollingText(graphics, x + offsetX, y, width - (offsetX - x), height, color);
+            } else {
+                this.drawScrollingText(graphics, x, y, width, height, color);
+            }
+        }
+    }
+
+    public static class HeaderEntry extends AbstractEntry {
+        protected HeaderEntry(SelectedPacksListWidget widget) {
+            super(widget);
+        }
+
+        @Override
+        protected String getTextString() {
+            return "";
+        }
+
+        @Override
+        protected Text getText() {
+            return HEADER;
+        }
+
+        @Override
+        protected void selectEntry() {
+        }
+
+        @Override
+        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            TextRenderer textRenderer = this.client.textRenderer;
+            int centerX = this.getX() + this.getWidth() / 2;
+            int centerY = this.getY() + this.getHeight() / 2 - textRenderer.fontHeight / 2;
+            graphics.drawCenteredShadowedText(textRenderer, HEADER, centerX, centerY, this.getColor());
         }
     }
 
@@ -440,12 +422,15 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            long time = System.currentTimeMillis();
-            if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                this.selectEntry();
+            if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
+                long time = System.currentTimeMillis();
+                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                    this.selectEntry();
+                }
+                this.lastClickTime = time;
             }
-            this.lastClickTime = time;
-            return false;
+
+            return super.mouseClicked(event, bl);
         }
 
         @Override
@@ -540,12 +525,15 @@ public class SelectedPacksListWidget extends EntryListWidget<SelectedPacksListWi
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            long time = System.currentTimeMillis();
-            if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
-                this.selectEntry();
+            if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
+                long time = System.currentTimeMillis();
+                if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
+                    this.selectEntry();
+                }
+                this.lastClickTime = time;
             }
-            this.lastClickTime = time;
-            return false;
+
+            return super.mouseClicked(event, bl);
         }
 
         @Override

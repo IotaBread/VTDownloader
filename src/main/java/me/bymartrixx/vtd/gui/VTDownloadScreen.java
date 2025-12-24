@@ -224,6 +224,7 @@ public class VTDownloadScreen extends Screen {
         if (!this.selectionHelper.hasSelection()) {
             return;
         }
+
         SharePackRequestData data = new SharePackRequestData("resourcepacks", VTDMod.VT_VERSION,
                 this.selectionHelper.getSelectedPacksPrimitive());
         if (data.equals(this.lastShareData) && this.lastShareCode != null) {
@@ -394,10 +395,9 @@ public class VTDownloadScreen extends Screen {
         // Render over everything else
         this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
-        // Don't add popups as drawables - we render them explicitly in render() method
-        // this.addDrawable(this.sharePopup);
-        // this.addDrawable(this.errorPopup);
-        // if (this.debugPopup != null) this.addDrawable(this.debugPopup);
+        this.addDrawable(this.sharePopup);
+        this.addDrawable(this.errorPopup);
+        if (this.debugPopup != null) this.addDrawable(this.debugPopup);
 
         this.updateButtons();
         this.readResourcePack();
@@ -405,8 +405,7 @@ public class VTDownloadScreen extends Screen {
 
     private void updateButtons() {
         if (this.shareButton != null) {
-            boolean hasSelection = this.selectionHelper.hasSelection();
-            this.shareButton.active = hasSelection;
+            this.shareButton.active = this.selectionHelper.hasSelection();
         }
         if (this.downloadButton != null) {
             this.downloadButton.active = this.selectionHelper.hasSelection() && this.packNameField.canUseName();
@@ -445,16 +444,6 @@ public class VTDownloadScreen extends Screen {
         super.render(graphics, mouseX, mouseY, delta);
         graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
         graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
-        // Render popups explicitly after everything else to ensure they're on top
-        if (this.sharePopup != null && this.sharePopup.shouldShow()) {
-            this.sharePopup.render(graphics, mouseX, mouseY, delta);
-        }
-        if (this.errorPopup != null && this.errorPopup.shouldShow()) {
-            this.errorPopup.render(graphics, mouseX, mouseY, delta);
-        }
-        if (this.debugPopup != null && this.debugPopup.shouldShow()) {
-            this.debugPopup.render(graphics, mouseX, mouseY, delta);
-        }
 
         this.renderDebugInfo(graphics, mouseX, mouseY);
         this.packSelector.renderTooltips(graphics, mouseX, mouseY);

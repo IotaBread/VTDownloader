@@ -86,7 +86,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     public void initCategoryButtons() {
         for (Category category : this.categories) {
-            CategoryButtonWidget button = getOrCreateCategoryButton(category);
+            CategoryButtonWidget button = this.getOrCreateCategoryButton(category);
             this.children.add(button);
         }
 
@@ -94,18 +94,22 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private CategoryButtonWidget getOrCreateCategoryButton(Category category) {
-        if (categoryButtons.containsKey(category)) {
-            return categoryButtons.get(category);
+        if (this.categoryButtons.containsKey(category)) {
+            return this.categoryButtons.get(category);
         }
 
         Text text = Text.literal(category.getName());
         CategoryButtonWidget button = new CategoryButtonWidget(this.screen, BUTTON_WIDTH, BUTTON_HEIGHT, text, category);
-        categoryButtons.put(category, button);
+        this.categoryButtons.put(category, button);
         return button;
     }
 
     public void setSelectedCategory(Category category) {
-        categoryButtons.forEach((c, button) -> button.setSelected(c == category));
+        this.categoryButtons.forEach((c, button) -> button.setSelected(c == category));
+        CategoryButtonWidget button = this.categoryButtons.get(category);
+        if (button != null) {
+            this.ensureVisible(button);
+        }
     }
 
     private int getButtonsWidth() {
@@ -122,7 +126,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private boolean shouldHaveScrollbar() {
-        return getButtonsWidth() > width;
+        return this.getButtonsWidth() > this.width;
     }
 
     public void updateScreenWidth() {
@@ -133,7 +137,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     private void calculateDimensions() {
         this.width = this.screen.getLeftWidth() - LEFT_RIGHT_MARGIN * 2;
-        boolean scrollbar = shouldHaveScrollbar();
+        boolean scrollbar = this.shouldHaveScrollbar();
         this.height = TOP_BOTTOM_PADDING * 2 + BUTTON_HEIGHT + (scrollbar ? SCROLLBAR_HEIGHT + SCROLLBAR_MARGIN : 0);
         this.left = LEFT_RIGHT_MARGIN;
         this.top = this.y;
@@ -146,7 +150,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private int getMaxScroll() {
-        return Math.max(0, getButtonsWidth() - this.width + LEFT_RIGHT_PADDING * 2);
+        return Math.max(0, this.getButtonsWidth() - this.width + LEFT_RIGHT_PADDING * 2);
     }
 
     private double getScrollAmount() {
@@ -154,7 +158,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private void setScrollAmount(double scrollAmount) {
-        this.scrollAmount = MathHelper.clamp(scrollAmount, 0.0, getMaxScroll());
+        this.scrollAmount = MathHelper.clamp(scrollAmount, 0.0, this.getMaxScroll());
     }
 
     private void updateScrollingState(double mouseX, double mouseY, int button) {
@@ -189,13 +193,9 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // region input callbacks
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        double mouseX = client.mouse.getX() * client.getWindow().getScaledWidth() / client.getWindow().getWidth();
-        double mouseY = client.mouse.getY() * client.getWindow().getScaledHeight() / client.getWindow().getHeight();
-        // Assume left button for scrolling state
-        this.updateScrollingState(mouseX, mouseY, GLFW.GLFW_MOUSE_BUTTON_1);
+        this.updateScrollingState(event.x(), event.y(), event.method_74245());
 
-        if (!this.isMouseOver(mouseX, mouseY)) {
+        if (!this.isMouseOver(event.x(), event.y())) {
             return false;
         } else {
             return super.mouseClicked(event, bl) || this.scrolling;
@@ -207,12 +207,13 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         return super.mouseReleased(event);
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+        if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
             // Dragging scrollbar
-            if (mouseX < this.left) {
+            if (event.x() < this.left) {
                 this.setScrollAmount(0);
-            } else if (mouseX > this.right) {
+            } else if (event.y() > this.right) {
                 this.setScrollAmount(this.getMaxScroll());
             } else {
                 double maxScroll = Math.max(1, this.getMaxScroll());

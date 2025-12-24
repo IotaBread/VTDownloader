@@ -63,7 +63,7 @@ public class CategoryButtonWidget implements Element, Selectable {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (this.hovered && !this.selected) {
+        if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1 && this.hovered && !this.selected) {
             this.playDownSound(MinecraftClient.getInstance().getSoundManager());
             return this.screen.selectCategory(this.category);
         }
@@ -83,7 +83,7 @@ public class CategoryButtonWidget implements Element, Selectable {
             return this.screen.selectCategory(this.category);
         }
 
-        return false;
+        return Element.super.keyPressed(event);
     }
 
     // TODO
