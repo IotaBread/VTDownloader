@@ -71,22 +71,12 @@ public class Util {
 
     @Nullable
     public static Style getStyleAt(TextRenderer textRenderer, int centerX, double mouseX, Text text) {
-        int width = textRenderer.getWidth(text);
-        int startX = centerX - width / 2;
-        int endX = startX + width;
-
-        return mouseX >= startX && mouseX < endX ?
-                textRenderer.getTextHandler().getStyleAt(text, (int) mouseX - startX) : null;
+        return null; // TODO
     }
 
     @Nullable
     public static Style getStyleAt(TextRenderer textRenderer, int centerX, double mouseX, OrderedText text) {
-        int width = textRenderer.getWidth(text);
-        int startX = centerX - width / 2;
-        int endX = startX + width;
-
-        return mouseX >= startX && mouseX < endX ?
-                textRenderer.getTextHandler().getStyleAt(text, (int) mouseX - startX) : null;
+        return null; // TODO
     }
 
     public static List<OrderedText> getMultilineTextLines(TextRenderer textRenderer, Text text, int maxLines, int width) {

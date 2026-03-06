@@ -19,16 +19,7 @@ import net.minecraft.resource.pack.PackProfile;
 import net.minecraft.resource.pack.ResourcePack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -39,9 +30,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +70,8 @@ public class VTDMod implements ClientModInitializer {
     public static final String VT_VERSION;
     public static final String VERSION;
 
+    public static final String USER_AGENT;
+
     private static HttpClient httpClient;
 
     public static RpCategories rpCategories;
@@ -87,34 +87,21 @@ public class VTDMod implements ClientModInitializer {
 
         VERSION = version;
         VT_VERSION = vtVersion;
+
+        USER_AGENT = "VTDownloader v" + VERSION;
     }
 
     private static HttpClient getClient() {
         if (httpClient == null) {
-            httpClient = HttpClients.createDefault();
+            httpClient = HttpClient.newBuilder().executor(DOWNLOAD_EXECUTOR).build();
         }
 
         return httpClient;
     }
 
-    private static String getResourceUri(String resource) {
+    private static URI getResourceUri(String resource) {
         resource = !resource.startsWith("/") ? "/" + resource : resource;
-        return BASE_URL + resource;
-    }
-
-    @Contract("_ -> new")
-    private static HttpGet createHttpGet(String resource) {
-        return new HttpGet(getResourceUri(resource));
-    }
-
-    @Contract("_ -> new")
-    private static HttpPost createHttpPost(String resource) {
-        return new HttpPost(getResourceUri(resource));
-    }
-
-    public static <R extends HttpRequestBase> HttpResponse executeRequest(R request) throws IOException {
-        request.addHeader("User-Agent", "VTDownloader v" + VERSION);
-        return getClient().execute(request);
+        return URI.create(BASE_URL + resource);
     }
 
     public static void loadRpCategories() {
@@ -131,8 +118,12 @@ public class VTDMod implements ClientModInitializer {
             }
 
             if (categories == null) {
-                HttpResponse response = executeRequest(createHttpGet("/assets/resources/json/" + VT_VERSION + "/rpcategories.json"));
-                try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(getResourceUri("/assets/resources/json/" + VT_VERSION + "/rpcategories.json"))
+                        .header("User-Agent", USER_AGENT)
+                        .build();
+                HttpResponse<InputStream> response = getClient().send(request, HttpResponse.BodyHandlers.ofInputStream());
+                try (InputStream stream = new BufferedInputStream(response.body())) {
                     categories = GSON.fromJson(new InputStreamReader(stream), RpCategories.class);
                 }
             }
@@ -154,113 +145,128 @@ public class VTDMod implements ClientModInitializer {
             Path downloadPath, @Nullable String userFileName) {
         LOGGER.debug("Downloading resource packs: {}", GSON.toJson(requestData));
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                HttpPost request = createHttpPost("/assets/server/zipresourcepacks.php");
+        String body = "version=" + URLEncoder.encode(VT_VERSION, StandardCharsets.UTF_8) +
+                "&packs=" + URLEncoder.encode(GSON.toJson(requestData), StandardCharsets.UTF_8);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(getResourceUri("/assets/server/zipresourcepacks.php"))
+                .header("User-Agent", USER_AGENT)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        return getClient().sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                .handleAsync((response, e) -> {
+                    if (e != null) {
+                        throw new RuntimeException("Failed to execute pack zipping request", e);
+                    }
 
-                List<NameValuePair> params = new ArrayList<>();
-                params.add(new BasicNameValuePair("version", VT_VERSION));
-                params.add(new BasicNameValuePair("packs", GSON.toJson(requestData)));
-                request.setEntity(new UrlEncodedFormEntity(params));
+                    return response;
+                }, DOWNLOAD_EXECUTOR)
+                .thenApplyAsync(response -> {
+                    progressCallback.accept(0.1F);
+                    int code = response.statusCode();
+                    if (code / 100 != 2) {
+                        throw new IllegalStateException("Pack zipping request returned status code " + code);
+                    }
 
-                return executeRequest(request);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to execute pack zipping request", e);
-            }
-        }, DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
-            progressCallback.accept(0.1F);
-            int code = response.getStatusLine().getStatusCode();
-            if (code / 100 != 2) {
-                throw new IllegalStateException("Pack zipping request returned status code " + code);
-            }
+                    try (InputStream stream = new BufferedInputStream(response.body())) {
+                        return GSON.fromJson(new InputStreamReader(stream), DownloadPackResponseData.class);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to read pack zipping response", e);
+                    }
+                }, DOWNLOAD_EXECUTOR)
+                .thenApplyAsync(data -> {
+                    progressCallback.accept(0.3F);
+                    String fileName = userFileName != null ? userFileName + ".zip" : data.getFileName();
 
-            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
-                return GSON.fromJson(new InputStreamReader(stream), DownloadPackResponseData.class);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to read pack zipping response", e);
-            }
-        }, DOWNLOAD_EXECUTOR).thenApplyAsync(data -> {
-            progressCallback.accept(0.3F);
-            String fileName = userFileName != null ? userFileName + ".zip" : data.getFileName();
+                    try {
+                        HttpRequest fileReq = HttpRequest.newBuilder()
+                                .uri(URI.create(data.getLink()))
+                                .header("User-Agent", USER_AGENT)
+                                .timeout(Duration.ofSeconds(4L))
+                                .build();
+                        return new Pair<>(fileName, getClient().send(fileReq, HttpResponse.BodyHandlers.ofInputStream()));
+                    } catch (IOException | InterruptedException e) {
+                        throw new RuntimeException("Failed to execute pack download request", e);
+                    }
+                }, DOWNLOAD_EXECUTOR)
+                .thenApplyAsync(data -> {
+                    progressCallback.accept(0.4F);
 
-            try {
-                HttpGet request = createHttpGet(data.getLink());
-                request.setConfig(RequestConfig.custom().setConnectTimeout(4000).build());
+                    HttpResponse<InputStream> response = data.getRight();
+                    int code = response.statusCode();
+                    if (code / 100 != 2) {
+                        throw new IllegalStateException("Pack download request returned status code " + code);
+                    }
 
-                return new Pair<>(fileName, executeRequest(request));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to execute pack download request", e);
-            }
-        }, DOWNLOAD_EXECUTOR).thenApplyAsync(data -> {
-            progressCallback.accept(0.4F);
-
-            HttpResponse response = data.getRight();
-            int code = response.getStatusLine().getStatusCode();
-            if (code / 100 != 2) {
-                throw new IllegalStateException("Pack download request returned status code " + code);
-            }
-
-            String fileName = data.getLeft().trim();
-            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
-                return Files.copy(stream, downloadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING) > 0;
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to read pack download response", e);
-            }
-        }, DOWNLOAD_EXECUTOR);
+                    String fileName = data.getLeft().trim();
+                    try (InputStream stream = new BufferedInputStream(response.body())) {
+                        return Files.copy(stream, downloadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING) > 0;
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to read pack download response", e);
+                    }
+                }, DOWNLOAD_EXECUTOR);
     }
 
     public static CompletableFuture<String> executeShare(SharePackRequestData requestData) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                HttpPost request = createHttpPost("/assets/server/sharecode.php");
+        String body = "data=" + URLEncoder.encode(GSON.toJson(requestData), StandardCharsets.UTF_8);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(getResourceUri("/assets/server/sharecode.php"))
+                .header("User-Agent", USER_AGENT)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        return getClient().sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                .handleAsync((response, e) -> {
+                    if (e != null) {
+                        throw new RuntimeException("Failed to execute pack share request", e);
+                    }
 
-                List<NameValuePair> params = Collections.singletonList(
-                        new BasicNameValuePair("data", GSON.toJson(requestData)));
-                request.setEntity(new UrlEncodedFormEntity(params));
+                    return response;
+                })
+                .thenApplyAsync(response -> {
+                    int code = response.statusCode();
+                    if (code / 100 != 2) {
+                        throw new IllegalStateException("Pack share request returned status code " + code);
+                    }
 
-                return executeRequest(request);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to execute pack share request", e);
-            }
-        }).thenApplyAsync(response -> {
-            int code = response.getStatusLine().getStatusCode();
-            if (code / 100 != 2) {
-                throw new IllegalStateException("Pack share request returned status code " + code);
-            }
-
-            try (InputStream stream = new BufferedInputStream(response.getEntity().getContent())) {
-                return GSON.fromJson(new InputStreamReader(stream), SharePackResponseData.class);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to read pack share response", e);
-            }
-        }).thenApplyAsync(data -> {
-            if (data.getResult().equals("error")) {
-                throw new IllegalStateException("There was an error sharing the pack");
-            }
-            return data.getCode();
-        });
+                    try (InputStream stream = new BufferedInputStream(response.body())) {
+                        return GSON.fromJson(new InputStreamReader(stream), SharePackResponseData.class);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to read pack share response", e);
+                    }
+                }).thenApplyAsync(data -> {
+                    if (data.getResult().equals("error")) {
+                        throw new IllegalStateException("There was an error sharing the pack");
+                    }
+                    return data.getCode();
+                });
     }
 
     public static CompletableFuture<NativeImage> downloadIcon(Pack pack) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return executeRequest(createHttpPost(
-                        String.format("/assets/resources/icons/resourcepacks/%s/%s.png", VT_VERSION, pack.getIcon())));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to execute icon download request", e);
-            }
-        }, DOWNLOAD_EXECUTOR).thenApplyAsync(response -> {
-            int code = response.getStatusLine().getStatusCode();
-            if (code / 100 != 2) {
-                throw new IllegalStateException("Icon download request returned status code " + code);
-            }
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(getResourceUri(String.format("/assets/resources/icons/resourcepacks/%s/%s.png", VT_VERSION, pack.getIcon())))
+                .header("User-Agent", USER_AGENT)
+                .build();
+        return getClient().sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                .handleAsync((response, e) -> {
+                    if (e != null) {
+                        throw new RuntimeException("Failed to execute icon download request", e);
+                    }
 
-            try (InputStream stream = response.getEntity().getContent()) {
-                return NativeImage.read(stream);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to read icon download response", e);
-            }
-        });
+                    return response;
+                })
+                .thenApplyAsync(response -> {
+                    int code = response.statusCode();
+                    if (code / 100 != 2) {
+                        throw new IllegalStateException("Icon download request returned status code " + code);
+                    }
+
+                    try (InputStream stream = response.body()) {
+                        return NativeImage.read(stream);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to read icon download response", e);
+                    }
+                });
     }
 
     @Contract("_ -> new")

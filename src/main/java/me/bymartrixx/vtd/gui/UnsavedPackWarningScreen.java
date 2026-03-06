@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.text.CommonTexts;
 import net.minecraft.text.Text;
+import net.minecraft.unmapped.C_emchntzr;
 import net.minecraft.util.Formatting;
 import me.bymartrixx.vtd.util.Util;
 
@@ -58,7 +59,7 @@ public class UnsavedPackWarningScreen extends Screen {
         graphics.drawCenteredShadowedText(this.textRenderer, HEADER, this.width / 2, this.height / 2 - 50, 0xFFFFFFFF);
 
         int y = this.height / 2 - 20;
-        MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
-        this.message.method_73212(graphics, alignment, this.width / 2, y, this.textRenderer.fontHeight, false, 0xFFFFFFFF);
+        C_emchntzr alignment = C_emchntzr.CENTER;
+        this.message.method_75816(alignment, this.width / 2, y, this.textRenderer.fontHeight, graphics.method_75788());
     }
 }

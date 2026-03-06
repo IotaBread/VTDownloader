@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
@@ -19,15 +20,15 @@ public class ReloadButtonWidget extends ButtonWidget {
     }
 
     @Override
-    protected void drawScrollingText(GuiGraphics graphics, TextRenderer textRenderer, int xOffset, int color) {
-        // ClickableWidget#drawScrollableText
+    protected void method_75752(GuiGraphics graphics, int mouseX, int mouseY, float f) {
+        this.method_75794(graphics);
         int scale = 2;
-        int left = (this.getX() + xOffset) / scale;
-        int right = (this.getX() + this.getWidth() - xOffset) / scale;
+        int centerX = this.width / 2 + this.getX();
 
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         graphics.getMatrices().pushMatrix();
         graphics.getMatrices().scale(scale, scale);
-        drawScrollingText(graphics, textRenderer, this.getIconText(), left, this.getY() / scale, right, (this.getY() + this.getHeight()) / scale, color);
+        graphics.drawCenteredShadowedText(textRenderer, this.getIconText(), centerX / scale, this.getY() / scale, 0xFFFFFFFF);
         graphics.getMatrices().popMatrix();
     }
 }

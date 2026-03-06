@@ -2,6 +2,8 @@ package me.bymartrixx.vtd.util;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
 
 import java.util.List;
 
@@ -29,5 +31,13 @@ public class RenderUtil {
         }
 
         graphics.getMatrices().popMatrix();
+    }
+
+    public static void drawCenteredTextLines(GuiGraphics graphics, TextRenderer textRenderer, List<OrderedText> lines, int x, int y, int color) {
+        drawCenteredTextLines(graphics, textRenderer, lines, x, y, textRenderer.fontHeight, color);
+    }
+
+    public static void drawCenteredTextLines(GuiGraphics graphics, TextRenderer textRenderer, List<OrderedText> lines, int x, int y, int lineHeight, int color) {
+        // TODO
     }
 }

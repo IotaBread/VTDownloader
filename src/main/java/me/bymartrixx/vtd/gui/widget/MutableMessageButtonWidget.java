@@ -3,7 +3,7 @@ package me.bymartrixx.vtd.gui.widget;
 import net.minecraft.client.gui.widget.button.ButtonWidget;
 import net.minecraft.text.Text;
 
-public class MutableMessageButtonWidget extends ButtonWidget {
+public class MutableMessageButtonWidget extends ButtonWidget.C_yzicpkhx {
     private final Text defaultMessage;
     private Text currentMessage;
 

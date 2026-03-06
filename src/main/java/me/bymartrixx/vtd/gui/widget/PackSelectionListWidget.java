@@ -29,6 +29,7 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.unmapped.C_emchntzr;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -368,8 +369,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         int lineHeight = getLineHeight(textRenderer);
 
         int textY = y - lineHeight * 2;
-        MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
-        this.errorText.method_73212(graphics, alignment, x, textY, lineHeight, false, 0xFFFFFFFF);
+        C_emchntzr alignment = C_emchntzr.CENTER;
+        this.errorText.method_75816(alignment, x, textY, lineHeight, graphics.method_75788());
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -568,8 +569,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
             TextRenderer textRenderer = this.client.textRenderer;
             MultilineText description = this.getShortDescription(width - TEXT_MARGIN, textRenderer);
-            MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
-            description.method_73212(graphics, alignment, x, y, textRenderer.fontHeight, false, 0xFFFFFFFF);
+            C_emchntzr alignment = C_emchntzr.CENTER;
+            description.method_75816(alignment, x, y, textRenderer.fontHeight, graphics.method_75788());
         }
 
         private static Text truncateAtLastPunctuation(Text originalText, int maxWidth, TextRenderer textRenderer) {
@@ -612,7 +613,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             downloadIcon();
             if (!this.iconExists) return;
 
-            graphics.drawTexture(RenderPipelines.GUI_TEXTURED, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
+            graphics.method_25290(RenderPipelines.GUI_TEXTURED, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
 
@@ -684,10 +685,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         private void renderText(GuiGraphics graphics, int x, int y, int width, int height) {
             MultilineText text = this.getText(width);
-            MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
+            C_emchntzr alignment = C_emchntzr.CENTER;
             int lineHeight = this.client.textRenderer.fontHeight;
             int textY = y + height / 2 - text.count() * lineHeight / 2;
-            text.method_73212(graphics, alignment, x, textY, lineHeight, false, 0xFFFFFFFF);
+            text.method_75816( alignment, x, textY, lineHeight, graphics.method_75788());
         }
         // endregion
 
@@ -760,7 +761,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             int width = this.getWidth();
             int height = this.getHeight();
 
-            graphics.drawSprite(RenderPipelines.GUI_TEXTURED, TEXTURE,
+            // drawSprite
+            graphics.method_52706(RenderPipelines.GUI_TEXTURED, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (height - BUTTON_HEIGHT) / 2, width - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
             graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + width / 2, y + (height - this.client.textRenderer.fontHeight) / 2, 0xFFFFFFFF);
         }

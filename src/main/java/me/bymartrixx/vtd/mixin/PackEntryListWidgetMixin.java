@@ -123,18 +123,19 @@ public abstract class PackEntryListWidgetMixin extends AlwaysSelectedEntryListWi
                     u = PENCIL_SIZE;
                 }
 
-                graphics.drawTexture(RenderPipelines.GUI_TEXTURED, Constants.PENCIL_TEXTURE, pencilX, pencilY,
+                // drawTexture
+                graphics.method_25290(RenderPipelines.GUI_TEXTURED, Constants.PENCIL_TEXTURE, pencilX, pencilY,
                         u, v, PENCIL_SIZE, PENCIL_SIZE, PENCIL_TEXTURE_SIZE, PENCIL_TEXTURE_SIZE);
             }
         }
 
-        // @version 1.21.10
+        // @version 1.21.11
         @Inject(at = @At(
                 value = "INVOKE",
-                target = "Lnet/minecraft/client/gui/widget/list/pack/PackEntryListWidget$PackEntry;isSelectable()Z"
+                target = "Lnet/minecraft/client/gui/screen/pack/ResourcePackOrganizer$Pack;canBeEnabled()Z"
         ), method = "mouseClicked")
         private void onMouseClicked(MouseButtonEvent event, boolean bl, CallbackInfoReturnable<Boolean> cir,
-                                    @Local(ordinal = 0) double clickedX, @Local(ordinal = 1) double clickedY) {
+                                    @Local(ordinal = 0) int clickedX, @Local(ordinal = 1) int clickedY) {
             if (this.vtdownloader$editable) {
                 int pencilX = this.vtdownloader$getPencilXOffset();
                 int pencilY = this.vtdownloader$getPencilYOffset();

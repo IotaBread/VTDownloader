@@ -74,7 +74,8 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
                 && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
         float u = hovered ? TAB_WIDTH : 0.0F;
         float v = this.extended ? TAB_HEIGHT : 0.0F;
-        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        // drawTexture
+        graphics.method_25290(RenderPipelines.GUI_TEXTURED, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override

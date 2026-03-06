@@ -116,7 +116,8 @@ public abstract class AbstractScreenPopup implements Drawable {
         graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24, alpha << 24);
 
         int color = ArgbHelper.pack(alpha, 64, 64, 64);
-        graphics.drawTexture(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
+        // drawTexture
+        graphics.method_25291(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE, color);
     }
 

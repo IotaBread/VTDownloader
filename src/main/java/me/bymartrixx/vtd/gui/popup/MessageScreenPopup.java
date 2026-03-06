@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -53,9 +54,8 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         int maxLines = this.getMaxLines();
 
         this.messageLines = Util.getMultilineTextLines(this.client.textRenderer, message, maxLines, this.maxWidth);
-        this.message = Util.createMultilineText(this.client.textRenderer, message, maxLines, this.maxWidth);
 
-        int height = this.getHeight(this.message.count());
+        int height = this.getHeight(this.messageLines.size());
         this.updateSize(this.maxWidth, height);
         this.show(time);
     }
@@ -67,8 +67,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
 
         int y = this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight;
-        MultilineText.C_wvhjqegh alignment = MultilineText.C_wvhjqegh.CENTER;
-        this.message.method_73212(graphics, alignment, this.centerX, y, textRenderer.fontHeight, false, color);
+        RenderUtil.drawCenteredTextLines(graphics, textRenderer, this.messageLines, this.centerX, y, color);
     }
 
     @Override
