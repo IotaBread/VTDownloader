@@ -13,7 +13,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.list.EntryListWidget;
@@ -26,10 +25,10 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.unmapped.C_emchntzr;
+import net.minecraft.unmapped.C_gitqeeaa;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -45,6 +44,7 @@ import java.util.Objects;
 public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
     // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
+    private static final boolean DEBUG_ERROR_TEXT = false;
     private static final boolean DISABLE_ICONS = false;
 
     private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
@@ -68,7 +68,6 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private Category category;
     private boolean editable = true;
 
-    private final List<OrderedText> errorLines;
     private final MultilineText errorText;
 
     private final PackSelectionHelper selectionHelper;
@@ -80,8 +79,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         this.category = category;
         this.selectionHelper = selectionHelper;
 
-        this.errorLines = Util.getMultilineTextLines(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
-        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (y / 1.5));
+        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
 
         // In 1.21.10+, children() returns an unmodifiable collection
         this.replaceEntries(this.getPackEntries(category));
@@ -100,7 +98,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private List<AbstractEntry> getPackEntries(Category category) {
-        if (category == null) {
+        if (category == null || DEBUG_ERROR_TEXT) {
             return Collections.emptyList();
         }
 
@@ -178,7 +176,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private int getCenterY() {
-        return this.height / 2;
+        return this.getY() + this.height / 2;
     }
 
     private static int getLineHeight(TextRenderer textRenderer) {
@@ -248,43 +246,42 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     //     }
     // }
 
+    void visitLines(C_gitqeeaa textCollector) {
+        if (!this.children().isEmpty()) {
+            return;
+        }
+
+        // visit error lines
+        TextRenderer textRenderer = this.client.textRenderer;
+
+        int x = this.getCenterX();
+        int y = this.getCenterY();
+        int lineHeight = getLineHeight(textRenderer);
+
+        int textY = y - lineHeight * 2;
+        C_emchntzr alignment = C_emchntzr.CENTER;
+        this.errorText.method_75816(alignment, x, textY, lineHeight, textCollector);
+    }
+
     // region input callbacks
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
         if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
             // Handle clicks when the error is shown
-            int x = this.getCenterX();
-            int textWidth = this.errorText.getMaxWidth();
-            int startX = x - textWidth / 2;
-            int endX = x + textWidth / 2;
-
-            int y = this.getCenterY();
-            TextRenderer textRenderer = this.client.textRenderer;
-            int lineHeight = getLineHeight(textRenderer);
-            int startY = y - lineHeight * 2;
-            int endY = y + lineHeight * 3;
-
             double mouseX = event.x();
             double mouseY = event.y();
-            if (mouseX >= startX && mouseX < endX && mouseY >= startY && mouseY < endY) {
-                int l = (int) ((mouseY - startY) / lineHeight);
-                OrderedText line = this.errorLines.get(l);
-                Style style = Util.getStyleAt(textRenderer, x, mouseX, line);
+            if (mouseX >= this.getX() && mouseX < this.getXEnd()
+                    && mouseY >= this.getY() && mouseY < this.getYEnd()) {
+                TextRenderer textRenderer = this.client.textRenderer;
+
+                C_gitqeeaa.C_abiemazc styleFinder = new C_gitqeeaa.C_abiemazc(textRenderer, (int) mouseX, (int) mouseY);
+                this.visitLines(styleFinder);
+                Style style = styleFinder.method_75777();
 
                 if (style != null && style.getClickEvent() != null
                         && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
                     URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
-                    if (this.client.options.getChatLinksPrompt().get()) {
-                        this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
-                            if (confirmed) {
-                                net.minecraft.util.Util.getOperatingSystem().open(uri);
-                            }
-
-                            client.setScreen(this.screen);
-                        }, uri.toString(), false));
-                    } else {
-                        net.minecraft.util.Util.getOperatingSystem().open(uri);
-                    }
+                    Util.openUri(this.client, this.screen, uri);
 
                     return true;
                 }
@@ -362,15 +359,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     private void renderError(GuiGraphics graphics) {
-        TextRenderer textRenderer = this.client.textRenderer;
-
-        int x = this.getCenterX();
-        int y = this.getCenterY();
-        int lineHeight = getLineHeight(textRenderer);
-
-        int textY = y - lineHeight * 2;
-        C_emchntzr alignment = C_emchntzr.CENTER;
-        this.errorText.method_75816(alignment, x, textY, lineHeight, graphics.method_75788());
+        this.visitLines(graphics.method_75788());
     }
 
     public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -688,7 +677,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             C_emchntzr alignment = C_emchntzr.CENTER;
             int lineHeight = this.client.textRenderer.fontHeight;
             int textY = y + height / 2 - text.count() * lineHeight / 2;
-            text.method_75816( alignment, x, textY, lineHeight, graphics.method_75788());
+            text.method_75816(alignment, x, textY, lineHeight, graphics.method_75788());
         }
         // endregion
 

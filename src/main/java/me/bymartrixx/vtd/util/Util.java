@@ -1,9 +1,12 @@
 package me.bymartrixx.vtd.util;
 
 import me.bymartrixx.vtd.VTDMod;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.font.TextHandler;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.ConfirmLinkScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.OrderedText;
@@ -69,14 +72,18 @@ public class Util {
         return t;
     }
 
-    @Nullable
-    public static Style getStyleAt(TextRenderer textRenderer, int centerX, double mouseX, Text text) {
-        return null; // TODO
-    }
+    public static void openUri(MinecraftClient client, @Nullable Screen screen, URI uri) {
+        if (client.options.getChatLinksPrompt().get()) {
+            client.setScreen(new ConfirmLinkScreen(open -> {
+                if (open) {
+                    net.minecraft.util.Util.getOperatingSystem().open(uri);
+                }
 
-    @Nullable
-    public static Style getStyleAt(TextRenderer textRenderer, int centerX, double mouseX, OrderedText text) {
-        return null; // TODO
+                client.setScreen(screen);
+            }, uri.toString(), false));
+        } else {
+            net.minecraft.util.Util.getOperatingSystem().open(uri);
+        }
     }
 
     public static List<OrderedText> getMultilineTextLines(TextRenderer textRenderer, Text text, int maxLines, int width) {

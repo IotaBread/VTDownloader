@@ -1,6 +1,5 @@
 package me.bymartrixx.vtd.gui.popup;
 
-import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -8,19 +7,18 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.unmapped.C_emchntzr;
+import net.minecraft.unmapped.C_gitqeeaa;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
-import java.util.List;
 
 public class MessageScreenPopup extends AbstractScreenPopup implements Element, Selectable {
     private static final int TITLE_MARGIN = 4;
@@ -30,7 +28,6 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     private final Text title;
     private final int maxWidth;
     private final int maxHeight;
-    private List<OrderedText> messageLines;
     private MultilineText message;
 
     public MessageScreenPopup(MinecraftClient client, Screen screen, int centerX, int centerY, int maxWidth, int maxHeight, Text title) {
@@ -53,21 +50,27 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     public void show(float time, Text message) {
         int maxLines = this.getMaxLines();
 
-        this.messageLines = Util.getMultilineTextLines(this.client.textRenderer, message, maxLines, this.maxWidth);
+        this.message = Util.createMultilineText(this.client.textRenderer, message, maxLines, this.maxWidth);
 
-        int height = this.getHeight(this.messageLines.size());
+        int height = this.getHeight(this.message.count());
         this.updateSize(this.maxWidth, height);
         this.show(time);
     }
 
+    public void visitLines(C_gitqeeaa textCollector) {
+        C_gitqeeaa.C_cnryfyay parameters = textCollector.method_75760();
+        textCollector.method_75764(parameters.method_75782(this.getFadeOpacity()));
+        textCollector.method_75768(C_emchntzr.CENTER, this.centerX, this.getTop() + TITLE_MARGIN, this.title);
+
+        TextRenderer textRenderer = this.client.textRenderer;
+        int lineHeight = textRenderer.fontHeight;
+        int y = this.getTop() + TITLE_MARGIN * 2 + lineHeight;
+        this.message.method_75816(C_emchntzr.CENTER, this.centerX, y, lineHeight, textCollector);
+    }
+
     @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        TextRenderer textRenderer = this.client.textRenderer;
-        int color = 0xFFFFFF | this.getFadeAlpha() << 24;
-        graphics.drawCenteredShadowedText(textRenderer, this.title, this.centerX, this.getTop() + TITLE_MARGIN, color);
-
-        int y = this.getTop() + TITLE_MARGIN * 2 + textRenderer.fontHeight;
-        RenderUtil.drawCenteredTextLines(graphics, textRenderer, this.messageLines, this.centerX, y, color);
+        this.visitLines(graphics.method_75785(GuiGraphics.C_kbymqsba.TOOLTIP_AND_CURSOR));
     }
 
     @Override
@@ -77,33 +80,16 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
         if (this.shouldShow() && event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1
                 && mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.getTop() && mouseY < this.getBottom()) {
-            double clickedY = mouseY - this.getTop();
             TextRenderer textRenderer = this.client.textRenderer;
-            int fontHeight = textRenderer.fontHeight;
 
-            Style style = null;
-            if (clickedY >= TITLE_MARGIN && clickedY < TITLE_MARGIN + fontHeight) {
-                style = Util.getStyleAt(textRenderer, this.centerX, mouseX, this.title);
-            } else if (clickedY >= TITLE_MARGIN * 2 + fontHeight) {
-                int l = ((int) clickedY - TITLE_MARGIN * 2 - fontHeight) / fontHeight;
-                OrderedText line = this.messageLines.get(l);
-                style = Util.getStyleAt(textRenderer, this.centerX, mouseX, line);
-            }
+            C_gitqeeaa.C_abiemazc styleFinder = new C_gitqeeaa.C_abiemazc(textRenderer, (int) mouseX, (int) mouseY);
+            this.visitLines(styleFinder);
+            Style style = styleFinder.method_75777();
 
             if (style != null && style.getClickEvent() != null
                     && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
                 URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
-                if (this.client.options.getChatLinksPrompt().get()) {
-                    this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
-                        if (confirmed) {
-                            net.minecraft.util.Util.getOperatingSystem().open(uri);
-                        }
-
-                        client.setScreen(this.screen);
-                    }, uri.toString(), false));
-                } else {
-                    net.minecraft.util.Util.getOperatingSystem().open(uri);
-                }
+                Util.openUri(this.client, this.screen, uri);
 
                 return true;
             }

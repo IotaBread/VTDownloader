@@ -63,8 +63,12 @@ public abstract class AbstractScreenPopup implements Drawable {
         return this.height;
     }
 
+    protected final float getFadeOpacity() {
+        return Math.clamp((FADE_TIME - this.fadeTime) / FADE_TIME, 0.0f, 1.0f);
+    }
+
     protected final int getFadeAlpha() {
-        return (int) ((FADE_TIME - this.fadeTime) / FADE_TIME * 255);
+        return ArgbHelper.getChannelByte(this.getFadeOpacity());
     }
 
     protected void updateSize(int width, int height) {

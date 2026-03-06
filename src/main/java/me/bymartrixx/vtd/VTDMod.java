@@ -180,7 +180,7 @@ public class VTDMod implements ClientModInitializer {
 
                     try {
                         HttpRequest fileReq = HttpRequest.newBuilder()
-                                .uri(URI.create(data.getLink()))
+                                .uri(getResourceUri(data.getLink()))
                                 .header("User-Agent", USER_AGENT)
                                 .timeout(Duration.ofSeconds(4L))
                                 .build();
