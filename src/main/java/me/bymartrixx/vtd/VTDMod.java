@@ -19,7 +19,6 @@ import net.minecraft.resource.pack.PackProfile;
 import net.minecraft.resource.pack.ResourcePack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.4.0";
+        String version = "2.4.1";
         String vtVersion = "1.21";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
