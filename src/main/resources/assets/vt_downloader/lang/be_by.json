@@ -1,0 +1,23 @@
+{
+    "vtd.error": "Памылка!",
+    "vtd.download": "Спампаваць",
+    "vtd.download.failed": "Нечаканая памылка!",
+    "vtd.download.success": "Пакет спампаваны!",
+    "vtd.share": "Падзяліцца",
+    "vtd.share.failed": "Failed to get resource pack share code",
+    "vtd.share.code": "Ваш код для распаўсюджвання %s. Націсканне на спасылку адкрые яго ці скапіруйце ў ваш буфер абмена",
+    "vtd.fileNameValidity.fileExists": "Файл з такой назвай ужо існуе",
+    "vtd.fileNameValidity.invalidWindows": "Назва файла недапушчальна ў Windows",
+    "vtd.fileNameValidity.regexDoesntMatch": "Файл павінен быць %s",
+    "vtd.fileNameValidity.reservedWindows": "Назва файла зарэзервіравана ў Windows",
+    "vtd.packError.title": "Падчас атрымання пакетаў, адбылася памылка.",
+    "vtd.packError.body": "Калі ласка, праверце ваша падлучэнне і ці працуе ў штатным рэжыме сайт %s.",
+    "vtd.resourcePack.button": "Спампоўка VT пакета рэсурсаў",
+    "vtd.resourcePack.nameField": "Назва пакета рэсурсаў...",
+    "vtd.resourcePack.subtitle": "Выберыце пакеты рэсурсаў",
+    "vtd.resourcePack.reload": "Перазагрузіце пакеты рэсурсаў",
+    "vtd.selectedPacks": "Выбраныя пакеты",
+    "vtd.readPackDataFailed": "Не ўдалося прачытаць даныя пакета VanillaTweaks:",
+    "vtd.unsavedPackWarning.header": "Увага: Незахваны пакет",
+    "vtd.unsavedPackWarning.text": "Усе змены, зробленыя ў гэтым пакеце будуць страчаны!"
+}
