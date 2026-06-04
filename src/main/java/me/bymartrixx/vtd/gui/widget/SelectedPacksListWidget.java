@@ -6,7 +6,7 @@ import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -302,12 +302,12 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
 
     // region render
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (!this.extended) {
             return;
         }
 
-        super.renderWidget(graphics, mouseX, mouseY, delta);
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
     }
     // endregion
 
@@ -345,7 +345,7 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
         }
 
         // @see ClickableWidget#drawScrollingText
-        protected void drawScrollingText(GuiGraphics graphics, int x, int y, int maxWidth, int height, int color) {
+        protected void drawScrollingText(GuiGraphicsExtractor graphics, int x, int y, int maxWidth, int height, int color) {
             Font textRenderer = this.client.font;
             Component text = this.getText();
             int textWidth = textRenderer.width(text);
@@ -358,22 +358,22 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
                 double scrollOffset = Mth.lerp(delta, 0.0, extraWidth);
 
                 graphics.enableScissor(x, y, x + maxWidth, y + height);
-                graphics.drawString(textRenderer, text, x - (int) scrollOffset, y, color);
+                graphics.text(textRenderer, text, x - (int) scrollOffset, y, color);
                 graphics.disableScissor();
             } else {
-                graphics.drawString(textRenderer, text, x, y, color);
+                graphics.text(textRenderer, text, x, y, color);
             }
         }
 
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             Font textRenderer = this.client.font;
             int x = this.getX();
             int y = this.getY();
             int width = this.getWidth();
             int height = this.getHeight();
             int color = this.getColor();
-            graphics.drawString(textRenderer, this.textPrefix, x, y, color);
+            graphics.text(textRenderer, this.textPrefix, x, y, color);
             int offsetX = textRenderer.width(this.textPrefix);
             if (offsetX > 0) {
                 this.drawScrollingText(graphics, x + offsetX, y, width - (offsetX - x), height, color);
@@ -403,11 +403,11 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
         }
 
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             Font textRenderer = this.client.font;
             int centerX = this.getX() + this.getWidth() / 2;
             int centerY = this.getY() + this.getHeight() / 2 - textRenderer.lineHeight / 2;
-            graphics.drawCenteredString(textRenderer, HEADER, centerX, centerY, this.getColor());
+            graphics.centeredText(textRenderer, HEADER, centerX, centerY, this.getColor());
         }
     }
 

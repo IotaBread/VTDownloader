@@ -3,7 +3,7 @@
 **DISCLAIMER: None of the content that can be downloaded from the mod was created by me. Everything (but the mod) was created by the VanillaTweaks team.**
 
 [ ![GitHub release](https://img.shields.io/github/v/release/IotaBread/VTDownloader?color=blue&include_prereleases&label=download&style=flat-square) ](https://github.com/IotaBread/VTDownloader/releases/latest)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/IotaBread/VTDownloader/gradle.yml?branch=1.19&style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/IotaBread/VTDownloader/gradle.yml?Branch=26.1&style=flat-square)
 
 **Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) to work properly**
 
@@ -23,4 +23,5 @@ Suggestions? [Start a discussion](https://github.com/IotaBread/VTDownloader/disc
 
 ### Planned features
 
-- Datapacks
+- In-game pack version selection
+- Support for datapack downloading

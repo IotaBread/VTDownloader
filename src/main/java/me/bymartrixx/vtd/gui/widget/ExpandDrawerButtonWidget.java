@@ -1,6 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -69,7 +69,7 @@ public class ExpandDrawerButtonWidget implements GuiEventListener, Renderable, N
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         boolean hovered = mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
         float u = hovered ? TAB_WIDTH : 0.0F;

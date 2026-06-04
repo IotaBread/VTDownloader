@@ -2,7 +2,7 @@ package me.bymartrixx.vtd.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
@@ -20,15 +20,15 @@ public class ReloadButtonWidget extends Button {
     }
 
     @Override
-    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float f) {
-        this.renderDefaultSprite(graphics);
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float f) {
+        this.extractDefaultSprite(graphics);
         int scale = 2;
         int centerX = this.width / 2 + this.getX();
 
         Font textRenderer = Minecraft.getInstance().font;
         graphics.pose().pushMatrix();
         graphics.pose().scale(scale, scale);
-        graphics.drawCenteredString(textRenderer, this.getIconText(), centerX / scale, this.getY() / scale, 0xFFFFFFFF);
+        graphics.centeredText(textRenderer, this.getIconText(), centerX / scale, this.getY() / scale, 0xFFFFFFFF);
         graphics.pose().popMatrix();
     }
 }

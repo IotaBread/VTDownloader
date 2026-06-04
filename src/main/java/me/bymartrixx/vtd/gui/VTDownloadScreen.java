@@ -22,7 +22,7 @@ import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -438,10 +438,10 @@ public class VTDownloadScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.render(graphics, mouseX, mouseY, delta);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
-        graphics.drawCenteredString(this.font, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.centeredText(this.font, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
+        graphics.centeredText(this.font, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
 
         this.renderDebugInfo(graphics, mouseX, mouseY);
         this.packSelector.renderTooltips(graphics, mouseX, mouseY);
@@ -450,7 +450,7 @@ public class VTDownloadScreen extends Screen {
         this.updateTime(delta);
     }
 
-    private void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderDebugInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         this.packSelector.renderDebugInfo(graphics, mouseX, mouseY);
         this.categorySelector.renderDebugInfo(graphics);
 
@@ -467,7 +467,7 @@ public class VTDownloadScreen extends Screen {
         RenderUtil.renderDebugInfo(graphics, textRenderer, 0, this.height, debugInfo);
     }
 
-    private void renderPackNameFieldTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderPackNameFieldTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (this.packNameField.isMouseOver(mouseX, mouseY)) {
             Component text = this.packNameField.getTooltipText();
             if (text != null) {

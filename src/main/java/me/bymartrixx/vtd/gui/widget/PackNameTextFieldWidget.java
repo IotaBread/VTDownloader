@@ -2,7 +2,7 @@ package me.bymartrixx.vtd.gui.widget;
 
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -94,21 +94,21 @@ public class PackNameTextFieldWidget extends EditBox {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.renderWidget(graphics, mouseX, mouseY, delta);
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
 
         if (this.isVisible()) {
             if (this.getValue().isEmpty()) {
                 int x = this.getX() + 4;
                 int y = this.getY() + (this.height - 8) / 2;
-                graphics.drawString(this.textRenderer, this.getMessage(), x, y, 0x707070);
+                graphics.text(this.textRenderer, this.getMessage(), x, y, 0x707070);
             }
 
             this.renderOutline(graphics);
         }
     }
 
-    private void renderOutline(GuiGraphics graphics) {
+    private void renderOutline(GuiGraphicsExtractor graphics) {
         int color = -1;
         if (this.nameStatus.isError()) {
             color = this.isFocused() ? ERROR_FOCUSED_COLOR : ERROR_COLOR;

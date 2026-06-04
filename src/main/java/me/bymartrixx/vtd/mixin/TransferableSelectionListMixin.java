@@ -6,7 +6,7 @@ import me.bymartrixx.vtd.access.PackSelectionScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.packs.PackSelectionModel;
@@ -24,6 +24,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(TransferableSelectionList.class)
 public abstract class TransferableSelectionListMixin extends ObjectSelectionList<TransferableSelectionList.Entry>
@@ -100,8 +101,8 @@ public abstract class TransferableSelectionListMixin extends ObjectSelectionList
             }
         }
 
-        @Inject(at = @At("TAIL"), method = "renderContent")
-        private void renderEditButton(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
+        @Inject(at = @At("TAIL"), method = "extractContent")
+        private void renderEditButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
             if (this.vtdownloader$vtPack) {
                 int pencilX = this.getX() + this.vtdownloader$getPencilXOffset();
                 int pencilY = this.getY() + this.vtdownloader$getPencilYOffset();
@@ -128,7 +129,7 @@ public abstract class TransferableSelectionListMixin extends ObjectSelectionList
             }
         }
 
-        // @version 1.21.11
+        // @version 26.1
         @Inject(at = @At(
                 value = "INVOKE",
                 target = "Lnet/minecraft/client/gui/screens/packs/PackSelectionModel$Entry;canSelect()Z"

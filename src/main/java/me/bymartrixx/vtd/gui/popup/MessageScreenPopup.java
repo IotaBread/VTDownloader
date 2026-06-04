@@ -4,7 +4,7 @@ import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -69,8 +69,8 @@ public class MessageScreenPopup extends AbstractScreenPopup implements GuiEventL
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.visitLines(graphics.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR));
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        this.visitLines(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR));
     }
 
     @Override

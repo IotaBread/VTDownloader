@@ -5,7 +5,7 @@ import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -250,7 +250,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
 
     // region render
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         this.renderListBackground(graphics);
         graphics.enableScissor(this.left, this.top, this.right, this.bottom);
         this.renderCategories(graphics, mouseX, mouseY, delta);
@@ -260,14 +260,14 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
     }
 
     // @see EntryListWidget#drawBackground
-    private void renderListBackground(GuiGraphics graphics) {
+    private void renderListBackground(GuiGraphicsExtractor graphics) {
         Identifier texture = Minecraft.getInstance().level == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
         graphics.blit(RenderPipelines.GUI_TEXTURED, texture,
                 this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
                 this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
-    private void renderCategories(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    private void renderCategories(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         for (int i = 0; i < this.children.size(); i++) {
             CategoryButtonWidget button = this.children.get(i);
             int left = getButtonLeft(i);
@@ -280,7 +280,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
         }
     }
 
-    private void renderSeparators(GuiGraphics graphics) {
+    private void renderSeparators(GuiGraphicsExtractor graphics) {
         Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         matrices.rotate((float) Math.PI / 2.0f); // 90 degrees
@@ -293,7 +293,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
         matrices.popMatrix();
     }
 
-    private void renderScrollbar(GuiGraphics graphics) {
+    private void renderScrollbar(GuiGraphicsExtractor graphics) {
         if (this.shouldHaveScrollbar()) {
             int startX = this.getScrollbarStartX();
             int endX = this.getScrollbarEndX();
@@ -315,7 +315,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
         }
     }
 
-    public void renderDebugInfo(GuiGraphics graphics) {
+    public void renderDebugInfo(GuiGraphicsExtractor graphics) {
         if (!SHOW_DEBUG_INFO) return;
         Minecraft client = Minecraft.getInstance();
         Font textRenderer = client.font;

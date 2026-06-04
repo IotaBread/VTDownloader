@@ -4,7 +4,7 @@ import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -46,12 +46,12 @@ public class CategoryButtonWidget implements GuiEventListener, NarratableEntry {
         this.category = category;
     }
 
-    public void render(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY, float delta) {
         this.hovered = mouseX >= x && mouseY >= y && mouseX < x + this.width && mouseY < y + this.height;
         this.renderButton(graphics, x, y);
     }
 
-    public void renderButton(GuiGraphics graphics, int x, int y) {
+    public void renderButton(GuiGraphicsExtractor graphics, int x, int y) {
         Minecraft client = Minecraft.getInstance();
         Font textRenderer = client.font;
 
@@ -59,7 +59,7 @@ public class CategoryButtonWidget implements GuiEventListener, NarratableEntry {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURES.get(!this.selected, this.isHoveredOrFocused()), x, y, this.width, this.height);
 
         int textColor = this.selected ? 0xFFA0A0A0 : 0xFFFFFFFF;
-        graphics.drawCenteredString(textRenderer, this.text, x + this.width / 2, y + (this.height - 8) / 2, textColor);
+        graphics.centeredText(textRenderer, this.text, x + this.width / 2, y + (this.height - 8) / 2, textColor);
     }
 
     @Override

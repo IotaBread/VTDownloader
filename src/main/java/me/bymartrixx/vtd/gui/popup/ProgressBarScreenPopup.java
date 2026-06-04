@@ -2,7 +2,7 @@ package me.bymartrixx.vtd.gui.popup;
 
 import me.bymartrixx.vtd.util.RenderUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.function.Supplier;
 
@@ -50,7 +50,7 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         float p = this.progress.get();
         if (p < 0.0F) {
             return;

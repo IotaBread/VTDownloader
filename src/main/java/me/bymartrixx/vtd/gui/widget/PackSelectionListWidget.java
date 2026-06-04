@@ -12,7 +12,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -321,8 +321,8 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
 
     // region render
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.renderWidget(graphics, mouseX, mouseY, delta);
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
 
         if (this.children().isEmpty()) {
             this.renderError(graphics);
@@ -330,7 +330,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
     }
 
     @Override
-    protected void renderItem(GuiGraphics graphics, int mouseX, int mouseY, float delta, AbstractEntry entry) {
+    protected void extractItem(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, AbstractEntry entry) {
         boolean focused = this.isFocused() && this.getFocused() == entry;
         boolean isSelected = entry instanceof PackEntry packEntry && packEntry.selectionData.isSelected();
         if (isSelected) {
@@ -345,10 +345,10 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             RenderUtil.drawOutline(graphics, x - 1, y - 1, width - 2, height - 2, 1, 0xFFFFFFFF);*/
         }
 
-        entry.renderContent(graphics, mouseX, mouseY, Objects.equals(this.getHovered(), entry), delta);
+        entry.extractContent(graphics, mouseX, mouseY, Objects.equals(this.getHovered(), entry), delta);
     }
 
-    protected void drawEntrySelectionHighlight(GuiGraphics graphics, AbstractEntry entry, int borderColor, int fillColor) {
+    protected void drawEntrySelectionHighlight(GuiGraphicsExtractor graphics, AbstractEntry entry, int borderColor, int fillColor) {
         int x1 = entry.getX();
         int y1 = entry.getY();
         int x2 = x1 + entry.getWidth();
@@ -357,11 +357,11 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
         graphics.fill(x1 + 1, y1 + 1, x2 - 1, y2 - 1, fillColor);
     }
 
-    private void renderError(GuiGraphics graphics) {
+    private void renderError(GuiGraphicsExtractor graphics) {
         this.visitLines(graphics.textRenderer());
     }
 
-    public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
+    public void renderDebugInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (!SHOW_DEBUG_INFO) return;
         Font textRenderer = this.minecraft.font;
 
@@ -381,7 +381,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
         RenderUtil.renderDebugInfo(graphics, textRenderer, this.getX(), this.getBottom(), debugInfo);
     }
 
-    public void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+    public void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (mouseY >= this.getY() && mouseY < this.getBottom()
                 && mouseX >= this.getX() && mouseX < this.getRight()
                 && !this.screen.isCoveredByPopup(mouseX, mouseY)) {
@@ -522,7 +522,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
 
         // region entryRender
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int height = this.getHeight();
@@ -547,14 +547,14 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             int textStartY = y + (height - totalTextHeight) / 2;
             int centerX = textAreaX + textAreaWidth / 2; // center in text area
 
-            graphics.drawCenteredString(textRenderer, this.name, centerX, textStartY, 0xFFFFFFFF);
+            graphics.centeredText(textRenderer, this.name, centerX, textStartY, 0xFFFFFFFF);
 
             // Use textAreaWidth for description to ensure proper wrapping when menu is open
             this.renderDescription(graphics, centerX, textStartY + lineHeight, textAreaWidth);
             if (!DISABLE_ICONS) this.renderIcon(graphics, iconX, iconY, iconSize);
         }
 
-        private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
+        private void renderDescription(GuiGraphicsExtractor graphics, int x, int y, int width) {
             Font textRenderer = this.client.font;
             MultiLineLabel description = this.getShortDescription(width - TEXT_MARGIN, textRenderer);
             TextAlignment alignment = TextAlignment.CENTER;
@@ -597,7 +597,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             return Component.empty();
         }
 
-        private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
+        private void renderIcon(GuiGraphicsExtractor graphics, int x, int y, int size) {
             downloadIcon();
             if (!this.iconExists) return;
 
@@ -654,7 +654,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
 
         // region warningRender
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int width = this.getWidth();
@@ -667,11 +667,11 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             this.renderText(graphics, x + WARNING_MARGIN + textWidth / 2, y + WARNING_MARGIN, textWidth, textHeight);
         }
 
-        private void renderBackground(GuiGraphics graphics, int x, int y, int width, int height) {
+        private void renderBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
             graphics.fill(x, y, x + width, y + height, this.color);
         }
 
-        private void renderText(GuiGraphics graphics, int x, int y, int width, int height) {
+        private void renderText(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
             MultiLineLabel text = this.getText(width);
             TextAlignment alignment = TextAlignment.CENTER;
             int lineHeight = this.client.font.lineHeight;
@@ -743,7 +743,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
         }
 
         @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int width = this.getWidth();
@@ -752,7 +752,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             // drawSprite
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (height - BUTTON_HEIGHT) / 2, width - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
-            graphics.drawCenteredString(this.client.font, this.name, x + width / 2, y + (height - this.client.font.lineHeight) / 2, 0xFFFFFFFF);
+            graphics.centeredText(this.client.font, this.name, x + width / 2, y + (height - this.client.font.lineHeight) / 2, 0xFFFFFFFF);
         }
     }
 
@@ -778,7 +778,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
         protected abstract List<Component> getTooltipText(int width);
 
         // region baseEntryRender
-        protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
+        protected boolean renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
                 graphics.setComponentTooltipForNextFrame(this.client.font, this.getTooltipText(width), mouseX, mouseY);
                 return true;

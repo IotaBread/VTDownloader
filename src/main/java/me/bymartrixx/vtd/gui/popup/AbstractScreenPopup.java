@@ -1,7 +1,7 @@
 package me.bymartrixx.vtd.gui.popup;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -107,7 +107,7 @@ public abstract class AbstractScreenPopup implements Renderable {
     protected void reset() {}
 
     @Override
-    public final void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public final void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (this.show) {
             this.renderBackground(graphics);
             this.renderContent(graphics, mouseX, mouseY, delta);
@@ -115,7 +115,7 @@ public abstract class AbstractScreenPopup implements Renderable {
         }
     }
 
-    protected void renderBackground(GuiGraphics graphics) {
+    protected void renderBackground(GuiGraphicsExtractor graphics) {
         int alpha = this.getFadeAlpha();
         graphics.fillGradient(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24, alpha << 24);
 
@@ -125,5 +125,5 @@ public abstract class AbstractScreenPopup implements Renderable {
                 this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE, color);
     }
 
-    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);
+    protected abstract void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta);
 }
