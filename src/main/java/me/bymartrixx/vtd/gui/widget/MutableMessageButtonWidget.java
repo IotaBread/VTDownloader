@@ -1,14 +1,14 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import net.minecraft.client.gui.widget.button.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
-public class MutableMessageButtonWidget extends ButtonWidget.C_yzicpkhx {
-    private final Text defaultMessage;
-    private Text currentMessage;
+public class MutableMessageButtonWidget extends Button.Plain {
+    private final Component defaultMessage;
+    private Component currentMessage;
 
-    public MutableMessageButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
-        super(x, y, width, height, message, onPress, ButtonWidget.DEFAULT_NARRATION);
+    public MutableMessageButtonWidget(int x, int y, int width, int height, Component message, OnPress onPress) {
+        super(x, y, width, height, message, onPress, Button.DEFAULT_NARRATION);
         this.defaultMessage = message;
         this.currentMessage = message;
     }
@@ -17,12 +17,12 @@ public class MutableMessageButtonWidget extends ButtonWidget.C_yzicpkhx {
         this.currentMessage = this.defaultMessage;
     }
 
-    public void setMessage(Text message) {
+    public void setMessage(Component message) {
         this.currentMessage = message;
     }
 
     @Override
-    public Text getMessage() {
+    public Component getMessage() {
         return this.currentMessage;
     }
 }
