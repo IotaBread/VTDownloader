@@ -1,36 +1,36 @@
 package me.bymartrixx.vtd.gui.popup;
 
 import me.bymartrixx.vtd.util.Util;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.MultilineText;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.TextAlignment;
+import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.unmapped.C_emchntzr;
-import net.minecraft.unmapped.C_gitqeeaa;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 
-public class MessageScreenPopup extends AbstractScreenPopup implements Element, Selectable {
+public class MessageScreenPopup extends AbstractScreenPopup implements GuiEventListener, NarratableEntry {
     private static final int TITLE_MARGIN = 4;
     private static final int MESSAGE_MARGIN = 2;
 
     private final Screen screen;
-    private final Text title;
+    private final Component title;
     private final int maxWidth;
     private final int maxHeight;
-    private MultilineText message;
+    private MultiLineLabel message;
 
-    public MessageScreenPopup(MinecraftClient client, Screen screen, int centerX, int centerY, int maxWidth, int maxHeight, Text title) {
+    public MessageScreenPopup(Minecraft client, Screen screen, int centerX, int centerY, int maxWidth, int maxHeight, Component title) {
         super(client, centerX, centerY, maxWidth, maxHeight);
         this.screen = screen;
         this.title = title;
@@ -39,55 +39,55 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     }
 
     private int getMaxLines() {
-        int h = this.client.textRenderer.fontHeight;
+        int h = this.client.font.lineHeight;
         return (this.maxHeight - TITLE_MARGIN * 2 - h - MESSAGE_MARGIN) / h;
     }
 
     private int getHeight(int lines) {
-        return this.client.textRenderer.fontHeight * (lines + 1) + TITLE_MARGIN * 2 + MESSAGE_MARGIN;
+        return this.client.font.lineHeight * (lines + 1) + TITLE_MARGIN * 2 + MESSAGE_MARGIN;
     }
 
-    public void show(float time, Text message) {
+    public void show(float time, Component message) {
         int maxLines = this.getMaxLines();
 
-        this.message = Util.createMultilineText(this.client.textRenderer, message, maxLines, this.maxWidth);
+        this.message = Util.createMultilineText(this.client.font, message, maxLines, this.maxWidth);
 
-        int height = this.getHeight(this.message.count());
+        int height = this.getHeight(this.message.getLineCount());
         this.updateSize(this.maxWidth, height);
         this.show(time);
     }
 
-    public void visitLines(C_gitqeeaa textCollector) {
-        C_gitqeeaa.C_cnryfyay parameters = textCollector.method_75760();
-        textCollector.method_75764(parameters.method_75782(this.getFadeOpacity()));
-        textCollector.method_75768(C_emchntzr.CENTER, this.centerX, this.getTop() + TITLE_MARGIN, this.title);
+    public void visitLines(ActiveTextCollector textCollector) {
+        ActiveTextCollector.Parameters parameters = textCollector.defaultParameters();
+        textCollector.defaultParameters(parameters.withOpacity(this.getFadeOpacity()));
+        textCollector.accept(TextAlignment.CENTER, this.centerX, this.getTop() + TITLE_MARGIN, this.title);
 
-        TextRenderer textRenderer = this.client.textRenderer;
-        int lineHeight = textRenderer.fontHeight;
+        Font textRenderer = this.client.font;
+        int lineHeight = textRenderer.lineHeight;
         int y = this.getTop() + TITLE_MARGIN * 2 + lineHeight;
-        this.message.method_75816(C_emchntzr.CENTER, this.centerX, y, lineHeight, textCollector);
+        this.message.visitLines(TextAlignment.CENTER, this.centerX, y, lineHeight, textCollector);
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.visitLines(graphics.method_75785(GuiGraphics.C_kbymqsba.TOOLTIP_AND_CURSOR));
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        this.visitLines(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR));
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
         double mouseX = event.x();
         double mouseY = event.y();
-        if (this.shouldShow() && event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1
+        if (this.shouldShow() && event.button() == GLFW.GLFW_MOUSE_BUTTON_1
                 && mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.getTop() && mouseY < this.getBottom()) {
-            TextRenderer textRenderer = this.client.textRenderer;
+            Font textRenderer = this.client.font;
 
-            C_gitqeeaa.C_abiemazc styleFinder = new C_gitqeeaa.C_abiemazc(textRenderer, (int) mouseX, (int) mouseY);
+            ActiveTextCollector.ClickableStyleFinder styleFinder = new ActiveTextCollector.ClickableStyleFinder(textRenderer, (int) mouseX, (int) mouseY);
             this.visitLines(styleFinder);
-            Style style = styleFinder.method_75777();
+            Style style = styleFinder.result();
 
             if (style != null && style.getClickEvent() != null
-                    && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                    && style.getClickEvent().action() == ClickEvent.Action.OPEN_URL) {
                 URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
                 Util.openUri(this.client, this.screen, uri);
 
@@ -95,7 +95,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
             }
         }
 
-        return Element.super.mouseClicked(event, bl);
+        return GuiEventListener.super.mouseClicked(event, bl);
     }
 
     // TODO
@@ -109,12 +109,12 @@ public class MessageScreenPopup extends AbstractScreenPopup implements Element, 
     }
 
     @Override
-    public SelectionType getType() {
-        return SelectionType.NONE;
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.NONE;
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
-        builder.put(NarrationPart.TITLE, this.title);
+    public void updateNarration(NarrationElementOutput builder) {
+        builder.add(NarratedElementType.TITLE, this.title);
     }
 }

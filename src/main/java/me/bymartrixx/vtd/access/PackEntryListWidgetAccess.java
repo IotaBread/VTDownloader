@@ -1,6 +1,6 @@
 package me.bymartrixx.vtd.access;
 
-import net.minecraft.client.gui.screen.pack.PackScreen;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 
 public interface PackEntryListWidgetAccess {
     boolean vtdownloader$isAvailablePackList();
@@ -9,5 +9,5 @@ public interface PackEntryListWidgetAccess {
 
     boolean vtdownloader$isResourcePackList();
 
-    PackScreen vtdownloader$getScreen();
+    PackSelectionScreen vtdownloader$getScreen();
 }

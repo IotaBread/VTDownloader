@@ -3,7 +3,7 @@ package me.bymartrixx.vtd;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.blaze3d.texture.NativeImage;
+import com.mojang.blaze3d.platform.NativeImage;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.DownloadPackResponseData;
 import me.bymartrixx.vtd.data.Pack;
@@ -14,11 +14,10 @@ import me.bymartrixx.vtd.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.resource.ResourceIoSupplier;
-import net.minecraft.resource.pack.PackProfile;
-import net.minecraft.resource.pack.ResourcePack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -76,8 +75,8 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.4.1";
-        String vtVersion = "1.21";
+        String version = "2.4.2";
+        String vtVersion = "26.1";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (container.isPresent()) {
@@ -183,7 +182,7 @@ public class VTDMod implements ClientModInitializer {
                                 .header("User-Agent", USER_AGENT)
                                 .timeout(Duration.ofSeconds(4L))
                                 .build();
-                        return new Pair<>(fileName, getClient().send(fileReq, HttpResponse.BodyHandlers.ofInputStream()));
+                        return new Tuple<>(fileName, getClient().send(fileReq, HttpResponse.BodyHandlers.ofInputStream()));
                     } catch (IOException | InterruptedException e) {
                         throw new RuntimeException("Failed to execute pack download request", e);
                     }
@@ -191,13 +190,13 @@ public class VTDMod implements ClientModInitializer {
                 .thenApplyAsync(data -> {
                     progressCallback.accept(0.4F);
 
-                    HttpResponse<InputStream> response = data.getRight();
+                    HttpResponse<InputStream> response = data.getB();
                     int code = response.statusCode();
                     if (code / 100 != 2) {
                         throw new IllegalStateException("Pack download request returned status code " + code);
                     }
 
-                    String fileName = data.getLeft().trim();
+                    String fileName = data.getA().trim();
                     try (InputStream stream = new BufferedInputStream(response.body())) {
                         return Files.copy(stream, downloadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING) > 0;
                     } catch (IOException e) {
@@ -270,13 +269,13 @@ public class VTDMod implements ClientModInitializer {
 
     @Contract("_ -> new")
     public static Identifier getIconId(Pack pack) {
-        return Identifier.of(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
+        return Identifier.fromNamespaceAndPath(MOD_ID, pack.getId().toLowerCase(Locale.ROOT));
     }
 
-    public static CompletableFuture<List<String>> readResourcePackData(PackProfile profile) {
+    public static CompletableFuture<List<String>> readResourcePackData(net.minecraft.server.packs.repository.Pack profile) {
         return CompletableFuture.supplyAsync(() -> {
-            try (ResourcePack resourcePack = profile.createPack()) {
-                ResourceIoSupplier<InputStream> fileStream = resourcePack.openRoot(Constants.SELECTED_PACKS_FILE);
+            try (PackResources resourcePack = profile.open()) {
+                IoSupplier<InputStream> fileStream = resourcePack.getRootResource(Constants.SELECTED_PACKS_FILE);
                 try (InputStream stream = fileStream != null ? fileStream.get() : null){
                     if (stream != null) {
                         return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));

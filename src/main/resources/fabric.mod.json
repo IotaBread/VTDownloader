@@ -8,7 +8,22 @@
     "authors": [
         "IotaBread"
     ],
+    "contributors": [
+        "arthomnix",
+        "NiTiSon",
+        "BifidoKephir",
+        "osfanbuff63",
+        "Calvineries",
+        "EvanHsieh0415",
+        "Gazmanovich",
+        "StarmanMine142",
+        "Aglomation",
+        "Kikaayy",
+        "NuruddinPlays",
+        "CoolAid48"
+    ],
     "contact": {
+        "homepage": "https://modrinth.com/mod/vtdownloader",
         "sources": "https://github.com/IotaBread/VTDownloader",
         "issues": "https://github.com/IotaBread/VTDownloader/issues"
     },
@@ -28,7 +43,9 @@
     ],
 
     "depends": {
-        "minecraft": "~1.21"
+        "fabricloader": ">=0.19.3",
+        "fabric-api": "*",
+        "minecraft": "~26.1"
     },
 
     "custom": {

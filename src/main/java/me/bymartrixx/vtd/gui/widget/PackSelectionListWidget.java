@@ -1,6 +1,5 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import com.mojang.blaze3d.texture.NativeImage;
 import me.bymartrixx.vtd.VTDMod;
 import me.bymartrixx.vtd.access.TextureManagerAccess;
 import me.bymartrixx.vtd.data.Category;
@@ -9,30 +8,30 @@ import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.MultilineText;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.widget.list.EntryListWidget;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.TextAlignment;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.render.RenderPipelines;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.unmapped.C_emchntzr;
-import net.minecraft.unmapped.C_gitqeeaa;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
-
+import com.mojang.blaze3d.platform.NativeImage;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,17 +40,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWidget.AbstractEntry> {
+public class PackSelectionListWidget extends AbstractSelectionList<PackSelectionListWidget.AbstractEntry> {
     // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
     private static final boolean DEBUG_ERROR_TEXT = false;
     private static final boolean DISABLE_ICONS = false;
 
-    private static final Text ERROR_URL = Util.urlText(VTDMod.BASE_URL);
-    private static final Text ERROR_HEADER = Text.translatable("vtd.packError.title")
-            .formatted(Formatting.BOLD, Formatting.ITALIC);
-    private static final Text ERROR_BODY = Text.translatable("vtd.packError.body", ERROR_URL);
-    private static final Text ERROR_TEXT = Text.empty().append(ERROR_HEADER).append("\n").append(ERROR_BODY);
+    private static final Component ERROR_URL = Util.urlText(VTDMod.BASE_URL);
+    private static final Component ERROR_HEADER = Component.translatable("vtd.packError.title")
+            .withStyle(ChatFormatting.BOLD, ChatFormatting.ITALIC);
+    private static final Component ERROR_BODY = Component.translatable("vtd.packError.body", ERROR_URL);
+    private static final Component ERROR_TEXT = Component.empty().append(ERROR_HEADER).append("\n").append(ERROR_BODY);
 
     public static final int ITEM_HEIGHT = 48;
     private static final int WARNING_MARGIN = 6;
@@ -68,18 +67,18 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     private Category category;
     private boolean editable = true;
 
-    private final MultilineText errorText;
+    private final MultiLineLabel errorText;
 
     private final PackSelectionHelper selectionHelper;
 
-    public PackSelectionListWidget(MinecraftClient client, VTDownloadScreen screen, int width, int height, int y,
+    public PackSelectionListWidget(Minecraft client, VTDownloadScreen screen, int width, int height, int y,
                                    Category category, PackSelectionHelper selectionHelper) {
         super(client, width, height, y, ITEM_HEIGHT);
         this.screen = screen;
         this.category = category;
         this.selectionHelper = selectionHelper;
 
-        this.errorText = Util.createMultilineText(client.textRenderer, ERROR_TEXT, 8, (int) (width / 1.5));
+        this.errorText = Util.createMultilineText(client.font, ERROR_TEXT, 8, (int) (width / 1.5));
 
         // In 1.21.10+, children() returns an unmodifiable collection
         this.replaceEntries(this.getPackEntries(category));
@@ -88,9 +87,9 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public void setCategory(Category category) {
         this.category = category;
 
-        this.setFocusedChild(null);
+        this.setFocused(null);
         this.replaceEntries(this.getPackEntries(category));
-        this.method_44382(0.0);
+        this.setScrollAmount(0.0);
     }
 
     public void updateCategories(List<Category> categories) {
@@ -179,8 +178,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         return this.getY() + this.height / 2;
     }
 
-    private static int getLineHeight(TextRenderer textRenderer) {
-        return textRenderer.fontHeight + TEXT_MARGIN;
+    private static int getLineHeight(Font textRenderer) {
+        return textRenderer.lineHeight + TEXT_MARGIN;
     }
 
     public void updateScreenWidth() {
@@ -207,7 +206,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     @Override
-    protected int method_65507() {
+    protected int scrollBarX() {
         return this.getX() + this.getRowWidth() + ROW_LEFT_RIGHT_MARGIN + SCROLLBAR_LEFT_MARGIN;
     }
 
@@ -246,42 +245,42 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     //     }
     // }
 
-    void visitLines(C_gitqeeaa textCollector) {
+    void visitLines(ActiveTextCollector textCollector) {
         if (!this.children().isEmpty()) {
             return;
         }
 
         // visit error lines
-        TextRenderer textRenderer = this.client.textRenderer;
+        Font textRenderer = this.minecraft.font;
 
         int x = this.getCenterX();
         int y = this.getCenterY();
         int lineHeight = getLineHeight(textRenderer);
 
         int textY = y - lineHeight * 2;
-        C_emchntzr alignment = C_emchntzr.CENTER;
-        this.errorText.method_75816(alignment, x, textY, lineHeight, textCollector);
+        TextAlignment alignment = TextAlignment.CENTER;
+        this.errorText.visitLines(alignment, x, textY, lineHeight, textCollector);
     }
 
     // region input callbacks
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
+        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
             // Handle clicks when the error is shown
             double mouseX = event.x();
             double mouseY = event.y();
-            if (mouseX >= this.getX() && mouseX < this.getXEnd()
-                    && mouseY >= this.getY() && mouseY < this.getYEnd()) {
-                TextRenderer textRenderer = this.client.textRenderer;
+            if (mouseX >= this.getX() && mouseX < this.getRight()
+                    && mouseY >= this.getY() && mouseY < this.getBottom()) {
+                Font textRenderer = this.minecraft.font;
 
-                C_gitqeeaa.C_abiemazc styleFinder = new C_gitqeeaa.C_abiemazc(textRenderer, (int) mouseX, (int) mouseY);
+                ActiveTextCollector.ClickableStyleFinder styleFinder = new ActiveTextCollector.ClickableStyleFinder(textRenderer, (int) mouseX, (int) mouseY);
                 this.visitLines(styleFinder);
-                Style style = styleFinder.method_75777();
+                Style style = styleFinder.result();
 
                 if (style != null && style.getClickEvent() != null
-                        && style.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+                        && style.getClickEvent().action() == ClickEvent.Action.OPEN_URL) {
                     URI uri = ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
-                    Util.openUri(this.client, this.screen, uri);
+                    Util.openUri(this.minecraft, this.screen, uri);
 
                     return true;
                 }
@@ -322,8 +321,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
     // region render
     @Override
-    public void drawWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.drawWidget(graphics, mouseX, mouseY, delta);
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
 
         if (this.children().isEmpty()) {
             this.renderError(graphics);
@@ -331,7 +330,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     }
 
     @Override
-    protected void renderEntry(GuiGraphics graphics, int mouseX, int mouseY, float delta, AbstractEntry entry) {
+    protected void extractItem(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, AbstractEntry entry) {
         boolean focused = this.isFocused() && this.getFocused() == entry;
         boolean isSelected = entry instanceof PackEntry packEntry && packEntry.selectionData.isSelected();
         if (isSelected) {
@@ -346,10 +345,10 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             RenderUtil.drawOutline(graphics, x - 1, y - 1, width - 2, height - 2, 1, 0xFFFFFFFF);*/
         }
 
-        entry.method_25343(graphics, mouseX, mouseY, Objects.equals(this.getHoveredEntry(), entry), delta);
+        entry.extractContent(graphics, mouseX, mouseY, Objects.equals(this.getHovered(), entry), delta);
     }
 
-    protected void drawEntrySelectionHighlight(GuiGraphics graphics, AbstractEntry entry, int borderColor, int fillColor) {
+    protected void drawEntrySelectionHighlight(GuiGraphicsExtractor graphics, AbstractEntry entry, int borderColor, int fillColor) {
         int x1 = entry.getX();
         int y1 = entry.getY();
         int x2 = x1 + entry.getWidth();
@@ -358,13 +357,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         graphics.fill(x1 + 1, y1 + 1, x2 - 1, y2 - 1, fillColor);
     }
 
-    private void renderError(GuiGraphics graphics) {
-        this.visitLines(graphics.method_75788());
+    private void renderError(GuiGraphicsExtractor graphics) {
+        this.visitLines(graphics.textRenderer());
     }
 
-    public void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
+    public void renderDebugInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (!SHOW_DEBUG_INFO) return;
-        TextRenderer textRenderer = this.client.textRenderer;
+        Font textRenderer = this.minecraft.font;
 
         boolean hasCategory = this.category != null;
         List<String> debugInfo = List.of(
@@ -379,12 +378,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 "MX/MY = " + mouseX + "/" + mouseY
         );
 
-        RenderUtil.renderDebugInfo(graphics, textRenderer, this.getX(), this.getYEnd(), debugInfo);
+        RenderUtil.renderDebugInfo(graphics, textRenderer, this.getX(), this.getBottom(), debugInfo);
     }
 
-    public void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
-        if (mouseY >= this.getY() && mouseY < this.getYEnd()
-                && mouseX >= this.getX() && mouseX < this.getXEnd()
+    public void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (mouseY >= this.getY() && mouseY < this.getBottom()
+                && mouseX >= this.getX() && mouseX < this.getRight()
                 && !this.screen.isCoveredByPopup(mouseX, mouseY)) {
             int width = this.getTooltipWidth();
             for (AbstractEntry entry : this.children()) {
@@ -397,13 +396,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     // endregion
 
     @Override
-    public void updateNarration(NarrationMessageBuilder builder) {
-        builder.put(NarrationPart.TITLE, Constants.RESOURCE_PACK_SCREEN_SUBTITLE);
+    public void updateWidgetNarration(NarrationElementOutput builder) {
+        builder.add(NarratedElementType.TITLE, Constants.RESOURCE_PACK_SCREEN_SUBTITLE);
     }
 
     public static class PackEntry extends AbstractEntry {
         private final Pack pack;
-        private final Text name;
+        private final Component name;
 
         private final PackSelectionListWidget widget;
         private final Identifier icon;
@@ -412,8 +411,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         private NativeImage downloadedIconImage;
 
-        private List<Text> description;
-        private MultilineText shortDescription;
+        private List<Component> description;
+        private MultiLineLabel shortDescription;
         private int lastDescriptionWidth;
 
         protected PackSelectionData selectionData;
@@ -421,7 +420,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         public PackEntry(PackSelectionListWidget widget, Pack pack) {
             super(widget);
             this.pack = pack;
-            this.name = Text.of(pack.getName()).copy().formatted(Formatting.BOLD);
+            this.name = Component.nullToEmpty(pack.getName()).copy().withStyle(ChatFormatting.BOLD);
             this.widget = widget;
 
             this.icon = VTDMod.getIconId(pack);
@@ -431,11 +430,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.selectionData = new PackSelectionData(this.pack, widget.category);
         }
 
-        protected List<Text> getDescriptionLines(int maxWidth) {
+        protected List<Component> getDescriptionLines(int maxWidth) {
             return this.wrapEscapedText(this.pack.getDescription(), maxWidth);
         }
 
-        private List<Text> getDescription(int maxWidth) {
+        private List<Component> getDescription(int maxWidth) {
             if (this.description != null) {
                 return this.description;
             }
@@ -445,20 +444,20 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             return this.description;
         }
 
-        private MultilineText getShortDescription(int maxWidth, TextRenderer textRenderer) {
+        private MultiLineLabel getShortDescription(int maxWidth, Font textRenderer) {
             if (maxWidth == this.lastDescriptionWidth && this.shortDescription != null) {
                 return this.shortDescription;
             }
 
-            List<Text> fullDescriptionLines =  this.getDescriptionLines(maxWidth);
-            List<Text> lines = new ArrayList<>();
+            List<Component> fullDescriptionLines =  this.getDescriptionLines(maxWidth);
+            List<Component> lines = new ArrayList<>();
             if (!fullDescriptionLines.isEmpty()) {
                 lines.add(fullDescriptionLines.getFirst());
 
                 // truncate the second line at a punctuation
                 if (fullDescriptionLines.size() > 1) {
-                    Text secondLine = fullDescriptionLines.get(1);
-                    int lineWidth = textRenderer.getWidth(secondLine);
+                    Component secondLine = fullDescriptionLines.get(1);
+                    int lineWidth = textRenderer.width(secondLine);
 
                     // If there are more than 2 lines, or if the second line doesn't fit, truncate at last punctuation
                     if (fullDescriptionLines.size() > 2 || lineWidth > maxWidth) {
@@ -482,8 +481,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private void downloadIcon() {
             if (this.downloadedIconImage != null) {
                 TextureManager textureManager = this.client.getTextureManager();
-                NativeImageBackedTexture iconTexture = new NativeImageBackedTexture(this.pack::getId, this.downloadedIconImage);
-                textureManager.method_4616(this.icon, iconTexture);
+                DynamicTexture iconTexture = new DynamicTexture(this.pack::getId, this.downloadedIconImage);
+                textureManager.register(this.icon, iconTexture);
                 this.iconExists = true;
                 this.downloadedIconImage = null;
             }
@@ -507,13 +506,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         @Override
-        protected List<Text> getTooltipText(int width) {
+        protected List<Component> getTooltipText(int width) {
             return this.getDescription(width);
         }
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
                 this.widget.toggleSelection(this);
                 return true;
             }
@@ -523,12 +522,12 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
 
         // region entryRender
         @Override
-        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int height = this.getHeight();
             int width = this.getWidth();
-            TextRenderer textRenderer = this.client.textRenderer;
+            Font textRenderer = this.client.font;
             // Keep icon size fixed based on ITEM_HEIGHT, not entryHeight (reduced to 75%)
             int iconSize = ((ITEM_HEIGHT - ICON_MARGIN * 2) * 3)/4;
 
@@ -548,21 +547,21 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             int textStartY = y + (height - totalTextHeight) / 2;
             int centerX = textAreaX + textAreaWidth / 2; // center in text area
 
-            graphics.drawCenteredShadowedText(textRenderer, this.name, centerX, textStartY, 0xFFFFFFFF);
+            graphics.centeredText(textRenderer, this.name, centerX, textStartY, 0xFFFFFFFF);
 
             // Use textAreaWidth for description to ensure proper wrapping when menu is open
             this.renderDescription(graphics, centerX, textStartY + lineHeight, textAreaWidth);
             if (!DISABLE_ICONS) this.renderIcon(graphics, iconX, iconY, iconSize);
         }
 
-        private void renderDescription(GuiGraphics graphics, int x, int y, int width) {
-            TextRenderer textRenderer = this.client.textRenderer;
-            MultilineText description = this.getShortDescription(width - TEXT_MARGIN, textRenderer);
-            C_emchntzr alignment = C_emchntzr.CENTER;
-            description.method_75816(alignment, x, y, textRenderer.fontHeight, graphics.method_75788());
+        private void renderDescription(GuiGraphicsExtractor graphics, int x, int y, int width) {
+            Font textRenderer = this.client.font;
+            MultiLineLabel description = this.getShortDescription(width - TEXT_MARGIN, textRenderer);
+            TextAlignment alignment = TextAlignment.CENTER;
+            description.visitLines(alignment, x, y, textRenderer.lineHeight, graphics.textRenderer());
         }
 
-        private static Text truncateAtLastPunctuation(Text originalText, int maxWidth, TextRenderer textRenderer) {
+        private static Component truncateAtLastPunctuation(Component originalText, int maxWidth, Font textRenderer) {
             String text = originalText.getString();
             int lastPunctIndex = -1;
 
@@ -571,8 +570,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
                 char c = text.charAt(i);
                 if (c == '.' || c == ',') {
                     String candidate = text.substring(0, i + 1);
-                    Text candidateText = Text.of(candidate).copy().setStyle(originalText.getStyle());
-                    if (textRenderer.getWidth(candidateText) <= maxWidth) {
+                    Component candidateText = Component.nullToEmpty(candidate).copy().setStyle(originalText.getStyle());
+                    if (textRenderer.width(candidateText) <= maxWidth) {
                         lastPunctIndex = i + 1;
                         break;
                     }
@@ -582,27 +581,27 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             // If we found a punctuation mark, truncate there
             if (lastPunctIndex > 0) {
                 String truncated = text.substring(0, lastPunctIndex);
-                return Text.of(truncated).copy().setStyle(originalText.getStyle());
+                return Component.nullToEmpty(truncated).copy().setStyle(originalText.getStyle());
             }
 
             // If no punctuation found, truncate to fit maxWidth
             for (int i = text.length(); i > 0; i--) {
                 String candidate = text.substring(0, i);
-                Text candidateText = Text.of(candidate).copy().setStyle(originalText.getStyle());
-                if (textRenderer.getWidth(candidateText) <= maxWidth) {
+                Component candidateText = Component.nullToEmpty(candidate).copy().setStyle(originalText.getStyle());
+                if (textRenderer.width(candidateText) <= maxWidth) {
                     return candidateText;
                 }
             }
 
             // Fallback: return empty or first character
-            return Text.empty();
+            return Component.empty();
         }
 
-        private void renderIcon(GuiGraphics graphics, int x, int y, int size) {
+        private void renderIcon(GuiGraphicsExtractor graphics, int x, int y, int size) {
             downloadIcon();
             if (!this.iconExists) return;
 
-            graphics.method_25290(RenderPipelines.GUI_TEXTURED, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, this.icon, x, y, 0.0F, 0.0F, size, size, size, size);
         }
         // endregion
 
@@ -616,8 +615,8 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         private final Category.Warning warning;
         private final int color;
 
-        private List<Text> textLines;
-        private MultilineText text;
+        private List<Component> textLines;
+        private MultiLineLabel text;
 
         public WarningEntry(PackSelectionListWidget widget, Category.Warning warning) {
             super(widget);
@@ -626,11 +625,11 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.color = Util.parseColor(warning.getColor());
         }
 
-        private List<Text> getWrappedText(int maxWidth) {
+        private List<Component> getWrappedText(int maxWidth) {
             return this.wrapEscapedText(this.warning.getText(), maxWidth);
         }
 
-        private List<Text> getTextLines(int maxWidth) {
+        private List<Component> getTextLines(int maxWidth) {
             if (this.textLines != null) {
                 return this.textLines;
             }
@@ -639,7 +638,7 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             return this.textLines;
         }
 
-        private MultilineText getText(int maxWidth) {
+        private MultiLineLabel getText(int maxWidth) {
             if (this.text != null) {
                 return this.text;
             }
@@ -649,13 +648,13 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         @Override
-        protected List<Text> getTooltipText(int width) {
+        protected List<Component> getTooltipText(int width) {
             return this.getTextLines(width);
         }
 
         // region warningRender
         @Override
-        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int width = this.getWidth();
@@ -668,16 +667,16 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
             this.renderText(graphics, x + WARNING_MARGIN + textWidth / 2, y + WARNING_MARGIN, textWidth, textHeight);
         }
 
-        private void renderBackground(GuiGraphics graphics, int x, int y, int width, int height) {
+        private void renderBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
             graphics.fill(x, y, x + width, y + height, this.color);
         }
 
-        private void renderText(GuiGraphics graphics, int x, int y, int width, int height) {
-            MultilineText text = this.getText(width);
-            C_emchntzr alignment = C_emchntzr.CENTER;
-            int lineHeight = this.client.textRenderer.fontHeight;
-            int textY = y + height / 2 - text.count() * lineHeight / 2;
-            text.method_75816(alignment, x, textY, lineHeight, graphics.method_75788());
+        private void renderText(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+            MultiLineLabel text = this.getText(width);
+            TextAlignment alignment = TextAlignment.CENTER;
+            int lineHeight = this.client.font.lineHeight;
+            int textY = y + height / 2 - text.getLineCount() * lineHeight / 2;
+            text.visitLines(alignment, x, textY, lineHeight, graphics.textRenderer());
         }
         // endregion
 
@@ -712,29 +711,29 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
     public abstract static class CategoryButtonEntry extends AbstractEntry {
         protected static final int BUTTON_HEIGHT = 20;
         protected static final int BUTTON_HORIZONTAL_PADDING = 32;
-        protected static final Identifier TEXTURE = Identifier.ofDefault("widget/button");
+        protected static final Identifier TEXTURE = Identifier.withDefaultNamespace("widget/button");
 
         protected final Category category;
-        protected final Text name;
+        protected final Component name;
 
         protected CategoryButtonEntry(PackSelectionListWidget widget, Category category) {
             super(widget);
             this.category = category;
-            this.name = Text.literal(category.getName()).formatted(Formatting.BOLD);
+            this.name = Component.literal(category.getName()).withStyle(ChatFormatting.BOLD);
         }
 
         @Override
-        protected List<Text> getTooltipText(int width) {
+        protected List<Component> getTooltipText(int width) {
             return Collections.emptyList();
         }
 
         private void playDownSound(SoundManager soundManager) {
-            soundManager.play(PositionedSoundInstance.create(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
                 this.screen.selectCategory(this.category);
                 this.playDownSound(this.client.getSoundManager());
                 return true;
@@ -744,44 +743,44 @@ public class PackSelectionListWidget extends EntryListWidget<PackSelectionListWi
         }
 
         @Override
-        public void method_25343(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = this.getX();
             int y = this.getY();
             int width = this.getWidth();
             int height = this.getHeight();
 
             // drawSprite
-            graphics.method_52706(RenderPipelines.GUI_TEXTURED, TEXTURE,
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE,
                     x + BUTTON_HORIZONTAL_PADDING, y + (height - BUTTON_HEIGHT) / 2, width - BUTTON_HORIZONTAL_PADDING * 2, BUTTON_HEIGHT);
-            graphics.drawCenteredShadowedText(this.client.textRenderer, this.name, x + width / 2, y + (height - this.client.textRenderer.fontHeight) / 2, 0xFFFFFFFF);
+            graphics.centeredText(this.client.font, this.name, x + width / 2, y + (height - this.client.font.lineHeight) / 2, 0xFFFFFFFF);
         }
     }
 
-    public static abstract class AbstractEntry extends EntryListWidget.Entry<AbstractEntry> {
+    public static abstract class AbstractEntry extends AbstractSelectionList.Entry<AbstractEntry> {
         protected final PackSelectionListWidget parentWidget;
-        protected final MinecraftClient client;
+        protected final Minecraft client;
         protected final VTDownloadScreen screen;
 
         protected AbstractEntry(PackSelectionListWidget widget) {
             this.parentWidget = widget;
-            this.client = widget.client;
+            this.client = widget.minecraft;
             this.screen = widget.screen;
         }
 
-        protected final List<Text> wrapEscapedText(String text, int maxWidth) {
-            return Util.wrapText(this.client.textRenderer, Util.removeHtmlTags(text), maxWidth);
+        protected final List<Component> wrapEscapedText(String text, int maxWidth) {
+            return Util.wrapText(this.client.font, Util.removeHtmlTags(text), maxWidth);
         }
 
-        protected final MultilineText createMultilineText(List<Text> lines) {
-            return Util.createMultilineText(this.client.textRenderer, lines, 4);
+        protected final MultiLineLabel createMultilineText(List<Component> lines) {
+            return Util.createMultilineText(this.client.font, lines, 4);
         }
 
-        protected abstract List<Text> getTooltipText(int width);
+        protected abstract List<Component> getTooltipText(int width);
 
         // region baseEntryRender
-        protected boolean renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, int width) {
+        protected boolean renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int width) {
             if (this.isMouseOver(mouseX, mouseY)) {
-                graphics.deferDrawingTooltip(this.client.textRenderer, this.getTooltipText(width), mouseX, mouseY);
+                graphics.setComponentTooltipForNextFrame(this.client.font, this.getTooltipText(width), mouseX, mouseY);
                 return true;
             }
 
