@@ -36,7 +36,7 @@ public class UnsavedPackWarningScreen extends Screen {
         int buttonY = this.height / 2 + 40;
 
         this.addRenderableWidget(
-                Button.builder(CommonComponents.GUI_PROCEED, button -> this.minecraft.setScreen(this.next))
+                Button.builder(CommonComponents.GUI_PROCEED, button -> this.minecraft.gui.setScreen(this.next))
                         .pos(startX, buttonY)
                         .size(buttonWidth, buttonHeight)
                         .build());
@@ -49,7 +49,7 @@ public class UnsavedPackWarningScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @Override

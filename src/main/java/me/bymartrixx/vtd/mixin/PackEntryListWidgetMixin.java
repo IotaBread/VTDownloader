@@ -144,7 +144,7 @@ public abstract class PackEntryListWidgetMixin extends ObjectSelectionList<Trans
                         && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
                     PackSelectionScreen screen = ((PackEntryListWidgetAccess) this.parent).vtdownloader$getScreen();
                     ((PackScreenAccess) screen).vtdownloader$applyChanges();
-                    this.minecraft.setScreen(new VTDownloadScreen(screen,
+                    this.minecraft.gui.setScreen(new VTDownloadScreen(screen,
                             Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
                 }
             }

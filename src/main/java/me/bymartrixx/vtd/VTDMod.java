@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.datafixers.util.Pair;
 import me.bymartrixx.vtd.data.DownloadPackRequestData;
 import me.bymartrixx.vtd.data.DownloadPackResponseData;
 import me.bymartrixx.vtd.data.Pack;
@@ -17,7 +18,6 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
-import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -75,8 +75,8 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.4.2";
-        String vtVersion = "26.1";
+        String version = "2.4.3";
+        String vtVersion = "26.2";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (container.isPresent()) {
@@ -182,7 +182,7 @@ public class VTDMod implements ClientModInitializer {
                                 .header("User-Agent", USER_AGENT)
                                 .timeout(Duration.ofSeconds(4L))
                                 .build();
-                        return new Tuple<>(fileName, getClient().send(fileReq, HttpResponse.BodyHandlers.ofInputStream()));
+                        return new Pair<>(fileName, getClient().send(fileReq, HttpResponse.BodyHandlers.ofInputStream()));
                     } catch (IOException | InterruptedException e) {
                         throw new RuntimeException("Failed to execute pack download request", e);
                     }
@@ -190,13 +190,13 @@ public class VTDMod implements ClientModInitializer {
                 .thenApplyAsync(data -> {
                     progressCallback.accept(0.4F);
 
-                    HttpResponse<InputStream> response = data.getB();
+                    HttpResponse<InputStream> response = data.getSecond();
                     int code = response.statusCode();
                     if (code / 100 != 2) {
                         throw new IllegalStateException("Pack download request returned status code " + code);
                     }
 
-                    String fileName = data.getA().trim();
+                    String fileName = data.getFirst().trim();
                     try (InputStream stream = new BufferedInputStream(response.body())) {
                         return Files.copy(stream, downloadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING) > 0;
                     } catch (IOException e) {

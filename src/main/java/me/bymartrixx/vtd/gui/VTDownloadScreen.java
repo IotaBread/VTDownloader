@@ -311,9 +311,9 @@ public class VTDownloadScreen extends Screen {
     @Override
     public void onClose() {
         if (this.changed && this.selectionHelper.hasSelection()) {
-            this.minecraft.setScreen(new UnsavedPackWarningScreen(this, this.parent));
+            this.minecraft.gui.setScreen(new UnsavedPackWarningScreen(this, this.parent));
         } else {
-            this.minecraft.setScreen(this.parent);
+            this.minecraft.gui.setScreen(this.parent);
         }
     }
 

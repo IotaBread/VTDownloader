@@ -51,7 +51,7 @@ public class PackScreenMixin extends Screen implements PackScreenAccess {
         footerLayout.addChild(Button.builder(Constants.RESOURCE_PACK_BUTTON_TEXT, btn -> {
             this.vtdownloader$applyChanges();
             // noinspection ConstantConditions
-            this.minecraft.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
+            this.minecraft.gui.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
         }).size(Util.VTD_BUTTON_WIDTH, Util.VTD_BUTTON_HEIGHT).build());
     }
 
