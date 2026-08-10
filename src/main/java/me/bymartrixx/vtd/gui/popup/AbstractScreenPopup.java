@@ -1,17 +1,17 @@
 package me.bymartrixx.vtd.gui.popup;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.RenderPipelines;
-import net.minecraft.util.ArgbHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.util.ARGB;
 
-public abstract class AbstractScreenPopup implements Drawable {
+public abstract class AbstractScreenPopup implements Renderable {
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
     private static final float FADE_TIME = 20.0F;
 
-    protected final MinecraftClient client;
+    protected final Minecraft client;
     protected final int centerX;
     protected final int centerY;
     private int width;
@@ -21,7 +21,7 @@ public abstract class AbstractScreenPopup implements Drawable {
     private float shownTime;
     private float fadeTime;
 
-    public AbstractScreenPopup(MinecraftClient client, int centerX, int centerY, int width, int height) {
+    public AbstractScreenPopup(Minecraft client, int centerX, int centerY, int width, int height) {
         this.client = client;
         this.centerX = centerX;
         this.centerY = centerY;
@@ -68,7 +68,7 @@ public abstract class AbstractScreenPopup implements Drawable {
     }
 
     protected final int getFadeAlpha() {
-        return ArgbHelper.getChannelByte(this.getFadeOpacity());
+        return ARGB.as8BitChannel(this.getFadeOpacity());
     }
 
     protected void updateSize(int width, int height) {
@@ -107,7 +107,7 @@ public abstract class AbstractScreenPopup implements Drawable {
     protected void reset() {}
 
     @Override
-    public final void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public final void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (this.show) {
             this.renderBackground(graphics);
             this.renderContent(graphics, mouseX, mouseY, delta);
@@ -115,15 +115,15 @@ public abstract class AbstractScreenPopup implements Drawable {
         }
     }
 
-    protected void renderBackground(GuiGraphics graphics) {
+    protected void renderBackground(GuiGraphicsExtractor graphics) {
         int alpha = this.getFadeAlpha();
-        graphics.fill(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24, alpha << 24);
+        graphics.fillGradient(this.getLeft() - 1, this.getTop() - 1, this.getRight() + 1, this.getBottom() + 1, alpha << 24, alpha << 24);
 
-        int color = ArgbHelper.pack(alpha, 64, 64, 64);
+        int color = ARGB.color(alpha, 64, 64, 64);
         // drawTexture
-        graphics.method_25291(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 this.getLeft(), this.getTop(), 0.0F, 0.0F, this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE, color);
     }
 
-    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta);
+    protected abstract void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta);
 }

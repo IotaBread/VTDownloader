@@ -21,16 +21,14 @@ import me.bymartrixx.vtd.gui.widget.SelectedPacksListWidget;
 import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.RenderUtil;
 import me.bymartrixx.vtd.util.Util;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
-import net.minecraft.client.gui.widget.button.ButtonWidget;
-import net.minecraft.resource.pack.PackProfile;
-import net.minecraft.text.CommonTexts;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.packs.PackSelectionModel;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -48,16 +46,16 @@ public class VTDownloadScreen extends Screen {
     private static final boolean DEBUG_SHARE = false;
     private static final String DEBUG_SHARE_CODE = "abcdef";
 
-    private static final Text TITLE = Text.literal("VTDownloader");
-    private static final Text DOWNLOAD_TEXT = Text.translatable("vtd.download");
-    private static final Text DOWNLOAD_FAILED_TEXT = Text.translatable("vtd.download.failed");
-    private static final Text DOWNLOAD_SUCCESS_TEXT = Text.translatable("vtd.download.success");
-    private static final Text SHARE_TEXT = Text.translatable("vtd.share");
-    private static final Text SHARE_FAILED_TEXT = Text.translatable("vtd.share.failed");
-    private static final Function<Text, Text> SHARE_CODE_TEXT = code -> Text.translatable("vtd.share.code", code);
-    private static final Text READ_PACK_DATA_FAILED_TEXT = Text.translatable("vtd.readPackDataFailed");
-    private static final Text PACK_NAME_FIELD_TEXT = Text.translatable("vtd.resourcePack.nameField");
-    private static final Text PLACEHOLDER_TEXT = Text.literal("Lorem ipsum dolor sit amet");
+    private static final Component TITLE = Component.literal("VTDownloader");
+    private static final Component DOWNLOAD_TEXT = Component.translatable("vtd.download");
+    private static final Component DOWNLOAD_FAILED_TEXT = Component.translatable("vtd.download.failed");
+    private static final Component DOWNLOAD_SUCCESS_TEXT = Component.translatable("vtd.download.success");
+    private static final Component SHARE_TEXT = Component.translatable("vtd.share");
+    private static final Component SHARE_FAILED_TEXT = Component.translatable("vtd.share.failed");
+    private static final Function<Component, Component> SHARE_CODE_TEXT = code -> Component.translatable("vtd.share.code", code);
+    private static final Component READ_PACK_DATA_FAILED_TEXT = Component.translatable("vtd.readPackDataFailed");
+    private static final Component PACK_NAME_FIELD_TEXT = Component.translatable("vtd.resourcePack.nameField");
+    private static final Component PLACEHOLDER_TEXT = Component.literal("Lorem ipsum dolor sit amet");
 
     private static final int WIDGET_HEIGHT = 20;
     private static final int WIDGET_MARGIN = 10;
@@ -89,7 +87,7 @@ public class VTDownloadScreen extends Screen {
     private static final float DEBUG_MESSAGE_TIME = 200.0F;
 
     private final Screen parent;
-    private final Text subtitle;
+    private final Component subtitle;
     private final List<Category> categories;
 
     private Category currentCategory;
@@ -105,14 +103,14 @@ public class VTDownloadScreen extends Screen {
     private PackSelectionListWidget packSelector;
     private SelectedPacksListWidget selectedPacksList;
     private PackNameTextFieldWidget packNameField;
-    private ButtonWidget shareButton;
+    private Button shareButton;
     private MutableMessageButtonWidget downloadButton;
-    private ButtonWidget doneButton;
+    private Button doneButton;
 
     @Nullable
     private String packName;
     @Nullable
-    private ResourcePackOrganizer.Pack pack;
+    private PackSelectionModel.Entry pack;
     @Nullable
     private String defaultPackName;
     private int leftWidth;
@@ -126,7 +124,7 @@ public class VTDownloadScreen extends Screen {
 
     private final PackSelectionHelper selectionHelper = new PackSelectionHelper();
 
-    public VTDownloadScreen(Screen parent, Text subtitle) {
+    public VTDownloadScreen(Screen parent, Component subtitle) {
         super(TITLE);
         this.parent = parent;
         this.subtitle = subtitle;
@@ -140,10 +138,10 @@ public class VTDownloadScreen extends Screen {
         });
     }
 
-    public VTDownloadScreen(Screen parent, Text subtitle, ResourcePackOrganizer.Pack pack) {
+    public VTDownloadScreen(Screen parent, Component subtitle, PackSelectionModel.Entry pack) {
         this(parent, subtitle);
 
-        this.packName = pack.getDisplayName().getString().replaceAll("\\.zip$", "");
+        this.packName = pack.getTitle().getString().replaceAll("\\.zip$", "");
         this.pack = pack;
         this.defaultPackName = this.packName;
     }
@@ -170,7 +168,7 @@ public class VTDownloadScreen extends Screen {
 
     @Nullable
     private String getPackName() {
-        return this.packNameField != null ? this.packNameField.getText() : this.packName;
+        return this.packNameField != null ? this.packNameField.getValue() : this.packName;
     }
 
     private void download() {
@@ -190,8 +188,8 @@ public class VTDownloadScreen extends Screen {
 
         // noinspection ConstantConditions
         CompletableFuture<Boolean> download = VTDMod.executePackDownload(data, f -> this.downloadProgress = f,
-                this.client.getResourcePackDir(),
-                this.packNameField.isBlank() ? null : this.packNameField.getText());
+                this.minecraft.getResourcePackDirectory(),
+                this.packNameField.isBlank() ? null : this.packNameField.getValue());
 
         download.whenCompleteAsync((success, throwable) -> {
             this.updateButtons();
@@ -239,7 +237,7 @@ public class VTDownloadScreen extends Screen {
 
         VTDMod.executeShare(data).whenComplete((code, throwable) -> {
             // Execute on render thread since showSharePopup needs to access render system
-            this.client.execute(() -> {
+            this.minecraft.execute(() -> {
                 if (throwable != null) {
                     VTDMod.LOGGER.error("Failed to get resource pack share code", throwable);
                     this.errorPopup.show(ERROR_MESSAGE_TIME, SHARE_FAILED_TEXT.copy()
@@ -258,15 +256,15 @@ public class VTDownloadScreen extends Screen {
     private void showSharePopup(String code) {
         if (code != null && this.sharePopup != null) {
             String url = VTDMod.BASE_URL + "/share#" + code;
-            Text message = SHARE_CODE_TEXT.apply(Util.urlText(url));
+            Component message = SHARE_CODE_TEXT.apply(Util.urlText(url));
             this.sharePopup.show(SHARE_MESSAGE_TIME, message);
         }
     }
 
     private void readResourcePack() {
         // #AbstractPack and its inheritors are private
-        if (this.pack != null && this.pack.getClass().isNestmateOf(ResourcePackOrganizer.Pack.class)) {
-            PackProfile profile = ((AbstractPackAccess) this.pack).vtdownloader$getProfile();
+        if (this.pack != null && this.pack.getClass().isNestmateOf(PackSelectionModel.Entry.class)) {
+            net.minecraft.server.packs.repository.Pack profile = ((AbstractPackAccess) this.pack).vtdownloader$getProfile();
 
             VTDMod.readResourcePackData(profile).whenCompleteAsync((selection, throwable) -> {
                 if (throwable != null) {
@@ -311,11 +309,11 @@ public class VTDownloadScreen extends Screen {
 
     @SuppressWarnings("ConstantConditions") // client is marked as nullable
     @Override
-    public void closeScreen() {
+    public void onClose() {
         if (this.changed && this.selectionHelper.hasSelection()) {
-            this.client.setScreen(new UnsavedPackWarningScreen(this, this.parent));
+            this.minecraft.gui.setScreen(new UnsavedPackWarningScreen(this, this.parent));
         } else {
-            this.client.setScreen(this.parent);
+            this.minecraft.gui.setScreen(this.parent);
         }
     }
 
@@ -325,79 +323,79 @@ public class VTDownloadScreen extends Screen {
         this.leftWidth = this.width;
 
         // Draw before everything else
-        this.packSelector = this.addDrawable(new PackSelectionListWidget(this.client, this, this.width,
+        this.packSelector = this.addRenderableOnly(new PackSelectionListWidget(this.minecraft, this, this.width,
                 this.height - PACK_SELECTOR_TOP_HEIGHT - PACK_SELECTOR_BOTTOM_HEIGHT,
                 PACK_SELECTOR_TOP_HEIGHT,
                 this.currentCategory, this.selectionHelper));
         this.packSelector.updateCategories(this.categories);
 
-        this.selectedPacksList = this.addDrawable(new SelectedPacksListWidget(this, this.client,
+        this.selectedPacksList = this.addRenderableOnly(new SelectedPacksListWidget(this, this.minecraft,
                 SELECTED_PACKS_WIDTH, this.height - SELECTED_PACKS_TOP_HEIGHT - SELECTED_PACKS_BOTTOM_HEIGHT,
                 this.width - SELECTED_PACKS_WIDTH, SELECTED_PACKS_TOP_HEIGHT,
                 this.selectionHelper));
 
         // Reload button
-        this.addDrawableSelectableElement(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
+        this.addRenderableWidget(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
 
-        if (DEBUG_BUTTON) this.addDrawableSelectableElement(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
+        if (DEBUG_BUTTON) this.addRenderableWidget(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
                 WIDGET_MARGIN, PLACEHOLDER_TEXT, button -> {
             if (this.debugPopup != null) this.debugPopup.show(DEBUG_MESSAGE_TIME, PLACEHOLDER_TEXT);
         }));
 
-        this.categorySelector = this.addDrawableSelectableElement(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
+        this.categorySelector = this.addRenderableWidget(new CategorySelectionWidget(this, CATEGORY_SELECTOR_Y));
         this.categorySelector.init(this.categories, this.currentCategory);
 
-        ExpandDrawerButtonWidget expandButton = this.addDrawable(new ExpandDrawerButtonWidget(this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
+        ExpandDrawerButtonWidget expandButton = this.addRenderableOnly(new ExpandDrawerButtonWidget(this.width - ExpandDrawerButtonWidget.TAB_WIDTH,
                 SELECTED_PACKS_TOP_HEIGHT + SELECTED_PACKS_BUTTON_Y,
                 SELECTED_PACKS_WIDTH, e -> this.toggleSelectedPacksListExtended()));
 
         // Handle clicks before the pack selector
-        this.sharePopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
+        this.sharePopup = this.addWidget(new MessageScreenPopup(this.minecraft, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), SHARE_TEXT));
-        this.errorPopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
+        this.errorPopup = this.addWidget(new MessageScreenPopup(this.minecraft, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
-        if (DEBUG_BUTTON) this.debugPopup = this.addSelectableElement(new MessageScreenPopup(this.client, this,
+        if (DEBUG_BUTTON) this.debugPopup = this.addWidget(new MessageScreenPopup(this.minecraft, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), PLACEHOLDER_TEXT));
 
-        this.addSelectableElement(expandButton);
-        this.addSelectableElement(this.packSelector);
-        this.addSelectableElement(this.selectedPacksList);
+        this.addWidget(expandButton);
+        this.addWidget(this.packSelector);
+        this.addWidget(this.selectedPacksList);
 
-        this.shareButton = this.addDrawableSelectableElement(ButtonWidget.builder(SHARE_TEXT, button -> this.share())
-                .position(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
+        this.shareButton = this.addRenderableWidget(Button.builder(SHARE_TEXT, button -> this.share())
+                .pos(this.leftWidth + SELECTED_PACKS_CENTER_X - SHARE_BUTTON_CENTER_X,
                         this.height - SELECTED_PACKS_BOTTOM_HEIGHT + WIDGET_MARGIN)
                 .size(SHARE_BUTTON_WIDTH, WIDGET_HEIGHT)
                 .build());
 
         // noinspection ConstantConditions
-        this.packNameField = this.addDrawableSelectableElement(new PackNameTextFieldWidget(this.textRenderer,
+        this.packNameField = this.addRenderableWidget(new PackNameTextFieldWidget(this.font,
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH - WIDGET_MARGIN - PACK_NAME_FIELD_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, PACK_NAME_FIELD_WIDTH,
                 WIDGET_HEIGHT, this.getPackName(), PACK_NAME_FIELD_TEXT,
-                this.client.getResourcePackDir(), this.defaultPackName));
-        this.packNameField.setChangedListener(s -> this.updateButtons());
+                this.minecraft.getResourcePackDirectory(), this.defaultPackName));
+        this.packNameField.setResponder(s -> this.updateButtons());
         this.packName = null; // Pack name should only be used once
 
-        this.downloadButton = this.addDrawableSelectableElement(new MutableMessageButtonWidget(
+        this.downloadButton = this.addRenderableWidget(new MutableMessageButtonWidget(
                 this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN * 2 - DOWNLOAD_BUTTON_WIDTH,
                 this.height - WIDGET_HEIGHT - WIDGET_MARGIN, DOWNLOAD_BUTTON_WIDTH, WIDGET_HEIGHT, DOWNLOAD_TEXT,
                 button -> this.download()));
 
-        this.doneButton = this.addDrawableSelectableElement(ButtonWidget.builder(CommonTexts.DONE, button -> this.closeScreen())
-                .position(this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN)
+        this.doneButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
+                .pos(this.width - DONE_BUTTON_WIDTH - WIDGET_MARGIN, this.height - WIDGET_HEIGHT - WIDGET_MARGIN)
                 .size(DONE_BUTTON_WIDTH, WIDGET_HEIGHT)
                 .build());
 
         // Render over everything else
-        this.progressBar = this.addDrawable(new ProgressBarScreenPopup(this.client, this.width / 2, this.height / 2,
+        this.progressBar = this.addRenderableOnly(new ProgressBarScreenPopup(this.minecraft, this.width / 2, this.height / 2,
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
-        this.addDrawable(this.sharePopup);
-        this.addDrawable(this.errorPopup);
-        if (this.debugPopup != null) this.addDrawable(this.debugPopup);
+        this.addRenderableOnly(this.sharePopup);
+        this.addRenderableOnly(this.errorPopup);
+        if (this.debugPopup != null) this.addRenderableOnly(this.debugPopup);
 
         this.updateButtons();
         this.readResourcePack();
@@ -440,10 +438,10 @@ public class VTDownloadScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.render(graphics, mouseX, mouseY, delta);
-        graphics.drawCenteredShadowedText(this.textRenderer, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
-        graphics.drawCenteredShadowedText(this.textRenderer, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.centeredText(this.font, this.title, this.width / 2, TITLE_Y, 0xFFFFFFFF);
+        graphics.centeredText(this.font, this.subtitle, this.width / 2, SUBTITLE_Y, 0xFFFFFFFF);
 
         this.renderDebugInfo(graphics, mouseX, mouseY);
         this.packSelector.renderTooltips(graphics, mouseX, mouseY);
@@ -452,16 +450,16 @@ public class VTDownloadScreen extends Screen {
         this.updateTime(delta);
     }
 
-    private void renderDebugInfo(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderDebugInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         this.packSelector.renderDebugInfo(graphics, mouseX, mouseY);
         this.categorySelector.renderDebugInfo(graphics);
 
         if (!SHOW_DEBUG_INFO) return;
-        TextRenderer textRenderer = this.client.textRenderer;
+        Font textRenderer = this.minecraft.font;
         List<String> debugInfo = List.of(
                 "Ch = " + this.children().stream().map(e -> e.getClass().getSimpleName())
                         .collect(Collectors.joining(", ")),
-                "H = " + this.hoveredElement(mouseX, mouseY),
+                "H = " + this.getChildAt(mouseX, mouseY),
                 "Sm = " + this.sharePopup.isMouseOver(mouseX, mouseY),
                 "MX/MY = " + mouseX + "/" + mouseY
         );
@@ -469,11 +467,11 @@ public class VTDownloadScreen extends Screen {
         RenderUtil.renderDebugInfo(graphics, textRenderer, 0, this.height, debugInfo);
     }
 
-    private void renderPackNameFieldTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderPackNameFieldTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (this.packNameField.isMouseOver(mouseX, mouseY)) {
-            Text text = this.packNameField.getTooltipText();
+            Component text = this.packNameField.getTooltipText();
             if (text != null) {
-                graphics.deferDrawingTooltip(this.textRenderer, text, mouseX, mouseY);
+                graphics.setTooltipForNextFrame(this.font, text, mouseX, mouseY);
             }
         }
     }
@@ -489,7 +487,7 @@ public class VTDownloadScreen extends Screen {
 
     // for some reason the share popup is never reported as the hovered element
     @Override
-    public Optional<Element> hoveredElement(double mouseX, double mouseY) {
+    public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
         if (this.sharePopup.isMouseOver(mouseX, mouseY)) {
             return Optional.of(this.sharePopup);
         } else if (this.errorPopup.isMouseOver(mouseX, mouseY)) {
@@ -498,6 +496,6 @@ public class VTDownloadScreen extends Screen {
             return Optional.of(this.debugPopup);
         }
 
-        return super.hoveredElement(mouseX, mouseY);
+        return super.getChildAt(mouseX, mouseY);
     }
 }

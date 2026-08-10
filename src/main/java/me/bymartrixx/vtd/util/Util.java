@@ -1,20 +1,20 @@
 package me.bymartrixx.vtd.util;
 
 import me.bymartrixx.vtd.VTDMod;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.MultilineText;
-import net.minecraft.client.font.TextHandler;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.ArgbHelper;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.StringSplitter;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +45,7 @@ public class Util {
                     int blue = Integer.parseInt(components.get(2));
                     float alpha = Float.parseFloat(components.get(3));
 
-                    return ArgbHelper.pack((int) (alpha * 255), red, green, blue);
+                    return ARGB.color((int) (alpha * 255), red, green, blue);
                 }
             }
         }
@@ -60,53 +60,53 @@ public class Util {
                 .replaceAll("<br>", "\n"); // Replace <br> after normalizing to keep new lines
     }
 
-    public static Text urlText(String url) {
-        MutableText t = Text.literal(url)
-                .formatted(Formatting.UNDERLINE, Formatting.ITALIC, Formatting.BLUE);
+    public static Component urlText(String url) {
+        MutableComponent t = Component.literal(url)
+                .withStyle(ChatFormatting.UNDERLINE, ChatFormatting.ITALIC, ChatFormatting.BLUE);
         try {
-            URI uri = net.minecraft.util.Util.createUri(url);
-            t.styled(s -> s.withClickEvent(new ClickEvent.OpenUrl(uri)));
+            URI uri = net.minecraft.util.Util.parseAndValidateUntrustedUri(url);
+            t.withStyle(s -> s.withClickEvent(new ClickEvent.OpenUrl(uri)));
         } catch (URISyntaxException ignored) {
         }
 
         return t;
     }
 
-    public static void openUri(MinecraftClient client, @Nullable Screen screen, URI uri) {
-        if (client.options.getChatLinksPrompt().get()) {
-            client.setScreen(new ConfirmLinkScreen(open -> {
+    public static void openUri(Minecraft client, @Nullable Screen screen, URI uri) {
+        if (client.options.chatLinksPrompt().get()) {
+            client.gui.setScreen(new ConfirmLinkScreen(open -> {
                 if (open) {
-                    net.minecraft.util.Util.getOperatingSystem().open(uri);
+                    net.minecraft.util.Util.getPlatform().openUri(uri);
                 }
 
-                client.setScreen(screen);
+                client.gui.setScreen(screen);
             }, uri.toString(), false));
         } else {
-            net.minecraft.util.Util.getOperatingSystem().open(uri);
+            net.minecraft.util.Util.getPlatform().openUri(uri);
         }
     }
 
-    public static List<OrderedText> getMultilineTextLines(TextRenderer textRenderer, Text text, int maxLines, int width) {
-        return textRenderer.wrapLines(text, width).stream()
+    public static List<FormattedCharSequence> getMultilineTextLines(Font textRenderer, Component text, int maxLines, int width) {
+        return textRenderer.split(text, width).stream()
                 .limit(maxLines)
                 .toList();
     }
 
-    public static MultilineText createMultilineText(TextRenderer textRenderer, Text text, int maxLines, int width) {
-        return MultilineText.create(textRenderer, width, maxLines, text);
+    public static MultiLineLabel createMultilineText(Font textRenderer, Component text, int maxLines, int width) {
+        return MultiLineLabel.create(textRenderer, width, maxLines, text);
     }
 
-    public static MultilineText createMultilineText(TextRenderer textRenderer, List<Text> lines, int maxLines) {
+    public static MultiLineLabel createMultilineText(Font textRenderer, List<Component> lines, int maxLines) {
         if (lines.size() > maxLines) {
             lines = lines.subList(0, maxLines);
         }
 
-        return MultilineText.create(textRenderer, lines.toArray(new Text[0]));
+        return MultiLineLabel.create(textRenderer, lines.toArray(new Component[0]));
     }
 
-    public static List<Text> wrapText(TextRenderer textRenderer, String text, int maxWidth) {
-        TextHandler textHandler = textRenderer.getTextHandler();
-        List<StringVisitable> visitableLines = textHandler.wrapLines(text, maxWidth, Style.EMPTY);
-        return visitableLines.stream().map(StringVisitable::getString).map(Text::of).toList();
+    public static List<Component> wrapText(Font textRenderer, String text, int maxWidth) {
+        StringSplitter textHandler = textRenderer.getSplitter();
+        List<FormattedText> visitableLines = textHandler.splitLines(text, maxWidth, Style.EMPTY);
+        return visitableLines.stream().map(FormattedText::getString).map(Component::nullToEmpty).toList();
     }
 }

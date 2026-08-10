@@ -3,20 +3,20 @@ package me.bymartrixx.vtd.gui.widget;
 import me.bymartrixx.vtd.data.Category;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.RenderUtil;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.AbstractParentElement;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderPipelines;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CategorySelectionWidget extends AbstractParentElement implements Drawable, Selectable {
+public class CategorySelectionWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
     // DEBUG
     private static final boolean SHOW_DEBUG_INFO = false;
 
-    private static final Identifier BACKGROUND_TEXTURE = Identifier.ofDefault("textures/gui/menu_list_background.png");
-    private static final Identifier INWORLD_BACKGROUND_TEXTURE = Identifier.ofDefault("textures/gui/inworld_menu_list_background.png");
+    private static final Identifier BACKGROUND_TEXTURE = Identifier.withDefaultNamespace("textures/gui/menu_list_background.png");
+    private static final Identifier INWORLD_BACKGROUND_TEXTURE = Identifier.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
     private static final int BACKGROUND_TEXTURE_SIZE = 32;
 
     private static final int LEFT_RIGHT_PADDING = 2;
@@ -98,7 +98,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
             return this.categoryButtons.get(category);
         }
 
-        Text text = Text.literal(category.getName());
+        Component text = Component.literal(category.getName());
         CategoryButtonWidget button = new CategoryButtonWidget(this.screen, BUTTON_WIDTH, BUTTON_HEIGHT, text, category);
         this.categoryButtons.put(category, button);
         return button;
@@ -158,7 +158,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     private void setScrollAmount(double scrollAmount) {
-        this.scrollAmount = MathHelper.clamp(scrollAmount, 0.0, this.getMaxScroll());
+        this.scrollAmount = Mth.clamp(scrollAmount, 0.0, this.getMaxScroll());
     }
 
     private void updateScrollingState(double mouseX, double mouseY, int button) {
@@ -193,7 +193,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // region input callbacks
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        this.updateScrollingState(event.x(), event.y(), event.method_74245());
+        this.updateScrollingState(event.x(), event.y(), event.button());
 
         if (!this.isMouseOver(event.x(), event.y())) {
             return false;
@@ -209,7 +209,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
-        if (event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
+        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
             // Dragging scrollbar
             if (event.x() < this.left) {
                 this.setScrollAmount(0);
@@ -219,7 +219,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
                 double maxScroll = Math.max(1, this.getMaxScroll());
                 int width = this.getScrollbarEndX() - this.getScrollbarStartX();
                 int barSize = (this.width * this.width) / this.getButtonsWidth();
-                barSize = MathHelper.clamp(barSize, SCROLLBAR_MIN_WIDTH, width);
+                barSize = Mth.clamp(barSize, SCROLLBAR_MIN_WIDTH, width);
 
                 double factor = Math.max(1, maxScroll / (this.width - barSize));
 
@@ -250,7 +250,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
     // region render
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         this.renderListBackground(graphics);
         graphics.enableScissor(this.left, this.top, this.right, this.bottom);
         this.renderCategories(graphics, mouseX, mouseY, delta);
@@ -260,14 +260,14 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     }
 
     // @see EntryListWidget#drawBackground
-    private void renderListBackground(GuiGraphics graphics) {
-        Identifier texture = MinecraftClient.getInstance().world == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
-        graphics.method_25290(RenderPipelines.GUI_TEXTURED, texture,
+    private void renderListBackground(GuiGraphicsExtractor graphics) {
+        Identifier texture = Minecraft.getInstance().level == null ? BACKGROUND_TEXTURE : INWORLD_BACKGROUND_TEXTURE;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, texture,
                 this.left, this.top, this.right + (int) this.getScrollAmount(), this.bottom,
                 this.width, this.height, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
     }
 
-    private void renderCategories(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    private void renderCategories(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         for (int i = 0; i < this.children.size(); i++) {
             CategoryButtonWidget button = this.children.get(i);
             int left = getButtonLeft(i);
@@ -280,20 +280,20 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         }
     }
 
-    private void renderSeparators(GuiGraphics graphics) {
-        Matrix3x2fStack matrices = graphics.getMatrices();
+    private void renderSeparators(GuiGraphicsExtractor graphics) {
+        Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         matrices.rotate((float) Math.PI / 2.0f); // 90 degrees
 
-        Identifier leftSeparator = MinecraftClient.getInstance().world == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
-        Identifier rightSeparator = MinecraftClient.getInstance().world == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-        graphics.method_25290(RenderPipelines.GUI_TEXTURED, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
-        graphics.method_25290(RenderPipelines.GUI_TEXTURED, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
+        Identifier leftSeparator = Minecraft.getInstance().level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
+        Identifier rightSeparator = Minecraft.getInstance().level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, leftSeparator, this.top, -this.left, 0.0f, 0.0f, this.height, 2, 32, 2);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, rightSeparator, this.top, -this.right - 2, 0.0f, 0.0f, this.height, 2, 32, 2);
 
         matrices.popMatrix();
     }
 
-    private void renderScrollbar(GuiGraphics graphics) {
+    private void renderScrollbar(GuiGraphicsExtractor graphics) {
         if (this.shouldHaveScrollbar()) {
             int startX = this.getScrollbarStartX();
             int endX = this.getScrollbarEndX();
@@ -302,7 +302,7 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
 
             int width = endX - startX;
             int size = (this.width * this.width) / this.getButtonsWidth();
-            size = MathHelper.clamp(size, SCROLLBAR_MIN_WIDTH, width);
+            size = Mth.clamp(size, SCROLLBAR_MIN_WIDTH, width);
 
             int x = (int) this.getScrollAmount() * (width - size) / this.getMaxScroll() + startX;
             if (x < startX) {
@@ -315,10 +315,10 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
         }
     }
 
-    public void renderDebugInfo(GuiGraphics graphics) {
+    public void renderDebugInfo(GuiGraphicsExtractor graphics) {
         if (!SHOW_DEBUG_INFO) return;
-        MinecraftClient client = MinecraftClient.getInstance();
-        TextRenderer textRenderer = client.textRenderer;
+        Minecraft client = Minecraft.getInstance();
+        Font textRenderer = client.font;
 
         int last = categories.size() - 1;
         List<String> debugInfo = List.of(
@@ -364,16 +364,16 @@ public class CategorySelectionWidget extends AbstractParentElement implements Dr
     // endregion
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationElementOutput builder) {
     }
 
     @Override
-    public List<? extends Element> children() {
+    public List<? extends GuiEventListener> children() {
         return this.children;
     }
 
     @Override
-    public SelectionType getType() {
-        return SelectionType.NONE;
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.NONE;
     }
 }

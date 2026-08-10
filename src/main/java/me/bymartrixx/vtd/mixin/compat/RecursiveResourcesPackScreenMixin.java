@@ -4,12 +4,12 @@ import me.bymartrixx.vtd.access.PackScreenAccess;
 import me.bymartrixx.vtd.gui.VTDownloadScreen;
 import me.bymartrixx.vtd.util.Constants;
 import me.bymartrixx.vtd.util.Util;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.pack.PackScreen;
-import net.minecraft.client.gui.widget.button.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.resource.pack.PackManager;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.repository.PackRepository;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,9 +23,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 @Mixin(targets = "nl.enjarai.recursiveresources.gui.FolderedResourcePackScreen")
-public abstract class RecursiveResourcesPackScreenMixin extends PackScreen implements PackScreenAccess {
+public abstract class RecursiveResourcesPackScreenMixin extends PackSelectionScreen implements PackScreenAccess {
     @Unique
-    private static final Text OPEN_FOLDER_TEXT = Text.translatable("pack.openFolder");
+    private static final Component OPEN_FOLDER_TEXT = Component.translatable("pack.openFolder");
     @Unique
     private static final int LIST_WIDTH = 200;
     @Unique
@@ -33,20 +33,20 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackScreen imple
     @Unique
     private static final int BUTTON_MARGIN = 1;
     @Unique
-    private static final Text VTD_TEXT = Text.literal("VTDownloader");
+    private static final Component VTD_TEXT = Component.literal("VTDownloader");
     @Unique
     private static final int BUTTON_Y_OFFSET = 48;
 
-    public RecursiveResourcesPackScreenMixin(PackManager packManager, Consumer<PackManager> applier, Path file, Text title) {
+    public RecursiveResourcesPackScreenMixin(PackRepository packManager, Consumer<PackRepository> applier, Path file, Component title) {
         super(packManager, applier, file, title);
     }
 
     @Shadow(remap = false)
     @Final
-    protected MinecraftClient client;
+    protected Minecraft minecraft;
 
     @Shadow
-    protected abstract Optional<ClickableWidget> findButton(Text text);
+    protected abstract Optional<AbstractWidget> findButton(Component text);
 
     @Inject(at = @At(value = "TAIL"), method = "repositionElements")
     public void vt_downloader$addRecursiveResourcesButton(CallbackInfo ci) {
@@ -54,11 +54,11 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackScreen imple
             button.setX(this.width / 2 + LIST_X_OFFSET + BUTTON_MARGIN);
             button.setWidth(LIST_WIDTH / 2 - BUTTON_MARGIN * 2);
         });
-        this.addDrawableSelectableElement(ButtonWidget.builder(VTD_TEXT, button -> {
+        this.addRenderableWidget(Button.builder(VTD_TEXT, button -> {
             this.vtdownloader$applyChanges();
-            this.client.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
+            this.minecraft.gui.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
         })
-                .position((this.width + LIST_WIDTH) / 2 + LIST_X_OFFSET + BUTTON_MARGIN, this.height - BUTTON_Y_OFFSET)
+                .pos((this.width + LIST_WIDTH) / 2 + LIST_X_OFFSET + BUTTON_MARGIN, this.height - BUTTON_Y_OFFSET)
                 .size(LIST_WIDTH / 2 - BUTTON_MARGIN * 2, Util.VTD_BUTTON_HEIGHT)
                 .build());
     }

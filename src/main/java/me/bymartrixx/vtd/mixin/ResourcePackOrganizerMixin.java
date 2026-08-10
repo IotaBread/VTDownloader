@@ -1,22 +1,22 @@
 package me.bymartrixx.vtd.mixin;
 
 import me.bymartrixx.vtd.access.AbstractPackAccess;
-import net.minecraft.client.gui.screen.pack.ResourcePackOrganizer;
-import net.minecraft.resource.pack.PackProfile;
+import net.minecraft.client.gui.screens.packs.PackSelectionModel;
+import net.minecraft.server.packs.repository.Pack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ResourcePackOrganizer.class)
+@Mixin(PackSelectionModel.class)
 public class ResourcePackOrganizerMixin {
-    @Mixin(targets = "net/minecraft/client/gui/screen/pack/ResourcePackOrganizer$AbstractPack")
+    @Mixin(targets = "net.minecraft.client.gui.screens.packs.PackSelectionModel$EntryBase")
     public static class AbstractPackMixin implements AbstractPackAccess {
         @Shadow @Final
-        private PackProfile profile;
+        private Pack pack;
 
         @Override
-        public PackProfile vtdownloader$getProfile() {
-            return this.profile;
+        public Pack vtdownloader$getProfile() {
+            return this.pack;
         }
     }
 }

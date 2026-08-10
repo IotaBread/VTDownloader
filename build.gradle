@@ -1,7 +1,6 @@
 plugins {
-	alias libs.plugins.fabric.loom
-	alias libs.plugins.minotaur
-	alias libs.plugins.cursegradle
+	alias(libs.plugins.fabric.loom)
+	alias(libs.plugins.minotaur)
 	id 'maven-publish'
 }
 
@@ -17,33 +16,14 @@ boolean isBuild = System.getenv('GITHUB_WORKFLOW') == 'build'
 version = !isBuild ? version : "${version}+build.${System.getenv('GITHUB_RUN_NUMBER')}"
 
 repositories {
-	maven {
-		name = 'Quilt'
-		url = 'https://maven.quiltmc.org/repository/release'
-	}
-	maven {
-		name = 'Quilt Snapshots'
-		url = 'https://maven.quiltmc.org/repository/snapshot'
-	}
-
-	// Recursive resources maven
-	maven { url "https://maven.enjarai.nl/releases" }
-	// Required for recursive resources
-	maven { url "https://maven.enjarai.nl/mirrors" }
 }
 
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft libs.minecraft
-	mappings variantOf(libs.quilt.mappings) { classifier("intermediary-v2") }
-	modImplementation libs.fabric.loader
+	implementation libs.fabric.loader
 
-	modImplementation libs.fabric.api
-
-	// With modImplementation it breaks on runtime
-	modCompileOnly(libs.recursive.resources) {
-		exclude group: "com.terraformersmc", module: "modmenu"
-	}
+	implementation libs.fabric.api
 }
 
 processResources {
@@ -62,13 +42,17 @@ tasks.withType(JavaCompile).configureEach {
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
 
-	// Minecraft 1.20.5 upwards uses Java 21.
-	it.options.release = 21
+	// Minecraft 26.1 upwards uses Java 25.
+	it.options.release = 25
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
 	// If you remove this line, sources will not be generated.
@@ -77,7 +61,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archives_base_name}" }
 	}
 }
 
@@ -86,36 +70,13 @@ modrinth {
 	projectId = '1E2sq1cp'
 	versionNumber = project.version
 	versionName = "VTDownloader ${project.mod_version} for Minecraft ${mcVersion}"
-	uploadFile = remapJar
+	uploadFile = jar
 	changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
 	gameVersions = [mcVersion]
 	loaders = ['fabric', 'quilt']
 }
 
-curseforge {
-	if (project.hasProperty('curse_api_key') || System.getenv('CURSE_API_KEY') != null) {
-		apiKey = project.hasProperty('curse_api_key') ? project.property('curse_api_key') : System.getenv('CURSE_API_KEY')
-	}
-	project {
-		id = '432425'
-		changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
-		releaseType = 'release'
-		addGameVersion mcVersion
-		addGameVersion 'Fabric'
-		addGameVersion 'Quilt'
-		mainArtifact(remapJar) {
-			displayName = "VTDownloader ${project.mod_version} for Minecraft ${mcVersion}"
-		}
-		afterEvaluate {
-			uploadTask.dependsOn('remapJar')
-		}
-	}
-	options {
-		forgeGradleIntegration = false
-	}
-}
-
-publish.finalizedBy tasks.modrinth, tasks.curseforge
+publish.finalizedBy tasks.modrinth
 
 // configure the maven publication
 publishing {

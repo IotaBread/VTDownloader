@@ -1,19 +1,19 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.render.RenderPipelines;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
-public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
-    private static final Identifier TEXTURE = Identifier.of("vt_downloader", "textures/drawer_tab.png");
+public class ExpandDrawerButtonWidget implements GuiEventListener, Renderable, NarratableEntry {
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("vt_downloader", "textures/drawer_tab.png");
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 64;
     public static final int TAB_WIDTH = 16;
@@ -43,13 +43,13 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (this.isMouseOver(event.x(), event.y()) && event.method_74245() == GLFW.GLFW_MOUSE_BUTTON_1) {
+        if (this.isMouseOver(event.x(), event.y()) && event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
             this.extended = !this.extended;
             this.callback.accept(this.extended);
             return true;
         }
 
-        return Element.super.mouseClicked(event, bl);
+        return GuiEventListener.super.mouseClicked(event, bl);
     }
 
     // TODO
@@ -69,21 +69,21 @@ public class ExpandDrawerButtonWidget implements Element, Drawable, Selectable {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         boolean hovered = mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.y && mouseY < this.y + TAB_HEIGHT;
         float u = hovered ? TAB_WIDTH : 0.0F;
         float v = this.extended ? TAB_HEIGHT : 0.0F;
         // drawTexture
-        graphics.method_25290(RenderPipelines.GUI_TEXTURED, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.getLeft(), this.y, u, v, TAB_WIDTH, TAB_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override
-    public SelectionType getType() {
-        return SelectionType.NONE;
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.NONE;
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationElementOutput builder) {
     }
 }

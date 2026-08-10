@@ -1,34 +1,34 @@
 package me.bymartrixx.vtd.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.widget.button.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
-public class ReloadButtonWidget extends ButtonWidget {
-    private static final Text ICON = Text.literal("\u21BB"); // Clockwise arrow ↻
+public class ReloadButtonWidget extends Button {
+    private static final Component ICON = Component.literal("\u21BB");
 
     public static final int BUTTON_SIZE = 20;
 
-    public ReloadButtonWidget(int x, int y, Text message, PressAction onPress) {
-        super(x, y, BUTTON_SIZE, BUTTON_SIZE, message, onPress, ButtonWidget.DEFAULT_NARRATION);
+    public ReloadButtonWidget(int x, int y, Component message, OnPress onPress) {
+        super(x, y, BUTTON_SIZE, BUTTON_SIZE, message, onPress, Button.DEFAULT_NARRATION);
     }
 
-    protected Text getIconText() {
+    protected Component getIconText() {
         return ICON;
     }
 
     @Override
-    protected void method_75752(GuiGraphics graphics, int mouseX, int mouseY, float f) {
-        this.method_75794(graphics);
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float f) {
+        this.extractDefaultSprite(graphics);
         int scale = 2;
         int centerX = this.width / 2 + this.getX();
 
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        graphics.getMatrices().pushMatrix();
-        graphics.getMatrices().scale(scale, scale);
-        graphics.drawCenteredShadowedText(textRenderer, this.getIconText(), centerX / scale, this.getY() / scale, 0xFFFFFFFF);
-        graphics.getMatrices().popMatrix();
+        Font textRenderer = Minecraft.getInstance().font;
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(scale, scale);
+        graphics.centeredText(textRenderer, this.getIconText(), centerX / scale, this.getY() / scale, 0xFFFFFFFF);
+        graphics.pose().popMatrix();
     }
 }
