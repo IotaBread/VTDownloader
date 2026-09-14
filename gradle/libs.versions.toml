@@ -13,4 +13,4 @@ fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fab
 [plugins]
 fabric_loom = { id = "net.fabricmc.fabric-loom", version = "1.15.5" }
 minotaur = { id = "com.modrinth.minotaur", version = "2.9.0" }
-cursegradle = { id = "com.matthewprenger.cursegradle", version = "1.4.0" }
+curseforgegradle = { id = "net.darkhax.curseforgegradle", version = "1.3.33" }

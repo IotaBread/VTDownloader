@@ -1,7 +1,7 @@
 plugins {
 	alias(libs.plugins.fabric.loom)
 	alias(libs.plugins.minotaur)
-	alias(libs.plugins.cursegradle)
+	alias(libs.plugins.curseforgegradle)
 	id 'maven-publish'
 }
 
@@ -77,27 +77,16 @@ modrinth {
 	loaders = ['fabric', 'quilt']
 }
 
-curseforge {
-	if (project.hasProperty('curse_api_key') || System.getenv('CURSE_API_KEY') != null) {
-		apiKey = project.hasProperty('curse_api_key') ? project.property('curse_api_key') : System.getenv('CURSE_API_KEY')
-	}
-	project {
-		id = '432425'
-		changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
-		releaseType = 'release'
-		addGameVersion mcVersion
-		addGameVersion 'Fabric'
-		addGameVersion 'Quilt'
-		mainArtifact(jar) {
-			displayName = "VTDownloader ${project.mod_version} for Minecraft ${mcVersion}"
-		}
-		afterEvaluate {
-			uploadTask.dependsOn('remapJar')
-		}
-	}
-	options {
-		forgeGradleIntegration = false
-	}
+tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+	apiToken = project.hasProperty('curse_api_key') ? project.property('curse_api_key') : System.getenv('CURSE_API_KEY')
+
+	def projectId = '432425'
+	def mainFile = upload(projectId, jar)
+	mainFile.changelog = "A changelog can be found at https://github.com/IotaBread/VTDownloader/releases/tag/${project.mod_version}"
+	mainFile.releaseType = 'release'
+	mainFile.addGameVersion(mcVersion)
+	mainFile.addModLoader('Fabric', 'Quilt')
+	mainFile.displayName = "VTDownloader ${project.mod_version} for Minecraft ${mcVersion}"
 }
 
 publish.finalizedBy tasks.modrinth, tasks.curseforge
