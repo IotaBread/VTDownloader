@@ -74,12 +74,12 @@ public class Util {
 
     public static void openUri(Minecraft client, @Nullable Screen screen, URI uri) {
         if (client.options.chatLinksPrompt().get()) {
-            client.setScreen(new ConfirmLinkScreen(open -> {
+            client.gui.setScreen(new ConfirmLinkScreen(open -> {
                 if (open) {
                     net.minecraft.util.Util.getPlatform().openUri(uri);
                 }
 
-                client.setScreen(screen);
+                client.gui.setScreen(screen);
             }, uri.toString(), false));
         } else {
             net.minecraft.util.Util.getPlatform().openUri(uri);

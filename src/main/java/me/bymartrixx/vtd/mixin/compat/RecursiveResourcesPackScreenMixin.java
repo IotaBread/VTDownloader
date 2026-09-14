@@ -56,7 +56,7 @@ public abstract class RecursiveResourcesPackScreenMixin extends PackSelectionScr
         });
         this.addRenderableWidget(Button.builder(VTD_TEXT, button -> {
             this.vtdownloader$applyChanges();
-            this.minecraft.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
+            this.minecraft.gui.setScreen(new VTDownloadScreen(this, Constants.RESOURCE_PACK_SCREEN_SUBTITLE));
         })
                 .pos((this.width + LIST_WIDTH) / 2 + LIST_X_OFFSET + BUTTON_MARGIN, this.height - BUTTON_Y_OFFSET)
                 .size(LIST_WIDTH / 2 - BUTTON_MARGIN * 2, Util.VTD_BUTTON_HEIGHT)

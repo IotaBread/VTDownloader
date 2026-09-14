@@ -144,7 +144,7 @@ public abstract class TransferableSelectionListMixin extends ObjectSelectionList
                         && clickedY >= pencilY && clickedY < pencilY + PENCIL_SIZE) {
                     PackSelectionScreen screen = ((TransferableSelectionListAccess) this.parent).vtdownloader$getScreen();
                     ((PackSelectionScreenAccess) screen).vtdownloader$applyChanges();
-                    this.minecraft.setScreen(new VTDownloadScreen(screen,
+                    this.minecraft.gui.setScreen(new VTDownloadScreen(screen,
                             Constants.RESOURCE_PACK_SCREEN_SUBTITLE, this.pack));
                 }
             }
