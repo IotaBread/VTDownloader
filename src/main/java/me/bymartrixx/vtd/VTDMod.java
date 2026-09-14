@@ -76,7 +76,7 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.5.0";
+        String version = "2.6.0";
         String vtVersion = "26.2";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
