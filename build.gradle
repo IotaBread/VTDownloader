@@ -35,7 +35,7 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft libs.minecraft
-	mappings variantOf(libs.quilt.mappings) { classifier("intermediary-v2") }
+	mappings loom.officialMojangMappings()
 	modImplementation libs.fabric.loader
 
 	modImplementation libs.fabric.api

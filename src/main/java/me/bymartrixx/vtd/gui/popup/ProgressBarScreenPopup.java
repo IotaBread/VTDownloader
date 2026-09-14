@@ -1,7 +1,7 @@
 package me.bymartrixx.vtd.gui.popup;
 
 import me.bymartrixx.vtd.util.RenderUtil;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.function.Supplier;
@@ -17,7 +17,7 @@ public class ProgressBarScreenPopup extends AbstractScreenPopup {
 
     private boolean aborted;
 
-    public ProgressBarScreenPopup(MinecraftClient client, int centerX, int centerY, int width, int height, int color) {
+    public ProgressBarScreenPopup(Minecraft client, int centerX, int centerY, int width, int height, int color) {
         super(client, centerX, centerY, width, height);
 
         this.color = color;

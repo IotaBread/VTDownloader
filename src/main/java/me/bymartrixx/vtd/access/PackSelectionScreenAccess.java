@@ -1,6 +1,6 @@
 package me.bymartrixx.vtd.access;
 
-public interface PackScreenAccess {
+public interface PackSelectionScreenAccess {
     boolean vtdownloader$isResourcePackScreen();
 
     void vtdownloader$applyChanges();

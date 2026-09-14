@@ -1,17 +1,17 @@
 package me.bymartrixx.vtd.util;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 public class Constants {
-    public static final Text ERROR_TEXT = Text.translatable("vtd.error").formatted(Formatting.BOLD);
-    public static final Text RESOURCE_PACK_SCREEN_SUBTITLE = Text.translatable("vtd.resourcePack.subtitle")
-            .formatted(Formatting.GRAY);
-    public static final Text RESOURCE_PACK_BUTTON_TEXT = Text.translatable("vtd.resourcePack.button");
-    public static final Text RESOURCE_PACK_RELOAD_TEXT = Text.translatable("vtd.resourcePack.reload");
+    public static final Component ERROR_TEXT = Component.translatable("vtd.error").withStyle(ChatFormatting.BOLD);
+    public static final Component RESOURCE_PACK_SCREEN_SUBTITLE = Component.translatable("vtd.resourcePack.subtitle")
+            .withStyle(ChatFormatting.GRAY);
+    public static final Component RESOURCE_PACK_BUTTON_TEXT = Component.translatable("vtd.resourcePack.button");
+    public static final Component RESOURCE_PACK_RELOAD_TEXT = Component.translatable("vtd.resourcePack.reload");
 
-    public static final Identifier PENCIL_TEXTURE = Identifier.of("vt_downloader", "textures/pencil.png");
+    public static final Identifier PENCIL_TEXTURE = Identifier.fromNamespaceAndPath("vt_downloader", "textures/pencil.png");
 
     public static final String VT_DESCRIPTION_MARKER = "vanillatweaks.net";
     public static final String SELECTED_PACKS_FILE = "Selected Packs.txt";

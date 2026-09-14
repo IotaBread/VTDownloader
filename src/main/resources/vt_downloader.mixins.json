@@ -4,12 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
   "client": [
-    "PackEntryListWidgetMixin",
-    "PackEntryListWidgetMixin$PackEntryMixin",
-    "PackScreenMixin",
-    "ResourcePackOrganizerMixin",
-    "ResourcePackOrganizerMixin$AbstractPackMixin",
-    "TextureManagerMixin"
+    "PackSelectionModelMixin",
+    "PackSelectionModelMixin$EntryBaseMixin",
+    "PackSelectionScreenMixin",
+    "TextureManagerMixin",
+    "TransferableSelectionListMixin",
+    "TransferableSelectionListMixin$PackEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
