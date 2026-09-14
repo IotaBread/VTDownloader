@@ -9,7 +9,8 @@
     "PackSelectionScreenMixin",
     "TextureManagerMixin",
     "TransferableSelectionListMixin",
-    "TransferableSelectionListMixin$PackEntryMixin"
+    "TransferableSelectionListMixin$PackEntryMixin",
+    "UtilMixin"
   ],
   "injectors": {
     "defaultRequire": 1

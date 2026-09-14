@@ -15,6 +15,7 @@ import me.bymartrixx.vtd.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.TracingExecutor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -44,9 +45,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class VTDMod implements ClientModInitializer {
@@ -55,7 +56,7 @@ public class VTDMod implements ClientModInitializer {
 
     private static final ThreadFactory DOWNLOAD_THREAD_FACTORY = new ThreadFactoryBuilder()
             .setNameFormat("VT Download %d").build();
-    private static final ExecutorService DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool(DOWNLOAD_THREAD_FACTORY);
+    private static final TracingExecutor DOWNLOAD_EXECUTOR = new TracingExecutor(Executors.newCachedThreadPool(DOWNLOAD_THREAD_FACTORY));
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(DownloadPackRequestData.class, new DownloadPackRequestData.Serializer())
             .registerTypeAdapter(SharePackRequestData.class, new SharePackRequestData.Serializer())
@@ -95,6 +96,10 @@ public class VTDMod implements ClientModInitializer {
         }
 
         return httpClient;
+    }
+
+    public static void shutdownExecutor() {
+        DOWNLOAD_EXECUTOR.shutdownAndAwait(3L, TimeUnit.SECONDS);
     }
 
     private static URI getResourceUri(String resource) {
