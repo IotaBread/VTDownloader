@@ -86,6 +86,7 @@ tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge)
 	mainFile.releaseType = 'release'
 	mainFile.addGameVersion(mcVersion)
 	mainFile.addModLoader('Fabric', 'Quilt')
+	mainFile.addEnvironment('Client')
 	mainFile.displayName = "VTDownloader ${project.mod_version} for Minecraft ${mcVersion}"
 }
 
