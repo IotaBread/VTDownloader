@@ -17,7 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.TracingExecutor;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -279,7 +279,7 @@ public class VTDMod implements ClientModInitializer {
 
     public static CompletableFuture<List<String>> readResourcePackData(net.minecraft.server.packs.repository.Pack profile) {
         return CompletableFuture.supplyAsync(() -> {
-            try (PackResources resourcePack = profile.open()) {
+            try (PackMetadataResources resourcePack = profile.openMetadata()) {
                 IoSupplier<InputStream> fileStream = resourcePack.getRootResource(Constants.SELECTED_PACKS_FILE);
                 try (InputStream stream = fileStream != null ? fileStream.get() : null){
                     if (stream != null) {

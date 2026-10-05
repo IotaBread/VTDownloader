@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.popup;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import me.bymartrixx.vtd.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
@@ -16,7 +17,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 
@@ -77,7 +77,7 @@ public class MessageScreenPopup extends AbstractScreenPopup implements GuiEventL
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
         double mouseX = event.x();
         double mouseY = event.y();
-        if (this.shouldShow() && event.button() == GLFW.GLFW_MOUSE_BUTTON_1
+        if (this.shouldShow() && event.button() == InputConstants.MOUSE_BUTTON_LEFT
                 && mouseX >= this.getLeft() && mouseX < this.getRight()
                 && mouseY >= this.getTop() && mouseY < this.getBottom()) {
             Font textRenderer = this.client.font;
