@@ -1,5 +1,6 @@
 package me.bymartrixx.vtd.gui.widget;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -8,7 +9,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
@@ -43,7 +43,7 @@ public class ExpandDrawerButtonWidget implements GuiEventListener, Renderable, N
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (this.isMouseOver(event.x(), event.y()) && event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
+        if (this.isMouseOver(event.x(), event.y()) && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             this.extended = !this.extended;
             this.callback.accept(this.extended);
             return true;
