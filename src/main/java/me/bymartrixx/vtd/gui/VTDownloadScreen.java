@@ -9,6 +9,7 @@ import me.bymartrixx.vtd.data.RpCategories;
 import me.bymartrixx.vtd.data.SharePackRequestData;
 import me.bymartrixx.vtd.gui.popup.MessageScreenPopup;
 import me.bymartrixx.vtd.gui.popup.ProgressBarScreenPopup;
+import me.bymartrixx.vtd.gui.popup.VersionSelectionPopup;
 import me.bymartrixx.vtd.gui.widget.CategorySelectionWidget;
 import me.bymartrixx.vtd.gui.widget.DebugButtonWidget;
 import me.bymartrixx.vtd.gui.widget.ExpandDrawerButtonWidget;
@@ -56,9 +57,11 @@ public class VTDownloadScreen extends Screen {
     private static final Component READ_PACK_DATA_FAILED_TEXT = Component.translatable("vtd.readPackDataFailed");
     private static final Component PACK_NAME_FIELD_TEXT = Component.translatable("vtd.resourcePack.nameField");
     private static final Component PLACEHOLDER_TEXT = Component.literal("Lorem ipsum dolor sit amet");
+    private static final Component VERSION_POPUP_TITLE = Component.translatable("vtd.version.popup");
 
     private static final int WIDGET_HEIGHT = 20;
     private static final int WIDGET_MARGIN = 10;
+    private static final int VERSION_BUTTON_WIDTH = 120;
 
     private static final int TITLE_Y = 8;
     private static final int SUBTITLE_Y = 20;
@@ -95,6 +98,7 @@ public class VTDownloadScreen extends Screen {
     private ProgressBarScreenPopup progressBar;
     private MessageScreenPopup sharePopup;
     private MessageScreenPopup errorPopup;
+    private VersionSelectionPopup versionPopup;
     // DEBUG
     @Nullable
     private MessageScreenPopup debugPopup;
@@ -105,6 +109,7 @@ public class VTDownloadScreen extends Screen {
     private PackNameTextFieldWidget packNameField;
     private Button shareButton;
     private MutableMessageButtonWidget downloadButton;
+    private MutableMessageButtonWidget versionButton;
     private Button doneButton;
 
     @Nullable
@@ -338,6 +343,13 @@ public class VTDownloadScreen extends Screen {
         this.addRenderableWidget(new ReloadButtonWidget(WIDGET_MARGIN, WIDGET_MARGIN,
                 Constants.RESOURCE_PACK_RELOAD_TEXT, button -> this.reloadCategories()));
 
+        // Vanilla Tweaks version selection button
+        this.versionButton = this.addRenderableWidget(new MutableMessageButtonWidget(
+                WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE, WIDGET_MARGIN,
+                VERSION_BUTTON_WIDTH, WIDGET_HEIGHT,
+                Component.translatable("vtd.version", VTDMod.VT_VERSION),
+                button -> this.toggleVersionPopup()));
+
         if (DEBUG_BUTTON) this.addRenderableWidget(new DebugButtonWidget(WIDGET_MARGIN * 2 + ReloadButtonWidget.BUTTON_SIZE,
                 WIDGET_MARGIN, PLACEHOLDER_TEXT, button -> {
             if (this.debugPopup != null) this.debugPopup.show(DEBUG_MESSAGE_TIME, PLACEHOLDER_TEXT);
@@ -357,6 +369,10 @@ public class VTDownloadScreen extends Screen {
         this.errorPopup = this.addWidget(new MessageScreenPopup(this.minecraft, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), Constants.ERROR_TEXT));
+        this.versionPopup = this.addWidget(new VersionSelectionPopup(this.minecraft,
+                this.width / 2, this.height / 2, VERSION_POPUP_TITLE, this::selectVtVersion));
+        this.versionPopup.updateVersions(VTDMod.FALLBACK_VT_VERSIONS);
+        VTDMod.getAvailableVtVersions().thenAcceptAsync(this.versionPopup::updateVersions, this.minecraft);
         if (DEBUG_BUTTON) this.debugPopup = this.addWidget(new MessageScreenPopup(this.minecraft, this,
                 this.width / 2, this.height / 2,
                 this.width / 2, (int) (this.height / 1.5), PLACEHOLDER_TEXT));
@@ -395,6 +411,7 @@ public class VTDownloadScreen extends Screen {
                 PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_COLOR));
         this.addRenderableOnly(this.sharePopup);
         this.addRenderableOnly(this.errorPopup);
+        this.addRenderableOnly(this.versionPopup);
         if (this.debugPopup != null) this.addRenderableOnly(this.debugPopup);
 
         this.updateButtons();
@@ -426,10 +443,31 @@ public class VTDownloadScreen extends Screen {
         }
     }
 
+    private void toggleVersionPopup() {
+        if (this.versionPopup.shouldShow()) {
+            this.versionPopup.hide();
+        } else {
+            this.versionPopup.show();
+        }
+    }
+
+    private void selectVtVersion(String version) {
+        if (VTDMod.setVtVersion(version)) {
+            this.versionButton.setMessage(Component.translatable("vtd.version", VTDMod.VT_VERSION));
+
+            // The share code is tied to the version it was generated for
+            this.lastShareData = null;
+            this.lastShareCode = null;
+
+            this.reloadCategories();
+        }
+    }
+
     public boolean isCoveredByPopup(int mouseX, int mouseY) {
         return this.progressBar.isMouseOver(mouseX, mouseY)
                 || this.sharePopup.isMouseOver(mouseX, mouseY)
                 || this.errorPopup.isMouseOver(mouseX, mouseY)
+                || this.versionPopup.isMouseOver(mouseX, mouseY)
                 || (this.debugPopup != null && this.debugPopup.isMouseOver(mouseX, mouseY));
     }
 
@@ -488,7 +526,9 @@ public class VTDownloadScreen extends Screen {
     // for some reason the share popup is never reported as the hovered element
     @Override
     public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
-        if (this.sharePopup.isMouseOver(mouseX, mouseY)) {
+        if (this.versionPopup.isMouseOver(mouseX, mouseY)) {
+            return Optional.of(this.versionPopup);
+        } else if (this.sharePopup.isMouseOver(mouseX, mouseY)) {
             return Optional.of(this.sharePopup);
         } else if (this.errorPopup.isMouseOver(mouseX, mouseY)) {
             return Optional.of(this.errorPopup);

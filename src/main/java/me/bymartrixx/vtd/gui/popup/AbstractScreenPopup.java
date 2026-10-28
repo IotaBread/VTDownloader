@@ -35,6 +35,11 @@ public abstract class AbstractScreenPopup implements Renderable {
         this.fadeTime = 0.0F;
     }
 
+    public void hide() {
+        this.show = false;
+        this.reset();
+    }
+
     public boolean shouldShow() {
         return this.show;
     }

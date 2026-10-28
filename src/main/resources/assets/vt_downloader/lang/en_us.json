@@ -16,6 +16,8 @@
     "vtd.resourcePack.nameField": "Resource pack name...",
     "vtd.resourcePack.subtitle": "Select Resource Packs",
     "vtd.resourcePack.reload": "Reload Resource Packs",
+    "vtd.version": "VT Version: %s",
+    "vtd.version.popup": "Select Vanilla Tweaks version",
     "vtd.selectedPacks": "Selected packs",
     "vtd.readPackDataFailed": "Failed to read VanillaTweaks pack data:",
     "vtd.unsavedPackWarning.header": "Warning: Unsaved Pack",
