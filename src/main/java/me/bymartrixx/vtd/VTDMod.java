@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class VTDMod implements ClientModInitializer {
     // DEBUG
@@ -76,8 +77,8 @@ public class VTDMod implements ClientModInitializer {
     public static RpCategories rpCategories;
 
     static {
-        String version = "2.6.0";
-        String vtVersion = "26.2";
+        String version = "2.7.0";
+        String vtVersion = "26.3";
 
         Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (container.isPresent()) {
@@ -279,15 +280,17 @@ public class VTDMod implements ClientModInitializer {
 
     public static CompletableFuture<List<String>> readResourcePackData(net.minecraft.server.packs.repository.Pack profile) {
         return CompletableFuture.supplyAsync(() -> {
-            try (PackResources resourcePack = profile.open()) {
-                IoSupplier<InputStream> fileStream = resourcePack.getRootResource(Constants.SELECTED_PACKS_FILE);
-                try (InputStream stream = fileStream != null ? fileStream.get() : null){
-                    if (stream != null) {
-                        return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
-                    } else {
-                        return Collections.emptyList();
+            try (Stream<PackResources> resourcePacks = profile.open()) {
+                for (PackResources resourcePack : resourcePacks.toList()) {
+                    IoSupplier<InputStream> fileStream = resourcePack.getRootResource(Constants.SELECTED_PACKS_FILE);
+                    if (fileStream != null) {
+                        try (InputStream stream = fileStream.get()) {
+                            return readSelectedPacks(new BufferedReader(new InputStreamReader(stream)));
+                        }
                     }
                 }
+
+                return Collections.emptyList();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

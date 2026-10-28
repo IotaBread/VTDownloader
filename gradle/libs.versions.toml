@@ -1,8 +1,8 @@
 [versions]
-minecraft = "26.2"
-fabric_loader = "0.19.3"
+minecraft = "26.3"
+fabric_loader = "0.20.1"
 
-fabric_api = "0.157.0+26.2"
+fabric_api = "0.165.0+26.3"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
@@ -11,6 +11,6 @@ fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_l
 fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric_api" }
 
 [plugins]
-fabric_loom = { id = "net.fabricmc.fabric-loom", version = "1.15.5" }
+fabric_loom = { id = "net.fabricmc.fabric-loom", version = "1.19.3" }
 minotaur = { id = "com.modrinth.minotaur", version = "2.9.0" }
 curseforgegradle = { id = "net.darkhax.curseforgegradle", version = "1.3.33" }

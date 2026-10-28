@@ -76,13 +76,13 @@ public class Util {
         if (client.options.chatLinksPrompt().get()) {
             client.gui.setScreen(new ConfirmLinkScreen(open -> {
                 if (open) {
-                    net.minecraft.util.Util.getPlatform().openUri(uri);
+                    com.mojang.blaze3d.Blaze3D.openUri(uri);
                 }
 
                 client.gui.setScreen(screen);
-            }, uri.toString(), false));
+            }, uri, false));
         } else {
-            net.minecraft.util.Util.getPlatform().openUri(uri);
+            com.mojang.blaze3d.Blaze3D.openUri(uri);
         }
     }
 

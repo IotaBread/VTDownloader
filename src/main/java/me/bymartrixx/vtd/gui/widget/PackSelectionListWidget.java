@@ -30,7 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.net.URI;
 import java.util.ArrayList;
@@ -265,7 +265,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
     // region input callbacks
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1 && this.children().isEmpty()) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.children().isEmpty()) {
             // Handle clicks when the error is shown
             double mouseX = event.x();
             double mouseY = event.y();
@@ -301,7 +301,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
             //     return true;
             // }
 
-            if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+            if (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER) {
                 AbstractEntry focusedEntry = this.getFocused();
                 if (focusedEntry instanceof PackEntry entry) {
                     this.toggleSelection(entry);
@@ -512,7 +512,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 this.widget.toggleSelection(this);
                 return true;
             }
@@ -733,7 +733,7 @@ public class PackSelectionListWidget extends AbstractSelectionList<PackSelection
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 this.screen.selectCategory(this.category);
                 this.playDownSound(this.client.getSoundManager());
                 return true;

@@ -19,7 +19,7 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 // Doesn't extend ButtonWidget to allow dynamic positioning
 public class CategoryButtonWidget implements GuiEventListener, NarratableEntry {
@@ -64,7 +64,7 @@ public class CategoryButtonWidget implements GuiEventListener, NarratableEntry {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1 && this.hovered && !this.selected) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.hovered && !this.selected) {
             this.playDownSound(Minecraft.getInstance().getSoundManager());
             return this.screen.selectCategory(this.category);
         }
@@ -79,7 +79,7 @@ public class CategoryButtonWidget implements GuiEventListener, NarratableEntry {
             return false;
         }
 
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_SPACE || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+        if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_SPACE || keyCode == InputConstants.KEY_NUMPADENTER) {
             this.playDownSound(Minecraft.getInstance().getSoundManager());
             return this.screen.selectCategory(this.category);
         }

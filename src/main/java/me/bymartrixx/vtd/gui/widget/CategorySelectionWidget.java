@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,7 +162,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
     }
 
     private void updateScrollingState(double mouseX, double mouseY, int button) {
-        this.scrolling = button == GLFW.GLFW_MOUSE_BUTTON_1 &&
+        this.scrolling = button == InputConstants.MOUSE_BUTTON_LEFT &&
                 mouseX >= this.getScrollbarStartX() && mouseX < this.getScrollbarEndX() &&
                 mouseY >= this.getScrollbarStartY() && mouseY < this.getScrollbarEndY();
     }
@@ -209,7 +209,7 @@ public class CategorySelectionWidget extends AbstractContainerEventHandler imple
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
-        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1 && this.scrolling) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.scrolling) {
             // Dragging scrollbar
             if (event.x() < this.left) {
                 this.setScrollAmount(0);

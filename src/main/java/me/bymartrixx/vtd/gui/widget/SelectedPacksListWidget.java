@@ -15,7 +15,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -279,7 +279,7 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
             //     return true;
             // }
 
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) {
                 AbstractEntry focusedEntry = this.getFocused();
                 if (focusedEntry != null) {
                     focusedEntry.selectEntry();
@@ -422,7 +422,7 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 long time = System.currentTimeMillis();
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
                     this.selectEntry();
@@ -525,7 +525,7 @@ public class SelectedPacksListWidget extends AbstractSelectionList<SelectedPacks
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
-            if (event.button() == GLFW.GLFW_MOUSE_BUTTON_1) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 long time = System.currentTimeMillis();
                 if (time <= this.lastClickTime + DOUBLE_CLICK_THRESHOLD) {
                     this.selectEntry();
